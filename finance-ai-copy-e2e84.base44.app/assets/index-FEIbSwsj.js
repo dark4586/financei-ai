@@ -75226,9 +75226,16 @@ function NIe() {
         g = async () => {
             p(!0);
             let v = a.foto_perfil;
-            o && (v = (await se.integrations.Core.UploadFile({
-                file: o
-            })).file_url);
+            if (o) {
+                try {
+                    v = (await se.integrations.Core.UploadFile({
+                        file: o
+                    })).file_url;
+                } catch (err) {
+                    console.warn("Upload failed, using local Base64 fallback", err);
+                    v = c;
+                }
+            }
             const b = {
                 nome: a.nome,
                 foto_perfil: v
@@ -80287,15 +80294,15 @@ function z$e({
                 children: [l.jsx(q$e, {
                     settings: i,
                     location: n
+                }), l.jsx("div", {
+                    className: "fixed top-3 left-3 z-[45] hidden md:block",
+                    children: l.jsx(HG, {
+                        className: "bg-white/10 hover:bg-white/20 text-white rounded-lg p-2 pointer-events-auto"
+                    })
                 }), l.jsxs("main", {
                     className: "flex-1 flex flex-col overflow-hidden relative",
                     children: [l.jsx(I$e, {
                         currentPageName: t
-                    }), l.jsx("div", {
-                        className: "absolute top-3 left-3 z-30 hidden md:block",
-                        children: l.jsx(HG, {
-                            className: "bg-white/10 hover:bg-white/20 text-white rounded-lg p-2"
-                        })
                     }), l.jsxs("div", {
                         className: "flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 pt-14 md:pt-0",
                         style: {
