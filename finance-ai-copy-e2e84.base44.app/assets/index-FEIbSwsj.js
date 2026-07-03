@@ -69160,7 +69160,7 @@ function rIe() {
             children: [l.jsxs(xe, {
                 onClick: n,
                 variant: "outline",
-                className: "border-[#404040] text-white hover:bg-white/10 justify-start gap-3",
+                className: "bg-transparent border-[#404040] text-white hover:bg-white/10 justify-start gap-3",
                 children: [l.jsx(qoe, {
                     className: "w-4 h-4 text-emerald-400"
                 }), "Exportar Backup (JSON)"]
@@ -69174,7 +69174,7 @@ function rIe() {
                 }), l.jsx(xe, {
                     asChild: !0,
                     variant: "outline",
-                    className: "w-full border-[#404040] text-white hover:bg-white/10 justify-start gap-3",
+                    className: "w-full bg-transparent border-[#404040] text-white hover:bg-white/10 justify-start gap-3",
                     disabled: e,
                     children: l.jsxs("span", {
                         children: [l.jsx(Kse, {
@@ -75998,7 +75998,7 @@ function DIe({
         }), i && l.jsx("div", {
             className: "border-t border-[#404040] divide-y divide-[#404040]",
             children: t.map(d => l.jsxs("div", {
-                className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 pl-4 bg-[#1f1f1f] border-l-2 border-violet-500/20 w-full min-w-0",
+                className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 pl-4 submenu-item w-full min-w-0",
                 children: [l.jsxs("div", {
                     className: "flex-1 flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto",
                     children: [l.jsxs("div", {
@@ -76177,10 +76177,19 @@ function $Ie() {
                 dia_recebimento: f.dia_recebimento ? parseInt(f.dia_recebimento) : null,
                 banco_nome: (H == null ? void 0 : H.nome) || ""
             };
-        if (n) v.mutate({
-            id: n.id,
-            data: V
-        });
+        if (n) {
+            if (f.tipo === "salario_semanal") {
+                const baseDesc = f.descricao.split(" (")[0];
+                const dateObj = new Date(f.mes_referencia + "T12:00:00");
+                if (!isNaN(dateObj.getTime())) {
+                    V.descricao = `${baseDesc} (${tt(dateObj, "dd/MM")})`;
+                }
+            }
+            v.mutate({
+                id: n.id,
+                data: V
+            });
+        }
         else if (f.tipo === "salario_semanal") {
             const L = c6(f.mes_referencia).map(z => ({
                 descricao: `${f.descricao} (${tt(z,"dd/MM")})`,
@@ -79778,6 +79787,11 @@ function z$e({
 
         /* Keep scrollbar visible for better UX */
         
+        .submenu-item {
+          background-color: ${(i==null?void 0:i.tema)==="liquid_glass"?"rgba(255, 255, 255, 0.05)":(i==null?void 0:i.tema)==="dark"?"#1f1f1f":"rgba(0, 0, 0, 0.03)"} !important;
+          border-left: 2px solid ${(i==null?void 0:i.tema)==="liquid_glass"?"rgba(255, 255, 255, 0.2)":"rgba(139, 92, 246, 0.3)"} !important;
+        }
+
         .bg-\\[\\#121212\\], .bg-\\[\\#0f0f0f\\], .bg-\\[\\#0d0d1a\\] {
           background-color: ${(i==null?void 0:i.tema)==="liquid_glass"?"transparent":"var(--theme-background)"} !important;
         }
