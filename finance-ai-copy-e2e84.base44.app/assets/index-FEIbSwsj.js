@@ -80292,7 +80292,7 @@ function z$e({
                     children: [l.jsx(I$e, {
                         currentPageName: t
                     }), l.jsx("div", {
-                        className: "absolute top-3 left-3 z-20 hidden md:block",
+                        className: "absolute top-3 left-3 z-30 hidden md:block",
                         children: l.jsx(HG, {
                             className: "bg-white/10 hover:bg-white/20 text-white rounded-lg p-2"
                         })
