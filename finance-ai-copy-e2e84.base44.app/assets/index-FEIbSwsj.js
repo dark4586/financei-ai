@@ -13909,7 +13909,7 @@ const Eq = typeof window > "u",
             defaultValue: "69fdc875c6ab6facb4be2e84"
         }),
         serverUrl: Of("server_url", {
-            defaultValue: "http://localhost:3000"
+            defaultValue: typeof window !== "undefined" ? window.location.origin : "http://localhost:3000"
         }),
         token: Of("access_token", {
             removeFromUrl: !0
