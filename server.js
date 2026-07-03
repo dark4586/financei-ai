@@ -35,6 +35,130 @@ const MIME_TYPES = {
     '.svg': 'image/svg+xml',
     '.ico': 'image/x-icon'
 };
+function getRequestBody(req) {
+    return new Promise((resolve, reject) => {
+        let body = '';
+        req.on('data', chunk => { body += chunk.toString(); });
+        req.on('end', () => resolve(body));
+        req.on('error', err => reject(err));
+    });
+}
+
+async function handleInvokeLLM(req, res) {
+    try {
+        const bodyText = await getRequestBody(req);
+        const body = JSON.parse(bodyText);
+        const prompt = body.prompt;
+        const schema = body.response_json_schema;
+
+        const apiKey = process.env.GEMINI_API_KEY || process.env.API_KEY;
+
+        if (apiKey) {
+            try {
+                let geminiPrompt = prompt;
+                if (schema) {
+                    geminiPrompt += `\n\nResponda estritamente seguindo este JSON Schema: ${JSON.stringify(schema)}`;
+                }
+
+                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+                const apiRes = await fetch(geminiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: geminiPrompt }] }]
+                    })
+                });
+
+                if (apiRes.ok) {
+                    const apiData = await apiRes.json();
+                    let aiText = '';
+                    try {
+                        aiText = apiData.candidates[0].content.parts[0].text;
+                    } catch (e) {
+                        throw new Error("Formato de resposta do Gemini inválido.");
+                    }
+
+                    if (schema) {
+                        try {
+                            let cleanText = aiText.trim();
+                            if (cleanText.startsWith('```json')) {
+                                cleanText = cleanText.substring(7, cleanText.length - 3).trim();
+                            } else if (cleanText.startsWith('```')) {
+                                cleanText = cleanText.substring(3, cleanText.length - 3).trim();
+                            }
+                            const jsonResult = JSON.parse(cleanText);
+                            res.writeHead(200, { 'Content-Type': 'application/json' });
+                            res.end(JSON.stringify(jsonResult));
+                            logRequest(req.method, req.url, 200, 'Served Gemini API response (schema)');
+                            return;
+                        } catch (e) {
+                            console.error("Failed to parse Gemini JSON schema response:", e);
+                        }
+                    } else {
+                        res.writeHead(200, { 'Content-Type': 'application/json' });
+                        res.end(JSON.stringify(aiText));
+                        logRequest(req.method, req.url, 200, 'Served Gemini API response (text)');
+                        return;
+                    }
+                } else {
+                    const errText = await apiRes.text();
+                    console.error("Gemini API error:", errText);
+                    throw new Error(`Erro na API do Gemini: ${apiRes.status}`);
+                }
+            } catch (err) {
+                console.error("Gemini invocation failed, falling back to mock:", err);
+            }
+        }
+
+        // Fallback responder when no API key or when API call fails
+        if (schema) {
+            const mockInsights = {
+                insights: [
+                    {
+                        type: "info",
+                        title: "Ative a Inteligência Artificial",
+                        message: "Adicione a variável de ambiente GEMINI_API_KEY no Render com a sua chave do Google AI Studio para ativar as análises automáticas."
+                    },
+                    {
+                        type: "opportunity",
+                        title: "Dica de Economia",
+                        message: "Parabéns por começar a organizar suas finanças! Monitore seus gastos mensais para identificar onde economizar."
+                    }
+                ]
+            };
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(mockInsights));
+            logRequest(req.method, req.url, 200, 'Served Mock Insights (no API Key)');
+        } else {
+            const lowerPrompt = prompt.toLowerCase();
+            if (lowerPrompt.includes('tema') || lowerPrompt.includes('theme') || lowerPrompt.includes('mudar para')) {
+                let theme = 'dark';
+                if (lowerPrompt.includes('azul') || lowerPrompt.includes('blue')) theme = 'blue';
+                else if (lowerPrompt.includes('verde') || lowerPrompt.includes('green')) theme = 'green';
+                else if (lowerPrompt.includes('roxo') || lowerPrompt.includes('purple')) theme = 'purple';
+                else if (lowerPrompt.includes('vermelho') || lowerPrompt.includes('red')) theme = 'red';
+                else if (lowerPrompt.includes('dourado') || lowerPrompt.includes('gold')) theme = 'gold';
+                else if (lowerPrompt.includes('ciano') || lowerPrompt.includes('cyan')) theme = 'cyan';
+                else if (lowerPrompt.includes('rosa') || lowerPrompt.includes('pink')) theme = 'pink';
+                
+                const msg = `Troquei o tema para você!\n\n\`\`\`action\n{\n  "type": "change_theme",\n  "payload": {\n    "tema": "${theme}"\n  }\n}\n\`\`\``;
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify(msg));
+                logRequest(req.method, req.url, 200, 'Served Mock Theme Change Action');
+                return;
+            }
+
+            const defaultMsg = `Olá! Sou a **Luna**, sua assistente pessoal. 👋\n\nPara que eu possa analisar suas finanças detalhadamente e responder perguntas personalizadas usando inteligência artificial, você precisa configurar sua chave da API do Gemini.\n\n### Como configurar:\n1. Obtenha uma chave de API gratuita no [Google AI Studio](https://aistudio.google.com/).\n2. No painel do seu Web Service no **Render**, vá em **Environment**.\n3. Adicione uma variável de ambiente com a chave **\`GEMINI_API_KEY\`** e cole o valor da sua chave.\n4. Salve as alterações.\n\n*Enquanto isso, eu posso ajudar você com comandos simples (como: "mudar o tema para azul" ou "mudar o tema para roxo")!*`;
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(defaultMsg));
+            logRequest(req.method, req.url, 200, 'Served Mock Chat Reply (no API Key)');
+        }
+    } catch (e) {
+        console.error("InvokeLLM handler failed:", e);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
+    }
+}
 
 const server = http.createServer((req, res) => {
     // Add CORS headers
@@ -54,6 +178,12 @@ const server = http.createServer((req, res) => {
 
     // 1. API Route
     if (pathname.startsWith('/api/')) {
+        // Intercept InvokeLLM POST request
+        if (req.method === 'POST' && pathname.endsWith('/integration-endpoints/Core/InvokeLLM')) {
+            handleInvokeLLM(req, res);
+            return;
+        }
+
         // Try to serve mock API files by appending .html
         let filePath = path.join(BASE_DIR, 'base44.app', pathname);
         let filePathWithHtml = filePath + '.html';
