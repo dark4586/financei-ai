@@ -79826,7 +79826,7 @@ function z$e({
           line-height: var(--line-height);
           letter-spacing: var(--letter-spacing);
           scroll-behavior: var(--smooth-scrolling, auto);
-          filter: contrast(var(--contrast-multiplier)) !important;
+          ${i && i.high_contrast ? "filter: contrast(var(--contrast-multiplier)) !important;" : ""}
         }
         
         * {
