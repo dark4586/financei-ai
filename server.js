@@ -80,17 +80,34 @@ async function handleInvokeLLM(req, res) {
                     geminiPrompt += `\n\nResponda estritamente seguindo este JSON Schema: ${JSON.stringify(schema)}`;
                 }
 
-                const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
-                const apiRes = await fetch(geminiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: geminiPrompt }] }]
-                    })
-                });
+                let apiRes;
+                const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-1.5-flash'];
+                let success = false;
+                let apiData;
+                for (const model of models) {
+                    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+                    try {
+                        apiRes = await fetch(geminiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                contents: [{ parts: [{ text: geminiPrompt }] }]
+                            })
+                        });
+                        if (apiRes.ok) {
+                            apiData = await apiRes.json();
+                            success = true;
+                            break;
+                        } else {
+                            const errText = await apiRes.text();
+                            console.error(`Gemini API error for model ${model}:`, errText);
+                        }
+                    } catch (err) {
+                        console.error(`Fetch failed for model ${model}:`, err);
+                    }
+                }
 
-                if (apiRes.ok) {
-                    const apiData = await apiRes.json();
+                if (success && apiData) {
                     let aiText = '';
                     try {
                         aiText = apiData.candidates[0].content.parts[0].text;
@@ -121,9 +138,7 @@ async function handleInvokeLLM(req, res) {
                         return;
                     }
                 } else {
-                    const errText = await apiRes.text();
-                    console.error("Gemini API error:", errText);
-                    throw new Error(`Erro na API do Gemini: ${apiRes.status}`);
+                    throw new Error("Todos os modelos do Gemini falharam.");
                 }
             } catch (err) {
                 console.error("Gemini invocation failed, falling back to mock:", err);
