@@ -75942,9 +75942,21 @@ function TIe({
     })
 }
 
+function parseLocalDate(e) {
+    if (!e) return new Date();
+    if (e instanceof Date) return e;
+    const parts = e.split("-");
+    if (parts.length === 3) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]), 12, 0, 0);
+    } else if (parts.length === 2) {
+        return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, 1, 12, 0, 0);
+    }
+    return new Date(e);
+}
+
 function RIe(e) {
     if (!e) return "";
-    const t = new Date(e);
+    const t = parseLocalDate(e);
     return isNaN(t.getTime()) ? "" : tt(t, "dd/MM/yyyy")
 }
 
@@ -76058,24 +76070,24 @@ function DIe({
 
 function MIe(e) {
     if (!e) return "";
-    const t = new Date(e);
+    const t = parseLocalDate(e);
     return isNaN(t.getTime()) ? "" : tt(t, "MMM yyyy")
 }
 
 function IIe(e) {
     if (!e) return "";
-    const t = new Date(e);
+    const t = parseLocalDate(e);
     return isNaN(t.getTime()) ? "" : tt(t, "dd/MM/yyyy")
 }
 
 function c6(e) {
-    const t = new Date(e),
+    const t = parseLocalDate(e),
         n = t.getFullYear(),
         r = t.getMonth(),
         a = new Date(n, r + 1, 0).getDate(),
         i = [];
     for (let o = 1; o <= a; o++) {
-        const s = new Date(n, r, o);
+        const s = new Date(n, r, o, 12, 0, 0);
         s.getDay() === 5 && i.push(s)
     }
     return i
@@ -76180,7 +76192,7 @@ function $Ie() {
         if (n) {
             if (f.tipo === "salario_semanal") {
                 const baseDesc = f.descricao.split(" (")[0];
-                const dateObj = new Date(f.mes_referencia + "T12:00:00");
+                const dateObj = parseLocalDate(f.mes_referencia);
                 if (!isNaN(dateObj.getTime())) {
                     V.descricao = `${baseDesc} (${tt(dateObj, "dd/MM")})`;
                 }
