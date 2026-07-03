@@ -77211,7 +77211,17 @@ const HG = C.forwardRef(({
         size: "icon",
         className: De("h-7 w-7", e),
         onClick: o => {
-            t == null || t(o), i()
+            t == null || t(o);
+            try {
+                window.dispatchEvent(new Event("toggle_sidebar"));
+            } catch (err) {
+                console.error("Failed to dispatch toggle_sidebar:", err);
+            }
+            try {
+                i();
+            } catch (err) {
+                console.warn("Failed to call context toggleSidebar:", err);
+            }
         },
         asChild: n,
         ...r,
@@ -79363,10 +79373,16 @@ function q$e({
     settings: e,
     location: t
 }) {
-    const {
-        open: n,
-        setOpen: r
-    } = im(), a = (e == null ? void 0 : e.tema) === "liquid_glass" ? "rgba(5,5,15,0.55)" : "var(--theme-strong, #1a1a2e)";
+    const sidebarCtx = im();
+    const isMobile = sidebarCtx.isMobile;
+    const n = isMobile ? sidebarCtx.openMobile : sidebarCtx.open;
+    const r = isMobile ? sidebarCtx.setOpenMobile : sidebarCtx.setOpen;
+    const a = (e == null ? void 0 : e.tema) === "liquid_glass" ? "rgba(5,5,15,0.55)" : "var(--theme-strong, #1a1a2e)";
+    C.useEffect(() => {
+        const toggle = () => r(prev => !prev);
+        window.addEventListener("toggle_sidebar", toggle);
+        return () => window.removeEventListener("toggle_sidebar", toggle);
+    }, [r]);
     return l.jsx(Hr, {
         children: n && l.jsxs(l.Fragment, {
             children: [l.jsx(Be.div, {
@@ -80305,7 +80321,7 @@ function z$e({
                     settings: i,
                     location: n
                 }), l.jsx("div", {
-                    className: "fixed top-3 left-3 z-[45] hidden md:block",
+                    className: "fixed top-3 left-3 z-[9999] hidden md:block pointer-events-auto",
                     children: l.jsx(HG, {
                         className: "bg-white/10 hover:bg-white/20 text-white rounded-lg p-2 pointer-events-auto"
                     })
