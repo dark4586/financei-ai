@@ -75225,31 +75225,55 @@ function NIe() {
         },
         g = async () => {
             p(!0);
-            let v = a.foto_perfil;
-            if (o) {
-                try {
-                    const uploadPromise = se.integrations.Core.UploadFile({
-                        file: o
-                    });
-                    const timeoutPromise = new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error("Upload timeout")), 1200)
-                    );
-                    const res = await Promise.race([uploadPromise, timeoutPromise]);
-                    v = res.file_url;
-                } catch (err) {
-                    console.warn("Upload failed or timed out, using local Base64 fallback:", err);
-                    v = c || a.foto_perfil;
+            try {
+                let v = a.foto_perfil;
+                if (o) {
+                    try {
+                        const uploadPromise = se.integrations.Core.UploadFile({
+                            file: o
+                        });
+                        const timeoutPromise = new Promise((_, reject) =>
+                            setTimeout(() => reject(new Error("Upload timeout")), 25000)
+                        );
+                        const res = await Promise.race([uploadPromise, timeoutPromise]);
+                        if (res && res.file_url) {
+                            v = res.file_url;
+                        }
+                    } catch (err) {
+                        console.warn("Upload failed or timed out, using local Base64 fallback:", err);
+                        const fallbackVal = c || a.foto_perfil;
+                        if (fallbackVal && fallbackVal.startsWith("data:") && fallbackVal.length > 2 * 1024 * 1024) {
+                            alert("O upload no servidor falhou/expirou e o GIF/imagem selecionado é muito grande para ser salvo offline no navegador. Por favor, tente um arquivo menor ou verifique sua conexão.");
+                            return;
+                        }
+                        v = fallbackVal;
+                    }
                 }
+                const b = {
+                    nome: a.nome,
+                    foto_perfil: v
+                };
+                try {
+                    jIe(b);
+                } catch (storageErr) {
+                    console.error("LocalStorage save failed:", storageErr);
+                    alert("Limite de memória excedido no navegador ao tentar salvar o GIF localmente. Por favor, tente um GIF/imagem menor (abaixo de 1.5MB).");
+                    return;
+                }
+                t(j => ({ ...j,
+                    ...b
+                }));
+                i(j => ({ ...j,
+                    foto_perfil: v
+                }));
+                s(null);
+                r(!1);
+                window.dispatchEvent(new Event("financeai_profile_changed"));
+            } catch (globalErr) {
+                console.error("Global error in save profile:", globalErr);
+            } finally {
+                p(!1);
             }
-            const b = {
-                nome: a.nome,
-                foto_perfil: v
-            };
-            jIe(b), t(j => ({ ...j,
-                ...b
-            })), i(j => ({ ...j,
-                foto_perfil: v
-            })), s(null), r(!1), p(!1), window.dispatchEvent(new Event("financeai_profile_changed"))
         },
         w = () => se.auth.logout(),
         x = async () => {
