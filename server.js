@@ -195,6 +195,113 @@ async function handleInvokeLLM(req, res) {
     }
 }
 
+function getRequestBuffer(req) {
+    return new Promise((resolve, reject) => {
+        const chunks = [];
+        req.on('data', chunk => chunks.push(chunk));
+        req.on('end', () => resolve(Buffer.concat(chunks)));
+        req.on('error', err => reject(err));
+    });
+}
+
+function parseMultipart(buffer, boundary) {
+    const boundaryBuffer = Buffer.from(boundary);
+    const parts = [];
+    
+    let index = buffer.indexOf(boundaryBuffer);
+    while (index !== -1) {
+        const nextIndex = buffer.indexOf(boundaryBuffer, index + boundaryBuffer.length);
+        if (nextIndex === -1) break;
+        
+        const part = buffer.subarray(index + boundaryBuffer.length, nextIndex);
+        parts.push(part);
+        
+        index = nextIndex;
+    }
+    
+    for (const part of parts) {
+        let headerEnd = part.indexOf(Buffer.from('\r\n\r\n'));
+        let delimiterLength = 4;
+        if (headerEnd === -1) {
+            headerEnd = part.indexOf(Buffer.from('\n\n'));
+            delimiterLength = 2;
+        }
+        if (headerEnd === -1) continue;
+        
+        const header = part.subarray(0, headerEnd).toString('binary');
+        let body = part.subarray(headerEnd + delimiterLength);
+        
+        if (body.length >= 2 && body[0] === 13 && body[1] === 10) {
+            body = body.subarray(2);
+        } else if (body.length >= 1 && body[0] === 10) {
+            body = body.subarray(1);
+        }
+        
+        if (body.length >= 2 && body[body.length - 2] === 13 && body[body.length - 1] === 10) {
+            body = body.subarray(0, body.length - 2);
+        } else if (body.length >= 1 && body[body.length - 1] === 10) {
+            body = body.subarray(0, body.length - 1);
+        }
+        
+        if (header.includes('name="file"')) {
+            const filenameMatch = header.match(/filename="([^"]+)"/);
+            const filename = filenameMatch ? filenameMatch[1] : 'uploaded_file';
+            
+            const contentTypeMatch = header.match(/Content-Type:\s*([^\r\n]+)/i);
+            const contentType = contentTypeMatch ? contentTypeMatch[1] : 'application/octet-stream';
+            
+            return { filename, contentType, data: body };
+        }
+    }
+    return null;
+}
+
+async function handleUploadFile(req, res) {
+    try {
+        const contentTypeHeader = req.headers['content-type'] || '';
+        if (!contentTypeHeader.includes('multipart/form-data')) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Content-Type must be multipart/form-data' }));
+            return;
+        }
+
+        const boundaryMatch = contentTypeHeader.match(/boundary=([^\s;]+)/i);
+        if (!boundaryMatch) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'Boundary not found in Content-Type' }));
+            return;
+        }
+
+        const boundary = '--' + boundaryMatch[1];
+        const requestBuffer = await getRequestBuffer(req);
+        
+        const filePart = parseMultipart(requestBuffer, boundary);
+        if (!filePart || !filePart.data) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'No file part found in request' }));
+            return;
+        }
+
+        const safeFilename = Date.now() + '_' + filePart.filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+        const targetPath = path.join(MEDIA_DIR, 'images', safeFilename);
+
+        const imagesDir = path.join(MEDIA_DIR, 'images');
+        if (!fs.existsSync(imagesDir)) {
+            fs.mkdirSync(imagesDir, { recursive: true });
+        }
+
+        fs.writeFileSync(targetPath, filePart.data);
+
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ file_url: `/images/${safeFilename}` }));
+        logRequest(req.method, req.url, 200, `Uploaded file: ${safeFilename}`);
+    } catch (e) {
+        console.error("UploadFile handler failed:", e);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
+    }
+}
+
 const server = http.createServer((req, res) => {
     // Add CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -216,6 +323,12 @@ const server = http.createServer((req, res) => {
         // Intercept InvokeLLM POST request
         if (req.method === 'POST' && pathname.endsWith('/integration-endpoints/Core/InvokeLLM')) {
             handleInvokeLLM(req, res);
+            return;
+        }
+
+        // Intercept UploadFile POST request
+        if (req.method === 'POST' && pathname.endsWith('/integration-endpoints/Core/UploadFile')) {
+            handleUploadFile(req, res);
             return;
         }
 
