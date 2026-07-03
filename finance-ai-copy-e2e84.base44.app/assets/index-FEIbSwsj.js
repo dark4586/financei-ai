@@ -75228,12 +75228,17 @@ function NIe() {
             let v = a.foto_perfil;
             if (o) {
                 try {
-                    v = (await se.integrations.Core.UploadFile({
+                    const uploadPromise = se.integrations.Core.UploadFile({
                         file: o
-                    })).file_url;
+                    });
+                    const timeoutPromise = new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error("Upload timeout")), 1200)
+                    );
+                    const res = await Promise.race([uploadPromise, timeoutPromise]);
+                    v = res.file_url;
                 } catch (err) {
-                    console.warn("Upload failed, using local Base64 fallback", err);
-                    v = c;
+                    console.warn("Upload failed or timed out, using local Base64 fallback:", err);
+                    v = c || a.foto_perfil;
                 }
             }
             const b = {
@@ -77090,7 +77095,12 @@ const WG = C.forwardRef(({
         g = t ?? p,
         w = C.useCallback(j => {
             const N = typeof j == "function" ? j(g) : j;
-            n ? n(N) : m(N), document.cookie = `${KIe}=${N}; path=/; max-age=${GIe}`
+            n ? n(N) : m(N);
+            try {
+                document.cookie = `${KIe}=${N}; path=/; max-age=${GIe}`
+            } catch (err) {
+                console.warn("Failed to write sidebar cookie:", err);
+            }
         }, [n, g]),
         x = C.useCallback(() => c ? f(j => !j) : w(j => !j), [c, w, f]);
     C.useEffect(() => {
