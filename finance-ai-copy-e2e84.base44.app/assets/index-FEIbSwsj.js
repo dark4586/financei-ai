@@ -68086,7 +68086,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
             icon: r8
         }];
     return l.jsxs("div", {
-        className: "bg-[#121212] min-h-[calc(100dvh-136px)] md:min-h-screen flex flex-col",
+        className: "bg-[#121212] min-h-[calc(100dvh-136px)] md:min-h-screen flex flex-col w-full max-w-full overflow-hidden",
         children: [l.jsx("div", {
             className: "hidden md:block sticky top-0 z-10 bg-[#121212]/95 backdrop-blur-xl border-b border-white/5 px-8 py-4",
             children: l.jsxs("div", {
@@ -68144,7 +68144,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                 }, B.id)
             })
         }), l.jsx("div", {
-            className: "max-w-4xl mx-auto px-4 md:px-8 pb-2 flex-1 min-h-0 flex flex-col overflow-y-auto md:overflow-visible",
+            className: "w-full max-w-4xl mx-auto px-4 md:px-8 pb-2 flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden md:overflow-visible",
             children: l.jsxs(Hr, {
                 mode: "wait",
                 children: [o === "chat" && l.jsxs(Be.div, {
@@ -68193,11 +68193,11 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                             const be = B.icon;
                             return l.jsxs("button", {
                                 onClick: () => V(B.text),
-                                className: "flex flex-col items-start gap-1.5 p-3 rounded-xl bg-[#1a1a1a] border border-[#2a2a2a] hover:border-violet-500/30 transition-all text-left group",
+                                className: "flex flex-col items-start gap-1.5 p-3 rounded-xl bg-[#1a1a1a] border border-[#2a2a2a] hover:border-violet-500/30 transition-all text-left group w-full min-w-0",
                                 children: [l.jsx(be, {
-                                    className: "w-4 h-4 text-violet-400 group-hover:text-violet-300"
+                                    className: "w-4 h-4 text-violet-400 group-hover:text-violet-300 flex-shrink-0"
                                 }), l.jsx("span", {
-                                    className: "text-xs text-gray-300 group-hover:text-white leading-snug",
+                                    className: "text-xs text-gray-300 group-hover:text-white leading-snug break-words w-full",
                                     children: B.label
                                 })]
                             }, ie)
@@ -68216,7 +68216,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                                     value: n,
                                     onChange: B => r(B.target.value),
                                     placeholder: 'Ex: "Adiciona 300 de hora extra" ou "Muda o tema para azul"',
-                                    className: "bg-white/5 border-white/10 text-white placeholder:text-gray-600 rounded-xl pr-4 h-12 focus:border-violet-500/50 transition-all",
+                                    className: "w-full bg-white/5 border-white/10 text-white placeholder:text-gray-600 rounded-xl pr-4 h-12 focus:border-violet-500/50 transition-all",
                                     disabled: a
                                 })
                             }), l.jsx("button", {
@@ -75998,10 +75998,10 @@ function DIe({
         }), i && l.jsx("div", {
             className: "border-t border-[#404040] divide-y divide-[#404040]",
             children: t.map(d => l.jsxs("div", {
-                className: "flex items-center justify-between gap-3 p-3 pl-4 bg-[#1f1f1f]",
-                children: [l.jsx("div", {
-                    className: "flex-1",
-                    children: l.jsxs("div", {
+                className: "flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 pl-4 bg-[#1f1f1f] border-l-2 border-violet-500/20 w-full min-w-0",
+                children: [l.jsxs("div", {
+                    className: "flex-1 flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto",
+                    children: [l.jsxs("div", {
                         className: "flex items-center gap-2",
                         children: [l.jsxs("p", {
                             className: "text-sm text-white",
@@ -76014,24 +76014,24 @@ function DIe({
                         }) : l.jsxs("span", {
                             className: "text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded flex items-center gap-1",
                             children: [l.jsx(Rs, {
-                                className: "w-3 h-3"
+                                className: "w-3.5 h-3.5"
                             }), "Pendente"]
                         })]
-                    })
-                }), l.jsxs("span", {
-                    className: "text-sm font-semibold text-white whitespace-nowrap",
-                    children: ["R$ ", d.valor.toLocaleString("pt-BR", {
-                        minimumFractionDigits: 2
+                    }), l.jsxs("span", {
+                        className: "text-sm font-semibold text-white whitespace-nowrap",
+                        children: ["R$ ", d.valor.toLocaleString("pt-BR", {
+                            minimumFractionDigits: 2
+                        })]
                     })]
                 }), l.jsxs("div", {
-                    className: "flex items-center gap-1",
+                    className: "flex items-center gap-1 justify-end w-full sm:w-auto flex-shrink-0",
                     children: [d.status === "pendente" && l.jsxs(xe, {
                         variant: "ghost",
                         size: "sm",
                         onClick: () => a(d),
                         className: "text-green-400 hover:text-green-300 hover:bg-green-500/10 h-7 px-2 text-xs",
                         children: [l.jsx(Pa, {
-                            className: "w-3 h-3 mr-1"
+                            className: "w-3.5 h-3.5 mr-1"
                         }), "Receber"]
                     }), l.jsx(xe, {
                         variant: "ghost",
