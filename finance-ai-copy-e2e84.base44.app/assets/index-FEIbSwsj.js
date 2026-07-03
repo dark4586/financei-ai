@@ -72723,6 +72723,13 @@ function bIe() {
         };
         return K(), window.addEventListener("financeai_profile_changed", K), () => window.removeEventListener("financeai_profile_changed", K)
     }, []);
+    C.useEffect(() => {
+        const handleFs = () => {
+            s(!!document.fullscreenElement);
+        };
+        document.addEventListener("fullscreenchange", handleFs);
+        return () => document.removeEventListener("fullscreenchange", handleFs);
+    }, []);
     const {
         data: w = []
     } = Ve({
@@ -72798,7 +72805,7 @@ function bIe() {
         color: "bg-red-500/20 text-red-400",
         emoji: "🚨"
     }, be = () => {
-        document.fullscreenElement ? (document.exitFullscreen(), s(!1)) : (document.documentElement.requestFullscreen(), s(!0))
+        document.fullscreenElement ? (document.exitFullscreen().catch(() => {}), s(!1)) : (document.documentElement.requestFullscreen().catch(() => {}), s(!0))
     }, le = (() => {
         const K = [],
             J = new Date(2026, 0, 1),
@@ -73166,7 +73173,29 @@ function bIe() {
                             },
                             onClick: be,
                             className: "text-gray-400 hover:text-white transition-colors text-lg p-2 rounded-lg hover:bg-white/5",
-                            children: o ? "◱" : "⛶"
+                            children: o ? l.jsx("svg", {
+                                className: "w-5 h-5",
+                                viewBox: "0 0 24 24",
+                                fill: "none",
+                                stroke: "currentColor",
+                                strokeWidth: "2",
+                                strokeLinecap: "round",
+                                strokeLinejoin: "round",
+                                children: l.jsx("path", {
+                                    d: "M4 14h6v6m10-6h-6v6M4 10h6V4m10 6h-6V4"
+                                })
+                            }) : l.jsx("svg", {
+                                className: "w-5 h-5",
+                                viewBox: "0 0 24 24",
+                                fill: "none",
+                                stroke: "currentColor",
+                                strokeWidth: "2",
+                                strokeLinecap: "round",
+                                strokeLinejoin: "round",
+                                children: l.jsx("path", {
+                                    d: "M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+                                })
+                            })
                         })]
                     }), l.jsx("div", {
                         className: "grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5",
@@ -79768,6 +79797,27 @@ function z$e({
                   --contrast-multiplier: 1;
                 }
         
+        *, *::before, *::after {
+          -webkit-user-select: none !important;
+          user-select: none !important;
+          -webkit-touch-callout: none !important;
+        }
+
+        input, textarea, [contenteditable="true"], [role="textbox"] {
+          -webkit-user-select: text !important;
+          user-select: text !important;
+        }
+
+        :fullscreen .ios-top-bar,
+        :-webkit-full-screen .ios-top-bar {
+          padding-top: 0.5rem !important;
+          padding-bottom: 0.5rem !important;
+        }
+        :fullscreen main > .overflow-y-auto,
+        :-webkit-full-screen main > .overflow-y-auto {
+          padding-top: 2.75rem !important;
+        }
+
         body {
           background-color: var(--theme-background) !important;
           cursor: ${d?"var(--custom-cursor)":"none"} !important;
@@ -79776,6 +79826,7 @@ function z$e({
           line-height: var(--line-height);
           letter-spacing: var(--letter-spacing);
           scroll-behavior: var(--smooth-scrolling, auto);
+          filter: contrast(var(--contrast-multiplier)) !important;
         }
         
         * {
@@ -79787,14 +79838,14 @@ function z$e({
           border-radius: var(--button-radius);
         }
         
-        [class*="rounded"] {
-          border-radius: var(--card-border-radius);
+        .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-3xl, [class*="rounded"] {
+          border-radius: var(--card-border-radius) !important;
         }
         
-        [class*="bg-\\[\\#1a1a1a\\]"], 
-        [class*="bg-\\[\\#2a2a2a\\]"] {
-          opacity: var(--card-opacity);
-          box-shadow: var(--card-shadow);
+        .bg-\\[\\#1a1a1a\\], 
+        .bg-\\[\\#2a2a2a\\] {
+          opacity: var(--card-opacity) !important;
+          box-shadow: var(--card-shadow) !important;
         }
 
         /* Keep scrollbar visible for better UX */
@@ -80039,7 +80090,7 @@ function z$e({
                     backdrop-filter: blur(2px) !important;
                     -webkit-backdrop-filter: blur(2px) !important;
                     border: 1px solid rgba(255, 255, 255, 0.28) !important;
-                    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+                    box-shadow: ${(i==null?void 0:i.card_shadow)?"0 2px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.18)":"none"} !important;
                   }
 
                   /* ---- GLASS INNER CARD (nested) ---- */
@@ -80146,8 +80197,8 @@ function z$e({
                   }
 
                   /* ---- ROUNDED ---- */
-                  [class*="rounded-xl"], [class*="rounded-lg"] {
-                    border-radius: 16px !important;
+                  .rounded-xl, .rounded-lg, [class*="rounded-xl"], [class*="rounded-lg"] {
+                    border-radius: var(--card-border-radius) !important;
                   }
 
                   /* ---- iOS-style top/bottom bars ---- */
