@@ -10,6 +10,26 @@ const API_DIR = path.join(BASE_DIR, 'base44.app');
 const MEDIA_DIR = path.join(BASE_DIR, 'media.base44.com');
 const LOG_FILE = path.join(BASE_DIR, 'requests.log');
 
+// Load .env file if it exists (for local development)
+try {
+    const dotenvPath = path.join(__dirname, '.env');
+    if (fs.existsSync(dotenvPath)) {
+        const envContent = fs.readFileSync(dotenvPath, 'utf8');
+        envContent.split('\n').forEach(line => {
+            const parts = line.split('=');
+            if (parts.length >= 2) {
+                const key = parts[0].trim();
+                const value = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
+                if (key && value && !process.env[key]) {
+                    process.env[key] = value;
+                }
+            }
+        });
+    }
+} catch (e) {
+    console.error("Failed to load .env file:", e);
+}
+
 // Clear log file at startup
 try {
     fs.writeFileSync(LOG_FILE, '', 'utf8');
