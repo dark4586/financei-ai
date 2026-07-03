@@ -79826,8 +79826,16 @@ function z$e({
           line-height: var(--line-height);
           letter-spacing: var(--letter-spacing);
           scroll-behavior: var(--smooth-scrolling, auto);
-          ${i && i.high_contrast ? "filter: contrast(var(--contrast-multiplier)) !important;" : ""}
         }
+
+        ${i && i.high_contrast ? `
+          main > div,
+          .ios-top-bar,
+          .ios-bottom-bar,
+          nav[role="tablist"] {
+            filter: contrast(var(--contrast-multiplier)) !important;
+          }
+        ` : ""}
         
         * {
           cursor: ${d?"var(--custom-cursor)":"none"} !important;
