@@ -73941,6 +73941,86 @@ function bIe() {
 }
 
 function wIe() {
+    const queryClient = Ar();
+    const {
+        data: banksList = []
+    } = Ve({
+        queryKey: ["banks"],
+        queryFn: () => se.entities.Bank.list()
+    });
+    const [showSavingsDialog, setShowSavingsDialog] = C.useState(!1);
+    const [editingSavings, setEditingSavings] = C.useState(null);
+    const [savingsForm, setSavingsForm] = C.useState({
+        banco_id: "",
+        tipo: "cdb",
+        nome: "",
+        valor_investido: "",
+        aporte_mensal: "0",
+        taxa_rendimento: "",
+        retirada_mensal: "0",
+        data_inicio: new Date().toISOString().split("T")[0],
+        familiar: ""
+    });
+    const resetSavingsForm = () => {
+        setSavingsForm({
+            banco_id: "",
+            tipo: "cdb",
+            nome: "",
+            valor_investido: "",
+            aporte_mensal: "0",
+            taxa_rendimento: "",
+            retirada_mensal: "0",
+            data_inicio: new Date().toISOString().split("T")[0],
+            familiar: ""
+        });
+        setEditingSavings(null);
+    };
+    const createMutation = st({
+        mutationFn: Z => se.entities.Savings.create(Z),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["savings"]
+            });
+            setShowSavingsDialog(!1);
+            resetSavingsForm();
+        }
+    });
+    const updateMutation = st({
+        mutationFn: ({
+            id: Z,
+            data: Pe
+        }) => se.entities.Savings.update(Z, Pe),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["savings"]
+            });
+            setShowSavingsDialog(!1);
+            resetSavingsForm();
+        }
+    });
+    const deleteMutation = st({
+        mutationFn: Z => se.entities.Savings.delete(Z),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["savings"]
+            });
+        }
+    });
+    const handleSavingsSubmit = Z => {
+        Z.preventDefault();
+        const Pe = banksList.find(fn => fn.id === savingsForm.banco_id),
+            Nt = { ...savingsForm,
+                banco_nome: (Pe == null ? void 0 : Pe.nome) || "",
+                valor_investido: parseFloat(savingsForm.valor_investido),
+                aporte_mensal: parseFloat(savingsForm.aporte_mensal),
+                taxa_rendimento: parseFloat(savingsForm.taxa_rendimento),
+                retirada_mensal: parseFloat(savingsForm.retirada_mensal)
+            };
+        editingSavings ? updateMutation.mutate({
+            id: editingSavings.id,
+            data: Nt
+        }) : createMutation.mutate(Nt);
+    };
     const {
         data: e = []
     } = Ve({
@@ -74005,6 +74085,15 @@ function wIe() {
                         className: "text-gray-400",
                         children: "Acompanhe e simule a evolução da sua carteira"
                     })]
+                }), l.jsxs(xe, {
+                    onClick: () => {
+                        resetSavingsForm();
+                        setShowSavingsDialog(!0);
+                    },
+                    className: "bg-white text-black hover:bg-gray-200",
+                    children: [l.jsx(qr, {
+                        className: "w-5 h-5 mr-2"
+                    }), "✨ Novo Investimento"]
                 })]
             }), l.jsxs("div", {
                 className: "grid grid-cols-1 md:grid-cols-4 gap-6",
@@ -74104,12 +74193,49 @@ function wIe() {
                         children: [l.jsxs("div", {
                             className: "flex items-center justify-between mb-4",
                             children: [l.jsxs("div", {
-                                children: [l.jsx("h3", {
-                                    className: "text-xl font-semibold text-white",
-                                    children: c.nome
-                                }), l.jsx("p", {
-                                    className: "text-sm text-gray-400",
-                                    children: s[c.tipo]
+                                className: "flex items-center gap-2",
+                                children: [l.jsxs("div", {
+                                    children: [l.jsx("h3", {
+                                        className: "text-xl font-semibold text-white",
+                                        children: c.nome
+                                    }), l.jsx("p", {
+                                        className: "text-sm text-gray-400",
+                                        children: s[c.tipo]
+                                    })]
+                                }), l.jsx(xe, {
+                                    variant: "ghost",
+                                    size: "icon",
+                                    onClick: () => {
+                                        setEditingSavings(c);
+                                        setSavingsForm({
+                                            banco_id: c.banco_id || "",
+                                            tipo: c.tipo,
+                                            nome: c.nome,
+                                            valor_investido: c.valor_investido.toString(),
+                                            aporte_mensal: (c.aporte_mensal || 0).toString(),
+                                            taxa_rendimento: c.taxa_rendimento.toString(),
+                                            retirada_mensal: (c.retirada_mensal || 0).toString(),
+                                            data_inicio: c.data_inicio,
+                                            familiar: c.familiar || ""
+                                        });
+                                        setShowSavingsDialog(!0);
+                                    },
+                                    className: "text-gray-400 hover:text-white w-8 h-8",
+                                    children: l.jsx(Oa, {
+                                        className: "w-4 h-4"
+                                    })
+                                }), l.jsx(xe, {
+                                    variant: "ghost",
+                                    size: "icon",
+                                    onClick: () => {
+                                        if (confirm("Deseja realmente excluir este investimento?")) {
+                                            deleteMutation.mutate(c.id);
+                                        }
+                                    },
+                                    className: "text-red-400 hover:text-red-300 w-8 h-8",
+                                    children: l.jsx(fr, {
+                                        className: "w-4 h-4"
+                                    })
                                 })]
                             }), l.jsxs("div", {
                                 className: "text-right",
@@ -74280,6 +74406,189 @@ function wIe() {
                         children: "Nenhum Investimento Cadastrado"
                     }), l.jsx("p", {
                         children: 'Vá para "Bancos" para começar a investir!'
+                    })]
+                })
+            }), l.jsx(zr, {
+                open: showSavingsDialog,
+                onOpenChange: Z => {
+                    setShowSavingsDialog(Z);
+                    Z || resetSavingsForm();
+                },
+                children: l.jsxs(_r, {
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl",
+                    children: [l.jsx(jr, {
+                        children: l.jsxs(Nr, {
+                            children: [editingSavings ? "✏️ Editar" : "📈 Novo", " Investimento"]
+                        })
+                    }), l.jsxs("form", {
+                        onSubmit: handleSavingsSubmit,
+                        className: "space-y-4",
+                        children: [l.jsxs("div", {
+                            children: [l.jsx(he, {
+                                children: "🏦 Banco"
+                            }), l.jsxs(Pt, {
+                                value: savingsForm.banco_id,
+                                onValueChange: Z => setSavingsForm({ ...savingsForm,
+                                    banco_id: Z
+                                }),
+                                children: [l.jsx(kt, {
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                    children: l.jsx(Ot, {
+                                        placeholder: "Selecione o banco"
+                                    })
+                                }), l.jsx(Et, {
+                                    className: "bg-[#1a1a1a] border-[#2a2a2a]",
+                                    children: banksList.map(Z => l.jsx(we, {
+                                        value: Z.id,
+                                        children: Z.nome
+                                    }, Z.id))
+                                })]
+                            })]
+                        }), l.jsxs("div", {
+                            children: [l.jsx(he, {
+                                children: "📊 Tipo de Investimento"
+                            }), l.jsxs(Pt, {
+                                value: savingsForm.tipo,
+                                onValueChange: Z => setSavingsForm({ ...savingsForm,
+                                    tipo: Z
+                                }),
+                                children: [l.jsx(kt, {
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                    children: l.jsx(Ot, {})
+                                }), l.jsxs(Et, {
+                                    className: "bg-[#1a1a1a] border-[#2a2a2a]",
+                                    children: [l.jsx(we, {
+                                        value: "cdb",
+                                        children: "💰 CDB"
+                                    }), l.jsx(we, {
+                                        value: "poupanca",
+                                        children: "🐷 Poupança"
+                                    }), l.jsx(we, {
+                                        value: "tesouro_direto",
+                                        children: "🏛️ Tesouro Direto"
+                                    }), l.jsx(we, {
+                                        value: "acoes",
+                                        children: "📈 Ações"
+                                    }), l.jsx(we, {
+                                        value: "fundos_investimento",
+                                        children: "📊 Fundos de Investimento"
+                                    }), l.jsx(we, {
+                                        value: "outros",
+                                        children: "📦 Outros"
+                                    })]
+                                })]
+                            })]
+                        }), l.jsxs("div", {
+                            children: [l.jsx(he, {
+                                children: "📝 Nome/Descrição"
+                            }), l.jsx(Re, {
+                                value: savingsForm.nome,
+                                onChange: Z => setSavingsForm({ ...savingsForm,
+                                    nome: Z.target.value
+                                }),
+                                className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                required: !0
+                            })]
+                        }), l.jsxs("div", {
+                            className: "grid grid-cols-2 gap-4",
+                            children: [l.jsxs("div", {
+                                children: [l.jsx(he, {
+                                    children: "💵 Valor Investido"
+                                }), l.jsx(Re, {
+                                    type: "number",
+                                    step: "0.01",
+                                    value: savingsForm.valor_investido,
+                                    onChange: Z => setSavingsForm({ ...savingsForm,
+                                        valor_investido: Z.target.value
+                                    }),
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                    required: !0
+                                })]
+                            }), l.jsxs("div", {
+                                children: [l.jsx(he, {
+                                    children: "📈 Taxa de Rendimento (%)"
+                                }), l.jsx(Re, {
+                                    type: "number",
+                                    step: "0.01",
+                                    value: savingsForm.taxa_rendimento,
+                                    onChange: Z => setSavingsForm({ ...savingsForm,
+                                        taxa_rendimento: Z.target.value
+                                    }),
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                    required: !0
+                                })]
+                            }), l.jsxs("div", {
+                                children: [l.jsx(he, {
+                                    children: "➕ Aporte Mensal"
+                                }), l.jsx(Re, {
+                                    type: "number",
+                                    step: "0.01",
+                                    value: savingsForm.aporte_mensal,
+                                    onChange: Z => setSavingsForm({ ...savingsForm,
+                                        aporte_mensal: Z.target.value
+                                    }),
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white"
+                                })]
+                            }), l.jsxs("div", {
+                                children: [l.jsx(he, {
+                                    children: "➖ Retirada Mensal"
+                                }), l.jsx(Re, {
+                                    type: "number",
+                                    step: "0.01",
+                                    value: savingsForm.retirada_mensal,
+                                    onChange: Z => setSavingsForm({ ...savingsForm,
+                                        retirada_mensal: Z.target.value
+                                    }),
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white"
+                                })]
+                            }), l.jsxs("div", {
+                                className: "col-span-2",
+                                children: [l.jsx(he, {
+                                    children: "📅 Data de Início (aportes começam a partir desta data)"
+                                }), l.jsx(Re, {
+                                    type: "date",
+                                    value: savingsForm.data_inicio,
+                                    onChange: Z => setSavingsForm({ ...savingsForm,
+                                        data_inicio: Z.target.value
+                                    }),
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                    required: !0
+                                }), l.jsx("p", {
+                                    className: "text-xs text-gray-400 mt-1",
+                                    children: "💡 Os aportes mensais só serão contabilizados nas despesas a partir desta data"
+                                })]
+                            })]
+                        }), l.jsxs("div", {
+                            children: [l.jsx(he, {
+                                children: "👨‍👩‍👧 Familiar (opcional)"
+                            }), l.jsx(Re, {
+                                value: savingsForm.familiar || "",
+                                onChange: Z => setSavingsForm({ ...savingsForm,
+                                    familiar: Z.target.value
+                                }),
+                                className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                placeholder: "Ex: João Silva, Maria Costa..."
+                            }), l.jsx("p", {
+                                className: "text-xs text-gray-400 mt-1",
+                                children: "💡 Vincule este investimento a um familiar para melhor organização"
+                            })]
+                        }), l.jsxs("div", {
+                            className: "flex justify-end gap-3",
+                            children: [l.jsx(xe, {
+                                type: "button",
+                                variant: "outline",
+                                onClick: () => {
+                                    setShowSavingsDialog(!1);
+                                    resetSavingsForm();
+                                },
+                                className: "border-[#404040]",
+                                children: "❌ Cancelar"
+                            }), l.jsx(xe, {
+                                type: "submit",
+                                className: "bg-white text-black hover:bg-gray-200",
+                                children: editingSavings ? "💾 Atualizar" : "✨ Criar"
+                            })]
+                        })]
                     })]
                 })
             })]
