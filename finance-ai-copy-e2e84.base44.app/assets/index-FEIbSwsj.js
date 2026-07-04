@@ -13930,14 +13930,17 @@ function $k(e) {
 function us(e) {
     try {
         const t = localStorage.getItem($k(e));
-        return t ? JSON.parse(t) : []
+        const parsed = t ? JSON.parse(t) : [];
+        return Array.isArray(parsed) ? parsed : [];
     } catch {
         return []
     }
 }
 
 function Zf(e, t) {
-    localStorage.setItem($k(e), JSON.stringify(t))
+    if (Array.isArray(t)) {
+        localStorage.setItem($k(e), JSON.stringify(t))
+    }
 }
 
 function aD() {
