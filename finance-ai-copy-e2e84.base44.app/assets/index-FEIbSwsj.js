@@ -54376,37 +54376,53 @@ async function jAe() {
     }
 }
 async function NAe() {
-    return "Notification" in window ? await Notification.requestPermission() !== "granted" ? {
-        success: !1,
-        reason: "denied"
-    } : {
-        success: !0
-    } : {
-        success: !1,
-        reason: "not_supported"
+    try {
+        return "Notification" in window && window.Notification ? await Notification.requestPermission() !== "granted" ? {
+            success: !1,
+            reason: "denied"
+        } : {
+            success: !0
+        } : {
+            success: !1,
+            reason: "not_supported"
+        }
+    } catch {
+        return {
+            success: !1,
+            reason: "not_supported"
+        }
     }
 }
 
 function uB() {
-    return "Notification" in window ? Notification.permission : "not_supported"
+    try {
+        return "Notification" in window && window.Notification ? Notification.permission : "not_supported"
+    } catch {
+        return "not_supported"
+    }
 }
 async function l7(e, t, n = {}) {
-    if (!("Notification" in window) || Notification.permission !== "granted") return;
-    const r = await navigator.serviceWorker.ready.catch(() => null);
-    r ? await r.showNotification(e, {
-        body: t,
-        icon: "/favicon.ico",
-        badge: "/favicon.ico",
-        vibrate: [200, 100, 200],
-        tag: n.tag || "financeai",
-        data: {
-            url: n.url || "/"
-        },
-        ...n
-    }) : new Notification(e, {
-        body: t,
-        icon: "/favicon.ico"
-    })
+    try {
+        if (!("Notification" in window) || !window.Notification || Notification.permission !== "granted") return;
+        if (!navigator.serviceWorker) return;
+        const r = await navigator.serviceWorker.ready.catch(() => null);
+        r ? await r.showNotification(e, {
+            body: t,
+            icon: "/favicon.ico",
+            badge: "/favicon.ico",
+            vibrate: [200, 100, 200],
+            tag: n.tag || "financeai",
+            data: {
+                url: n.url || "/"
+            },
+            ...n
+        }) : new Notification(e, {
+            body: t,
+            icon: "/favicon.ico"
+        })
+    } catch (err) {
+        console.warn("Notification failed:", err);
+    }
 }
 const sj = [{
         key: "segunda",
@@ -80478,12 +80494,51 @@ function z$e({
         })]
     })
 }
+class SettingsErrorBoundary extends C.Component {
+    constructor(t) {
+        super(t);
+        this.state = { hasError: false, error: null };
+    }
+    static getDerivedStateFromError(t) {
+        return { hasError: true, error: t };
+    }
+    componentDidCatch(t, n) {
+        console.error("SettingsErrorBoundary caught an error:", t, n);
+    }
+    render() {
+        if (this.state.hasError) {
+            return l.jsxs("div", {
+                className: "min-h-screen bg-[#121212] p-8 text-white flex flex-col items-center justify-center space-y-4 w-full text-center",
+                children: [
+                    l.jsx("h1", { className: "text-2xl font-bold text-red-500", children: "⚠️ Erro ao Carregar Configurações" }),
+                    l.jsx("pre", { className: "bg-black/50 p-4 rounded border border-red-500/30 text-xs overflow-auto max-w-full text-red-400 break-all whitespace-pre-wrap text-left", children: String(this.state.error && this.state.error.stack || this.state.error) }),
+                    l.jsx("button", {
+                        onClick: () => {
+                            localStorage.removeItem("financeai_Settings");
+                            window.location.reload();
+                        },
+                        className: "px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded font-medium",
+                        children: "Restaurar Configurações Padrão"
+                    }),
+                    l.jsx("button", {
+                        onClick: () => window.location.reload(),
+                        className: "px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded font-medium ml-2",
+                        children: "Recarregar Página"
+                    })
+                ]
+            });
+        }
+        return this.props.children;
+    }
+}
+const SafeConfiguracoes = () => l.jsx(SettingsErrorBoundary, { children: l.jsx(cIe, {}) });
+
 const V$e = {
         Anotacoes: hOe,
         Bancos: YOe,
         Calculadora: XOe,
         ChatIA: N4e,
-        Configuracoes: cIe,
+        Configuracoes: SafeConfiguracoes,
         DespesasFixas: uIe,
         Dividas: vIe,
         HistoricoMensal: xIe,
