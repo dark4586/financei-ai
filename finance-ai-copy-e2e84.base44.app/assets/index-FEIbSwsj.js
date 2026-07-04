@@ -69617,6 +69617,7 @@ function cIe() {
         } = Ve({
             queryKey: ["settings"],
             queryFn: () => se.entities.Settings.list()
+        }),
         G = (z && z[0]) || {
             tema: "dark",
             liquid_glass_color1: "#667eea",
