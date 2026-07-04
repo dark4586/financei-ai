@@ -59476,7 +59476,7 @@ function YOe() {
                         d(Z), Z || Ce()
                     },
                     children: l.jsxs(_r, {
-                        className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl",
+                        className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto",
                         children: [l.jsx(jr, {
                             children: l.jsxs(Nr, {
                                 children: [f ? "✏️ Editar" : "💳 Novo", " Cartão de Crédito"]
@@ -67790,7 +67790,7 @@ function _4e(e, t, n, r, a, i, o, s) {
 ${t.map(p=>{var m;return`- [ID:${p.id}] ${p.descricao}: R$ ${(m=p.valor)==null?void 0:m.toFixed(2)} (${p.tipo}${p.recorrente?", recorrente":""}${p.status==="pendente"?", PENDENTE":""})`}).join(`
     `)||"Nenhuma"}
 
-## DESPESAS FIXAS
+## DESPESAS
 ${n.filter(p=>p.ativa).map(p=>{var m;return`- [ID:${p.id}] ${p.nome}: R$ ${(m=p.valor)==null?void 0:m.toFixed(2)} (${p.categoria}, ${p.status==="pago"?"PAGO":"PENDENTE"})`}).join(`
     `)||"Nenhuma"}
 
@@ -67920,8 +67920,8 @@ function N4e() {
             be = I.reduce((J, ve) => J + (ve.retirada_mensal || 0), 0),
             me = W.reduce((J, ve) => J + Wv(ve, B), 0),
             le = ie + be + me,
-            pe = O.filter(J => J.ativa && J.status === "pendente").reduce((J, ve) => J + (ve.valor || 0), 0),
-            ae = P.filter(J => J.status === "ativa" && (!J.mes_atual_pago || J.mes_atual_pago === !1)).reduce((J, ve) => J + (ve.valor_parcela || 0), 0),
+            pe = O.filter(J => J.ativa).reduce((J, ve) => J + (ve.valor || 0), 0),
+            ae = P.filter(J => J.status === "ativa").reduce((J, ve) => J + (ve.valor_parcela || 0), 0),
             ge = $.filter(J => J.status === "ativo").reduce((J, ve) => J + (ve.economia_mensal || 0), 0),
             Se = I.reduce((J, ve) => J + (ve.aporte_mensal || 0), 0),
             ce = F.filter(J => {
@@ -70772,7 +70772,7 @@ function uIe() {
                     children: [l.jsxs("div", {
                         children: [l.jsx("h1", {
                             className: "text-3xl font-bold text-white mb-2",
-                            children: "🏠 Despesas Fixas"
+                            children: "🏠 Despesas"
                         }), l.jsx("p", {
                             className: "text-gray-400",
                             children: "Gerencie suas despesas mensais recorrentes"
@@ -70939,7 +70939,7 @@ function uIe() {
                                 })]
                             }, S.id)), s.length === 0 && l.jsx("div", {
                                 className: "text-center py-12 text-gray-500",
-                                children: "📭 Nenhuma despesa fixa cadastrada ainda"
+                                children: "📭 Nenhuma despesa cadastrada ainda"
                             })]
                         })]
                     })
@@ -70949,10 +70949,10 @@ function uIe() {
                         t(S), S || m()
                     },
                     children: l.jsxs(_r, {
-                        className: "bg-[#1a1a1a] border-[#2a2a2a] text-white",
+                        className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-[90vh] overflow-y-auto",
                         children: [l.jsx(jr, {
                             children: l.jsxs(Nr, {
-                                children: [n ? "✏️ Editar" : "➕ Nova", " Despesa Fixa"]
+                                children: [n ? "✏️ Editar" : "➕ Nova", " Despesa"]
                             })
                         }), l.jsxs("form", {
                             onSubmit: g,
@@ -71557,7 +71557,7 @@ function vIe() {
                     t(k), k || m()
                 },
                 children: l.jsxs(_r, {
-                    className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl",
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto",
                     children: [l.jsx(jr, {
                         children: l.jsxs(Nr, {
                             children: [n ? "Editar" : "Nova", " Dívida"]
@@ -72024,7 +72024,7 @@ function xIe() {
     <p style="font-size:12px;font-weight:600;color:#18181b;margin:0 0 12px 0;text-transform:uppercase;letter-spacing:0.5px;">Despesas</p>
     <table style="width:100%;border-collapse:collapse;">
       <tr style="border-bottom:1px solid #f4f4f5;">
-        <td style="padding:9px 0;color:#52525b;font-size:14px;">Despesas fixas</td>
+        <td style="padding:9px 0;color:#52525b;font-size:14px;">Despesas</td>
         <td style="padding:9px 0;text-align:right;color:#18181b;font-size:14px;font-weight:500;">${D(U.despesasFixas)}</td>
       </tr>
       ${U.dividas>0?`<tr style="border-bottom:1px solid #f4f4f5;">
@@ -72647,7 +72647,21 @@ function bIe() {
             s(!!document.fullscreenElement);
         };
         document.addEventListener("fullscreenchange", handleFs);
-        return () => document.removeEventListener("fullscreenchange", handleFs);
+        const tryFullscreen = () => {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            }
+            window.removeEventListener("click", tryFullscreen);
+            window.removeEventListener("touchstart", tryFullscreen);
+        };
+        window.addEventListener("click", tryFullscreen);
+        window.addEventListener("touchstart", tryFullscreen);
+        tryFullscreen();
+        return () => {
+            document.removeEventListener("fullscreenchange", handleFs);
+            window.removeEventListener("click", tryFullscreen);
+            window.removeEventListener("touchstart", tryFullscreen);
+        };
     }, []);
     const {
         data: w = []
@@ -72691,7 +72705,7 @@ function bIe() {
     }).reduce((K, J) => {
         const ve = J.valor || 0;
         return K + ve
-    }, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente").reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && K.status === "pendente").reduce((K, J) => K + J.valor, 0), R = x.filter(K => K.status === "ativa" && (!K.mes_atual_pago || K.mes_atual_pago === !1)).reduce((K, J) => K + J.valor_parcela, 0), F = N.filter(K => {
+    }, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente").reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa).reduce((K, J) => K + J.valor, 0), R = x.filter(K => K.status === "ativa").reduce((K, J) => K + J.valor_parcela, 0), F = N.filter(K => {
         const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
             ve = J && J.getMonth() === new Date().getMonth() && J.getFullYear() === new Date().getFullYear();
         return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0
@@ -72814,8 +72828,8 @@ function bIe() {
             const et = w.filter(at => at.ativa).reduce((at, de) => at + de.valor, 0);
             X > 0 && et > X * .5 && J.push({
                 type: "warning",
-                title: "🏠 Despesas Fixas Altas",
-                message: `Suas despesas fixas consomem ${(et/X*100).toFixed(0)}% da renda. Ideal seria abaixo de 50%.`
+                title: "🏠 Despesas Altas",
+                message: `Suas despesas consomem ${(et/X*100).toFixed(0)}% da renda. Ideal seria abaixo de 50%.`
             });
             const ht = new Date,
                 It = ht.getDate(),
@@ -72851,7 +72865,7 @@ function bIe() {
             }), X > 0 && U < et * 6 && J.push({
                 type: "suggestion",
                 title: "📊 Reserva de Emergência",
-                message: `Recomenda-se ter 6 meses de despesas guardadas. Você tem ${(U/et).toLocaleString("pt-BR",{minimumFractionDigits:1})} meses de despesas fixas.`
+                message: `Recomenda-se ter 6 meses de despesas guardadas. Você tem ${(U/et).toLocaleString("pt-BR",{minimumFractionDigits:1})} meses de despesas.`
             }), G.length === 0 && J.push({
                 type: "suggestion",
                 title: "🎯 Defina Objetivos",
@@ -72869,7 +72883,7 @@ function bIe() {
             rr > 5 && J.push({
                 type: "warning",
                 title: "📋 Despesas Pendentes",
-                message: `Você tem ${rr} despesas fixas não pagas ainda este mês. Organize-se!`
+                message: `Você tem ${rr} despesas não pagas ainda este mês. Organize-se!`
             }), i(!1);
             const Pr = Date.now();
             if (J.length > 0 && (Pr - f > 18e5 || f === 0)) {
@@ -72933,7 +72947,7 @@ function bIe() {
             nome: K.nome,
             valor: K.valor,
             vencimento: K.dia_vencimento,
-            tipo: "Despesa Fixa"
+            tipo: "Despesa"
         })), ...x.filter(K => K.status === "ativa" && (!K.mes_atual_pago || K.mes_atual_pago === !1)).map(K => ({
             nome: K.nome,
             valor: K.valor_parcela,
@@ -73188,7 +73202,7 @@ function bIe() {
                                     children: "Distribuição"
                                 }), l.jsxs("p", {
                                     className: "text-gray-300",
-                                    children: ["🏠 Fixas: R$ ", M.toFixed(2)]
+                                    children: ["🏠 Despesas: R$ ", M.toFixed(2)]
                                 }), l.jsxs("p", {
                                     className: "text-gray-300",
                                     children: ["💳 Dívidas: R$ ", R.toFixed(2)]
@@ -74415,7 +74429,7 @@ function wIe() {
                     Z || resetSavingsForm();
                 },
                 children: l.jsxs(_r, {
-                    className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl",
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto",
                     children: [l.jsx(jr, {
                         children: l.jsxs(Nr, {
                             children: [editingSavings ? "✏️ Editar" : "📈 Novo", " Investimento"]
@@ -75258,7 +75272,7 @@ function _Ie() {
                     t(S), S || m()
                 },
                 children: l.jsxs(_r, {
-                    className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl",
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto",
                     children: [l.jsx(jr, {
                         children: l.jsxs(Nr, {
                             children: [n ? "Editar" : "Novo", " Objetivo"]
@@ -76960,7 +76974,7 @@ function $Ie() {
                         t(D), D || N()
                     },
                     children: l.jsxs(_r, {
-                        className: "bg-[#1a1a1a] border-[#2a2a2a] text-white",
+                        className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-[90vh] overflow-y-auto",
                         children: [l.jsx(jr, {
                             children: l.jsxs(Nr, {
                                 children: [n ? "✏️ Editar" : "➕ Nova", " Receita"]
@@ -78286,7 +78300,7 @@ function A$e({
     }).reduce((L, z) => {
         const G = z.valor || 0;
         return L + G
-    }, 0), b = p.reduce((L, z) => L + (z.retirada_mensal || 0), 0), j = w.reduce((L, z) => L + Wv(z, x), 0), N = v + b + j, k = d.filter(L => L.ativa && L.status === "pendente").reduce((L, z) => L + (z.valor || 0), 0), S = f.filter(L => L.status === "ativa" && (!L.mes_atual_pago || L.mes_atual_pago === !1)).reduce((L, z) => L + (z.valor_parcela || 0), 0), E = p.reduce((L, z) => L + (z.valor_investido || 0), 0), O = m.filter(L => {
+    }, 0), b = p.reduce((L, z) => L + (z.retirada_mensal || 0), 0), j = w.reduce((L, z) => L + Wv(z, x), 0), N = v + b + j, k = d.filter(L => L.ativa).reduce((L, z) => L + (z.valor || 0), 0), S = f.filter(L => L.status === "ativa").reduce((L, z) => L + (z.valor_parcela || 0), 0), E = p.reduce((L, z) => L + (z.valor_investido || 0), 0), O = m.filter(L => {
         const z = L.data_vencimento ? new Date(L.data_vencimento) : null,
             G = z && z.getMonth() === new Date().getMonth() && z.getFullYear() === new Date().getFullYear();
         return (L.status === "aberta" || G) && (L.valor_fatura_atual || 0) > 0
@@ -78346,7 +78360,7 @@ function A$e({
         color: "text-green-400"
     }, {
         icon: Co,
-        title: "🏠 Despesas Fixas",
+        title: "🏠 Despesas",
         value: `R$ ${k.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
         color: "text-red-400"
     }, {
@@ -78917,7 +78931,7 @@ function O$e() {
     <p style="font-size:13px;font-weight:600;color:#18181b;margin:0 0 12px 0;text-transform:uppercase;letter-spacing:0.5px;">Despesas</p>
     <table style="width:100%;border-collapse:collapse;">
       <tr style="border-bottom:1px solid #f4f4f5;">
-        <td style="padding:10px 0;color:#52525b;font-size:14px;">Despesas fixas</td>
+        <td style="padding:10px 0;color:#52525b;font-size:14px;">Despesas</td>
         <td style="padding:10px 0;text-align:right;color:#18181b;font-size:14px;font-weight:500;">${P(N.despesasFixas)}</td>
       </tr>
       ${N.dividas>0?`<tr style="border-bottom:1px solid #f4f4f5;">
@@ -79165,10 +79179,6 @@ const Jc = {
         url: Qe("ChatIA"),
         icon: f8
     }, {
-        title: "Receitas",
-        url: Qe("Receitas"),
-        icon: En
-    }, {
         title: "Despesas",
         url: Qe("DespesasFixas"),
         icon: sx
@@ -79179,6 +79189,10 @@ const Jc = {
         isMore: !0
     }],
     m6 = [{
+        title: "Receitas",
+        url: Qe("Receitas"),
+        icon: En
+    }, {
         title: "Dívidas",
         url: Qe("Dividas"),
         icon: Yl
@@ -79253,10 +79267,22 @@ function D$e() {
                 r(w => !w);
                 return
             }
-            r(!1), e.pathname === m.url ? window.scrollTo({
-                top: 0,
-                behavior: "smooth"
-            }) : t(m.url)
+            r(!1);
+            if (m.title === "Home" || m.url === Qe("Home")) {
+                t(m.url);
+                window.scrollTo(0, 0);
+                setTimeout(() => {
+                    window.scrollTo({
+                        top: 0,
+                        behavior: "smooth"
+                    });
+                }, 50);
+            } else {
+                e.pathname === m.url ? window.scrollTo({
+                    top: 0,
+                    behavior: "smooth"
+                }) : t(m.url);
+            }
         },
         p = m6.some(m => m.url === e.pathname);
     return l.jsxs(l.Fragment, {
@@ -79384,7 +79410,7 @@ const M$e = {
     Home: null,
     ChatIA: "🤖 Chat IA",
     Receitas: "💰 Receitas",
-    DespesasFixas: "🏠 Despesas Fixas",
+    DespesasFixas: "🏠 Despesas",
     Dividas: "💳 Dívidas",
     Bancos: "🏦 Bancos",
     MeusInvestimentos: "📈 Investimentos",
@@ -79687,7 +79713,7 @@ const B$e = [{
     url: Qe("Receitas"),
     icon: En
 }, {
-    title: "Despesas Fixas",
+    title: "Despesas",
     url: Qe("DespesasFixas"),
     icon: sx
 }, {
@@ -79828,7 +79854,18 @@ function q$e({
                         const o = t.pathname === i.url;
                         return l.jsxs(QA, {
                             to: i.url,
-                            onClick: () => r(!1),
+                            onClick: () => {
+                                r(!1);
+                                if (i.title === "Home") {
+                                    window.scrollTo(0, 0);
+                                    setTimeout(() => {
+                                        window.scrollTo({
+                                            top: 0,
+                                            behavior: "smooth"
+                                        });
+                                    }, 50);
+                                }
+                            },
                             className: "flex items-center gap-3 px-3 py-2.5 rounded-lg mb-0.5 transition-colors duration-150",
                             style: {
                                 background: o ? "rgba(255,255,255,0.18)" : "transparent",
