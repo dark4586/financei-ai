@@ -75182,9 +75182,74 @@ function _Ie() {
 }
 const AG = "financeai_profile";
 
+const initIndexedDB = () => {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open("FinanceAILocalDB", 1);
+        request.onupgradeneeded = e => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains("profile")) {
+                db.createObjectStore("profile");
+            }
+        };
+        request.onsuccess = e => {
+            resolve(e.target.result);
+        };
+        request.onerror = e => {
+            reject(e.target.error);
+        };
+    });
+};
+
+const saveAvatarToIndexedDB = async (base64Data) => {
+    try {
+        const db = await initIndexedDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction("profile", "readwrite");
+            const store = transaction.objectStore("profile");
+            const putReq = store.put(base64Data, "avatar");
+            putReq.onsuccess = () => resolve(true);
+            putReq.onerror = e => reject(e.target.error);
+        });
+    } catch (err) {
+        console.error("Failed to save avatar to IndexedDB:", err);
+        return false;
+    }
+};
+
+const loadAvatarFromIndexedDB = async () => {
+    try {
+        const db = await initIndexedDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction("profile", "readonly");
+            const store = transaction.objectStore("profile");
+            const getReq = store.get("avatar");
+            getReq.onsuccess = () => resolve(getReq.result || null);
+            getReq.onerror = e => reject(e.target.error);
+        });
+    } catch (err) {
+        console.error("Failed to load avatar from IndexedDB:", err);
+        return null;
+    }
+};
+
+try {
+    loadAvatarFromIndexedDB().then(avatar => {
+        if (avatar) {
+            window.__financeai_profile_avatar_base64 = avatar;
+            window.dispatchEvent(new Event("financeai_profile_changed"));
+        }
+    });
+} catch (e) {
+    console.error("Failed to start loading avatar from IndexedDB:", e);
+}
+
 function PG() {
     try {
-        return JSON.parse(localStorage.getItem(AG)) || {}
+        const profile = JSON.parse(localStorage.getItem(AG)) || {};
+        if (window.__financeai_profile_avatar_base64) {
+            profile.foto_perfil = window.__financeai_profile_avatar_base64;
+        }
+        return profile;
     } catch {
         return {}
     }
@@ -75228,6 +75293,15 @@ function NIe() {
             try {
                 let v = a.foto_perfil;
                 if (o) {
+                    if (c) {
+                        try {
+                            await saveAvatarToIndexedDB(c);
+                            window.__financeai_profile_avatar_base64 = c;
+                            v = c;
+                        } catch (indexedDbErr) {
+                            console.error("Failed to save avatar to IndexedDB:", indexedDbErr);
+                        }
+                    }
                     try {
                         const uploadPromise = se.integrations.Core.UploadFile({
                             file: o
@@ -75240,13 +75314,14 @@ function NIe() {
                             v = res.file_url;
                         }
                     } catch (err) {
-                        console.warn("Upload failed or timed out, using local Base64 fallback:", err);
-                        const fallbackVal = c || a.foto_perfil;
-                        if (fallbackVal && fallbackVal.startsWith("data:") && fallbackVal.length > 2 * 1024 * 1024) {
-                            alert("O upload no servidor falhou/expirou e o GIF/imagem selecionado é muito grande para ser salvo offline no navegador. Por favor, tente um arquivo menor ou verifique sua conexão.");
-                            return;
-                        }
-                        v = fallbackVal;
+                        console.warn("Upload to server failed or timed out, keeping local IndexedDB version:", err);
+                    }
+                } else if (v === "") {
+                    try {
+                        await saveAvatarToIndexedDB("");
+                        window.__financeai_profile_avatar_base64 = "";
+                    } catch (indexedDbErr) {
+                        console.error("Failed to clear avatar in IndexedDB:", indexedDbErr);
                     }
                 }
                 const b = {
@@ -75256,9 +75331,15 @@ function NIe() {
                 try {
                     jIe(b);
                 } catch (storageErr) {
-                    console.error("LocalStorage save failed:", storageErr);
-                    alert("Limite de memória excedido no navegador ao tentar salvar o GIF localmente. Por favor, tente um GIF/imagem menor (abaixo de 1.5MB).");
-                    return;
+                    console.warn("LocalStorage save failed, falling back to lightweight ref:", storageErr);
+                    try {
+                        jIe({
+                            nome: a.nome,
+                            foto_perfil: v.startsWith("data:") ? "indexeddb_stored" : v
+                        });
+                    } catch (nestedErr) {
+                        console.error("Failed to save lightweight ref:", nestedErr);
+                    }
                 }
                 t(j => ({ ...j,
                     ...b
