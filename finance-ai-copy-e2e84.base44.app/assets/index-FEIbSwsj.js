@@ -69961,126 +69961,27 @@ function cIe() {
                         className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
                         children: [l.jsx("h2", {
                             className: "text-xl font-semibold text-white mb-4",
-                            children: "✨ Cores do Liquid Glass"
+                            children: "✨ Estilo do Vidro (Liquid Glass)"
                         }), l.jsxs("div", {
                             className: "space-y-4",
-                            children: [l.jsxs("div", {
-                                className: "p-4 bg-[#2a2a2a] rounded-lg",
-                                children: [l.jsx(he, {
-                                    className: "text-white mb-3 block",
-                                    children: "🎨 Preview do Gradiente"
-                                }), l.jsx("div", {
-                                    className: "w-full h-32 rounded-lg",
-                                    style: {
-                                        background: `linear-gradient(135deg, ${G.liquid_glass_color1||"#667eea"} 0%, ${G.liquid_glass_color2||"#764ba2"} 50%, ${G.liquid_glass_color3||"#f093fb"} 100%)`
-                                    }
-                                })]
-                            }), l.jsxs("div", {
-                                className: "grid grid-cols-3 gap-4",
-                                children: [l.jsxs("div", {
-                                    children: [l.jsx(he, {
-                                        className: "text-white mb-2 block",
-                                        children: "🔵 Cor 1"
-                                    }), l.jsx(Re, {
-                                        type: "color",
-                                        value: G.liquid_glass_color1 || "#667eea",
-                                        onChange: async K => {
-                                            const J = `linear-gradient(135deg, ${K.target.value} 0%, ${G.liquid_glass_color2||"#764ba2"} 50%, ${G.liquid_glass_color3||"#f093fb"} 100%)`;
-                                            document.body.style.background = J, document.body.style.backgroundAttachment = "fixed", await le({
-                                                liquid_glass_color1: K.target.value,
-                                                liquid_glass_gradient: J
-                                            })
-                                        },
-                                        className: "bg-[#2a2a2a] border-[#404040] h-12 cursor-pointer"
-                                    })]
-                                }), l.jsxs("div", {
-                                    children: [l.jsx(he, {
-                                        className: "text-white mb-2 block",
-                                        children: "🟣 Cor 2"
-                                    }), l.jsx(Re, {
-                                        type: "color",
-                                        value: G.liquid_glass_color2 || "#764ba2",
-                                        onChange: async K => {
-                                            const J = `linear-gradient(135deg, ${G.liquid_glass_color1||"#667eea"} 0%, ${K.target.value} 50%, ${G.liquid_glass_color3||"#f093fb"} 100%)`;
-                                            document.body.style.background = J, document.body.style.backgroundAttachment = "fixed", await le({
-                                                liquid_glass_color2: K.target.value,
-                                                liquid_glass_gradient: J
-                                            })
-                                        },
-                                        className: "bg-[#2a2a2a] border-[#404040] h-12 cursor-pointer"
-                                    })]
-                                }), l.jsxs("div", {
-                                    children: [l.jsx(he, {
-                                        className: "text-white mb-2 block",
-                                        children: "🩷 Cor 3"
-                                    }), l.jsx(Re, {
-                                        type: "color",
-                                        value: G.liquid_glass_color3 || "#f093fb",
-                                        onChange: async K => {
-                                            const J = `linear-gradient(135deg, ${G.liquid_glass_color1||"#667eea"} 0%, ${G.liquid_glass_color2||"#764ba2"} 50%, ${K.target.value} 100%)`;
-                                            document.body.style.background = J, document.body.style.backgroundAttachment = "fixed", await le({
-                                                liquid_glass_color3: K.target.value,
-                                                liquid_glass_gradient: J
-                                            })
-                                        },
-                                        className: "bg-[#2a2a2a] border-[#404040] h-12 cursor-pointer"
-                                    })]
-                                })]
-                            }), l.jsxs("div", {
+                            children: [l.jsx("p", {
+                                className: "text-sm text-gray-400",
+                                children: "Escolha o estilo de transparência e desfoque dos painéis (idêntico ao iOS/iPhone)."
+                            }), l.jsx("div", {
                                 className: "grid grid-cols-2 gap-3",
-                                children: [l.jsx(xe, {
-                                    onClick: async () => {
-                                        const K = "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)";
-                                        document.body.style.background = K, document.body.style.backgroundAttachment = "fixed", await le({
-                                            liquid_glass_color1: "#667eea",
-                                            liquid_glass_color2: "#764ba2",
-                                            liquid_glass_color3: "#f093fb",
-                                            liquid_glass_gradient: K
-                                        })
-                                    },
-                                    variant: "outline",
-                                    className: "border-[#404040]",
-                                    children: "🔄 Padrão"
-                                }), l.jsx(xe, {
-                                    onClick: async () => {
-                                        const K = "linear-gradient(135deg, #ff6b6b 0%, #feca57 50%, #48dbfb 100%)";
-                                        document.body.style.background = K, document.body.style.backgroundAttachment = "fixed", await le({
-                                            liquid_glass_color1: "#ff6b6b",
-                                            liquid_glass_color2: "#feca57",
-                                            liquid_glass_color3: "#48dbfb",
-                                            liquid_glass_gradient: K
-                                        })
-                                    },
-                                    variant: "outline",
-                                    className: "border-[#404040]",
-                                    children: "🌅 Sunset"
-                                }), l.jsx(xe, {
-                                    onClick: async () => {
-                                        const K = "linear-gradient(135deg, #00f260 0%, #0575e6 50%, #00d4ff 100%)";
-                                        document.body.style.background = K, document.body.style.backgroundAttachment = "fixed", await le({
-                                            liquid_glass_color1: "#00f260",
-                                            liquid_glass_color2: "#0575e6",
-                                            liquid_glass_color3: "#00d4ff",
-                                            liquid_glass_gradient: K
-                                        })
-                                    },
-                                    variant: "outline",
-                                    className: "border-[#404040]",
-                                    children: "🌊 Ocean"
-                                }), l.jsx(xe, {
-                                    onClick: async () => {
-                                        const K = "linear-gradient(135deg, #fc5c7d 0%, #6a82fb 50%, #b06ab3 100%)";
-                                        document.body.style.background = K, document.body.style.backgroundAttachment = "fixed", await le({
-                                            liquid_glass_color1: "#fc5c7d",
-                                            liquid_glass_color2: "#6a82fb",
-                                            liquid_glass_color3: "#b06ab3",
-                                            liquid_glass_gradient: K
-                                        })
-                                    },
-                                    variant: "outline",
-                                    className: "border-[#404040]",
-                                    children: "💖 Romance"
-                                })]
+                                children: [{
+                                    value: "transparent",
+                                    label: "❄️ Transparente (Fino)"
+                                }, {
+                                    value: "frosted",
+                                    label: "🌫️ Fosco (Grosso)"
+                                }].map(K => l.jsx("button", {
+                                    onClick: () => le({
+                                        liquid_glass_style: K.value
+                                    }),
+                                    className: `p-3 rounded-lg text-center transition-all font-medium text-sm ${((G.liquid_glass_style||"transparent")===K.value)?"bg-white text-black scale-105":"bg-[#2a2a2a] text-gray-300 hover:bg-[#333333]"}`,
+                                    children: K.label
+                                }, K.value))
                             })]
                         })]
                     }), l.jsxs(Oe, {
@@ -78797,17 +78698,13 @@ function O$e() {
     return null
 }
 
-function T$e({
-    color1: e = "#667eea",
-    color2: t = "#764ba2",
-    color3: n = "#f093fb"
-}) {
+function T$e() {
     return l.jsx("div", {
         className: "fixed inset-0",
         style: {
             zIndex: 0,
             pointerEvents: "none",
-            background: `linear-gradient(135deg, ${e} 0%, ${t} 50%, ${n} 100%)`
+            background: "linear-gradient(135deg, #0f0f22 0%, #1c0e35 40%, #0a1b33 70%, #040c1a 100%)"
         }
     })
 }
@@ -80232,7 +80129,7 @@ function z$e({
 
                   ${(i==null?void 0:i.tema)==="liquid_glass"?`
                   /* ============================================
-                     LIQUID GLASS — ultra-transparent, 1% blur
+                     LIQUID GLASS — iOS native material standard
                      ============================================ */
 
                   body {
@@ -80248,33 +80145,48 @@ function z$e({
                     background: transparent !important;
                   }
 
-                  /* ---- GLASS CARD BASE (99% transparente, blur mínimo) ---- */
+                  /* ---- HARDWARE ACCELERATION & ANTIALIASING FOR LIQUID GLASS ---- */
+                  .bg-\\[\\#1a1a1a\\],
+                  .bg-\\[\\#2a2a2a\\],
+                  [class*="bg-\\[\\#1a1a1a\\]"],
+                  [class*="bg-\\[\\#2a2a2a\\]"],
+                  .ios-top-bar,
+                  .ios-bottom-bar,
+                  nav[role="tablist"],
+                  [data-sidebar="sidebar"] {
+                    -webkit-transform: translate3d(0, 0, 0) !important;
+                    transform: translate3d(0, 0, 0) !important;
+                    -webkit-backface-visibility: hidden !important;
+                    backface-visibility: hidden !important;
+                    will-change: transform, backdrop-filter !important;
+                  }
+
+                  /* ---- GLASS CARD BASE ---- */
                   .bg-\\[\\#1a1a1a\\],
                   .bg-transparent[class*="border"] {
-                    background: rgba(255, 255, 255, 0.05) !important;
-                    backdrop-filter: blur(2px) !important;
-                    -webkit-backdrop-filter: blur(2px) !important;
-                    border: 1px solid rgba(255, 255, 255, 0.28) !important;
-                    box-shadow: ${(i==null?void 0:i.card_shadow)?"0 2px 16px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.18)":"none"} !important;
+                    background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(22, 22, 33, 0.76)":"rgba(15, 15, 25, 0.44)"} !important;
+                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"30px":"20px"}) saturate(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"140%":"190%"}) !important;
+                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"30px":"20px"}) saturate(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"140%":"190%"}) !important;
+                    border: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.15":"0.11"}) !important;
+                    box-shadow: ${(i==null?void 0:i.card_shadow)?((i==null?void 0:i.liquid_glass_style)==="frosted"?"0 8px 32px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.12)":"0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.16)"):"none"} !important;
                   }
 
                   /* ---- GLASS INNER CARD (nested) ---- */
                   .bg-\\[\\#2a2a2a\\] {
-                    background: rgba(255, 255, 255, 0.04) !important;
-                    backdrop-filter: blur(1px) !important;
-                    -webkit-backdrop-filter: blur(1px) !important;
-                    border: 1px solid rgba(255, 255, 255, 0.22) !important;
+                    background: rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.05":"0.03"}) !important;
+                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"15px":"10px"}) saturate(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"130%":"180%"}) !important;
+                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"15px":"10px"}) saturate(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"130%":"180%"}) !important;
+                    border: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.10":"0.07"}) !important;
                   }
 
                   /* ---- HOVER (desktop) ---- */
                   @media (hover: hover) {
                     .bg-\\[\\#1a1a1a\\]:hover {
-                      background: rgba(255, 255, 255, 0.07) !important;
-                      border-color: rgba(255, 255, 255, 0.18) !important;
-                      transition: all 0.22s cubic-bezier(.25,.8,.25,1) !important;
+                      background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(22, 22, 33, 0.82)":"rgba(15, 15, 25, 0.50)"} !important;
+                      border-color: rgba(255, 255, 255, 0.22) !important;
                     }
                     .bg-\\[\\#2a2a2a\\]:hover {
-                      background: rgba(255, 255, 255, 0.05) !important;
+                      background: rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.08":"0.05"}) !important;
                     }
                   }
 
@@ -80294,8 +80206,8 @@ function z$e({
                     background: rgba(255, 255, 255, 0.04) !important;
                     border: 1px solid rgba(255, 255, 255, 0.12) !important;
                     color: white !important;
-                    backdrop-filter: blur(2px) !important;
-                    -webkit-backdrop-filter: blur(2px) !important;
+                    backdrop-filter: blur(8px) saturate(150%) !important;
+                    -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
                   }
                   input:focus, textarea:focus {
                     background: rgba(255, 255, 255, 0.07) !important;
@@ -80304,7 +80216,7 @@ function z$e({
                     outline: none !important;
                   }
                   input::placeholder, textarea::placeholder {
-                    color: rgba(255, 255, 255, 0.30) !important;
+                    color: rgba(255, 255, 255, 0.35) !important;
                   }
 
                   /* ---- SELECT TRIGGER ---- */
@@ -80313,27 +80225,27 @@ function z$e({
                     background: rgba(255, 255, 255, 0.04) !important;
                     border: 1px solid rgba(255, 255, 255, 0.12) !important;
                     color: white !important;
-                    backdrop-filter: blur(2px) !important;
-                    -webkit-backdrop-filter: blur(2px) !important;
+                    backdrop-filter: blur(8px) saturate(150%) !important;
+                    -webkit-backdrop-filter: blur(8px) saturate(150%) !important;
                   }
 
                   /* ---- DIALOG / SHEET ---- */
                   [role="dialog"],
                   [data-radix-dialog-content],
                   [data-radix-alert-dialog-content] {
-                    background: rgba(8, 8, 20, 0.55) !important;
-                    backdrop-filter: blur(8px) !important;
-                    -webkit-backdrop-filter: blur(8px) !important;
-                    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.40) !important;
+                    background: rgba(10, 10, 18, 0.72) !important;
+                    backdrop-filter: blur(24px) saturate(170%) !important;
+                    -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
+                    border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
+                    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.50) !important;
                   }
 
                   /* ---- SHEET (drawer) ---- */
                   [data-vaul-drawer] {
-                    background: rgba(8, 8, 20, 0.55) !important;
-                    backdrop-filter: blur(8px) !important;
-                    -webkit-backdrop-filter: blur(8px) !important;
-                    border-top: 1px solid rgba(255, 255, 255, 0.12) !important;
+                    background: rgba(10, 10, 18, 0.72) !important;
+                    backdrop-filter: blur(24px) saturate(170%) !important;
+                    -webkit-backdrop-filter: blur(24px) saturate(170%) !important;
+                    border-top: 0.5px solid rgba(255, 255, 255, 0.15) !important;
                   }
 
                   /* ---- DROPDOWNS / SELECT CONTENT / POPOVER ---- */
@@ -80342,11 +80254,11 @@ function z$e({
                   [data-radix-dropdown-menu-content],
                   [data-radix-popover-content],
                   [data-radix-tooltip-content] {
-                    background: rgba(8, 8, 20, 0.65) !important;
-                    backdrop-filter: blur(6px) !important;
-                    -webkit-backdrop-filter: blur(6px) !important;
-                    border: 1px solid rgba(255, 255, 255, 0.12) !important;
-                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.30) !important;
+                    background: rgba(12, 12, 22, 0.82) !important;
+                    backdrop-filter: blur(20px) saturate(160%) !important;
+                    -webkit-backdrop-filter: blur(20px) saturate(160%) !important;
+                    border: 0.5px solid rgba(255, 255, 255, 0.14) !important;
+                    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
                   }
 
                   /* ---- TABS ---- */
