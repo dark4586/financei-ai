@@ -72737,6 +72737,7 @@ function bIe() {
             const It = new Date(J);
             It.setMonth(J.getMonth() + ht);
             const zt = tt(It, "yyyy-MM");
+            const meInvestimento = b.filter($e => new Date($e.data_inicio) <= It).reduce(($e, Je) => $e + (Je.aporte_mensal || 0), 0);
             if (!v.some($e => {
                     var Je;
                     return $e.tipo !== "devedor" && ((Je = $e.mes_referencia) == null ? void 0 : Je.startsWith(zt))
@@ -72747,7 +72748,8 @@ function bIe() {
                     }),
                     receitas: 0,
                     despesas: 0,
-                    saldo: 0
+                    saldo: 0,
+                    investimento: meInvestimento
                 });
                 continue
             }
@@ -72768,7 +72770,8 @@ function bIe() {
                 }),
                 receitas: rr + H + Ce,
                 despesas: de,
-                saldo: rr + H + Ce - de
+                saldo: rr + H + Ce - de,
+                investimento: meInvestimento
             })
         }
         return K
@@ -73496,6 +73499,11 @@ function bIe() {
                                                 fill: "url(#gradBlue)",
                                                 name: "💵 Saldo",
                                                 radius: [6, 6, 0, 0]
+                                            }), l.jsx(ai, {
+                                                dataKey: "investimento",
+                                                fill: "url(#gradPurple)",
+                                                name: "📈 Investimento",
+                                                radius: [6, 6, 0, 0]
                                             }), l.jsxs("defs", {
                                                 children: [l.jsxs("linearGradient", {
                                                     id: "gradGreen",
@@ -73512,7 +73520,7 @@ function bIe() {
                                                         stopColor: "#059669",
                                                         stopOpacity: .6
                                                     })]
-                                                }), l.jsxs("linearGradient", {
+                                                 }), l.jsxs("linearGradient", {
                                                     id: "gradRed",
                                                     x1: "0",
                                                     y1: "0",
@@ -73540,6 +73548,21 @@ function bIe() {
                                                     }), l.jsx("stop", {
                                                         offset: "100%",
                                                         stopColor: "#2563eb",
+                                                        stopOpacity: .6
+                                                    })]
+                                                }), l.jsxs("linearGradient", {
+                                                    id: "gradPurple",
+                                                    x1: "0",
+                                                    y1: "0",
+                                                    x2: "0",
+                                                    y2: "1",
+                                                    children: [l.jsx("stop", {
+                                                        offset: "0%",
+                                                        stopColor: "#8b5cf6",
+                                                        stopOpacity: .9
+                                                    }), l.jsx("stop", {
+                                                        offset: "100%",
+                                                        stopColor: "#7c3aed",
                                                         stopOpacity: .6
                                                     })]
                                                 })]
