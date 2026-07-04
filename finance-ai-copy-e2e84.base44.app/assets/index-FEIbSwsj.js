@@ -69971,10 +69971,10 @@ function cIe() {
                                 className: "grid grid-cols-2 gap-3",
                                 children: [{
                                     value: "transparent",
-                                    label: "❄️ Transparente (Fino)"
+                                    label: "❄️ Transparente"
                                 }, {
                                     value: "frosted",
-                                    label: "🌫️ Fosco (Grosso)"
+                                    label: "🌫️ Fosco"
                                 }].map(K => l.jsx("button", {
                                     onClick: () => le({
                                         liquid_glass_style: K.value
@@ -80164,29 +80164,29 @@ function z$e({
                   /* ---- GLASS CARD BASE ---- */
                   .bg-\\[\\#1a1a1a\\],
                   .bg-transparent[class*="border"] {
-                    background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(22, 22, 33, 0.76)":"rgba(15, 15, 25, 0.44)"} !important;
-                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"30px":"20px"}) saturate(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"140%":"190%"}) !important;
-                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"30px":"20px"}) saturate(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"140%":"190%"}) !important;
-                    border: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.15":"0.11"}) !important;
-                    box-shadow: ${(i==null?void 0:i.card_shadow)?((i==null?void 0:i.liquid_glass_style)==="frosted"?"0 8px 32px rgba(0,0,0,0.36), inset 0 1px 0 rgba(255,255,255,0.12)":"0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.16)"):"none"} !important;
+                    background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(15, 15, 25, 0.44)":"rgba(15, 15, 25, 0.12)"} !important;
+                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"4px"}) saturate(190%) !important;
+                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"4px"}) saturate(190%) !important;
+                    border: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.11":"0.08"}) !important;
+                    box-shadow: ${(i==null?void 0:i.card_shadow)?((i==null?void 0:i.liquid_glass_style)==="frosted"?"0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.16)":"0 4px 16px rgba(0,0,0,0.10), inset 0 1px 0 rgba(255,255,255,0.08)"):"none"} !important;
                   }
 
                   /* ---- GLASS INNER CARD (nested) ---- */
                   .bg-\\[\\#2a2a2a\\] {
-                    background: rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.05":"0.03"}) !important;
-                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"15px":"10px"}) saturate(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"130%":"180%"}) !important;
-                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"15px":"10px"}) saturate(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"130%":"180%"}) !important;
-                    border: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.10":"0.07"}) !important;
+                    background: rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.03":"0.01"}) !important;
+                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"10px":"2px"}) saturate(180%) !important;
+                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"10px":"2px"}) saturate(180%) !important;
+                    border: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.07":"0.04"}) !important;
                   }
 
                   /* ---- HOVER (desktop) ---- */
                   @media (hover: hover) {
                     .bg-\\[\\#1a1a1a\\]:hover {
-                      background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(22, 22, 33, 0.82)":"rgba(15, 15, 25, 0.50)"} !important;
-                      border-color: rgba(255, 255, 255, 0.22) !important;
+                      background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(15, 15, 25, 0.50)":"rgba(15, 15, 25, 0.16)"} !important;
+                      border-color: rgba(255, 255, 255, 0.18) !important;
                     }
                     .bg-\\[\\#2a2a2a\\]:hover {
-                      background: rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.08":"0.05"}) !important;
+                      background: rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.05":"0.02"}) !important;
                     }
                   }
 
@@ -80265,12 +80265,12 @@ function z$e({
                   [role="tablist"] {
                     background: rgba(255, 255, 255, 0.04) !important;
                     border: 1px solid rgba(255, 255, 255, 0.10) !important;
-                    backdrop-filter: blur(2px) !important;
-                    -webkit-backdrop-filter: blur(2px) !important;
+                    backdrop-filter: blur(15px) saturate(160%) !important;
+                    -webkit-backdrop-filter: blur(15px) saturate(160%) !important;
                   }
                   [role="tab"][data-state="active"] {
                     background: rgba(255, 255, 255, 0.12) !important;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.18) !important;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.18) !important;
                   }
 
                   /* ---- ROUNDED ---- */
@@ -80280,16 +80280,16 @@ function z$e({
 
                   /* ---- iOS-style top/bottom bars ---- */
                   .ios-top-bar {
-                    background: rgba(5, 5, 15, 0.30) !important;
-                    backdrop-filter: blur(4px) !important;
-                    -webkit-backdrop-filter: blur(4px) !important;
-                    border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+                    background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(10, 10, 20, 0.58)":"rgba(10, 10, 20, 0.18)"} !important;
+                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"6px"}) saturate(180%) !important;
+                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"6px"}) saturate(180%) !important;
+                    border-bottom: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.10":"0.05"}) !important;
                   }
                   .ios-bottom-bar {
-                    background: rgba(5, 5, 15, 0.35) !important;
-                    backdrop-filter: blur(4px) !important;
-                    -webkit-backdrop-filter: blur(4px) !important;
-                    border-top: 1px solid rgba(255, 255, 255, 0.10) !important;
+                    background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(10, 10, 20, 0.58)":"rgba(10, 10, 20, 0.18)"} !important;
+                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"6px"}) saturate(180%) !important;
+                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"6px"}) saturate(180%) !important;
+                    border-top: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.10":"0.05"}) !important;
                   }
 
                   /* ---- SCROLLBAR ---- */
@@ -80302,10 +80302,10 @@ function z$e({
 
                   /* ---- SIDEBAR glass ---- */
                   [data-sidebar="sidebar"] {
-                    background: rgba(5, 5, 15, 0.30) !important;
-                    backdrop-filter: blur(4px) !important;
-                    -webkit-backdrop-filter: blur(4px) !important;
-                    border-right: 1px solid rgba(255, 255, 255, 0.10) !important;
+                    background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(10, 10, 20, 0.58)":"rgba(10, 10, 20, 0.18)"} !important;
+                    backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"6px"}) saturate(180%) !important;
+                    -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"6px"}) saturate(180%) !important;
+                    border-right: 0.5px solid rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.10":"0.05"}) !important;
                   }
                   `:""}
 
