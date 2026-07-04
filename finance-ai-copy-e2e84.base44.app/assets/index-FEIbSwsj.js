@@ -78166,28 +78166,28 @@ function A$e({
                 children: tt(new Date, "HH:mm")
             }), l.jsx("div", {
                 className: "h-40 flex items-center justify-center w-full max-w-2xl px-4",
-                children: l.jsx(Hr, {
-                    mode: "wait",
-                    children: l.jsx(Be.div, {
-                        initial: {
-                            x: 100,
-                            opacity: 0
-                        },
-                        animate: {
-                            x: 0,
-                            opacity: 1
-                        },
-                        exit: {
-                            x: -100,
-                            opacity: 0
-                        },
-                        transition: {
-                            duration: .8,
-                            ease: "easeInOut"
-                        },
-                        className: "w-full",
-                        children: l.jsxs("div", {
-                            className: "bg-black/50 backdrop-blur-lg p-8 rounded-2xl border border-white/10 flex flex-col items-center space-y-4",
+                children: l.jsx("div", {
+                    className: "w-full bg-black/50 backdrop-blur-lg p-8 rounded-2xl border border-white/10 flex flex-col items-center",
+                    children: l.jsx(Hr, {
+                        mode: "wait",
+                        children: l.jsxs(Be.div, {
+                            initial: {
+                                x: 50,
+                                opacity: 0
+                            },
+                            animate: {
+                                x: 0,
+                                opacity: 1
+                            },
+                            exit: {
+                                x: -50,
+                                opacity: 0
+                            },
+                            transition: {
+                                duration: .4,
+                                ease: "easeInOut"
+                            },
+                            className: "flex flex-col items-center space-y-4 w-full",
                             children: [l.jsx(V, {
                                 className: `w-10 h-10 ${H.color}`
                             }), l.jsxs("div", {
@@ -78200,8 +78200,8 @@ function A$e({
                                     children: H.value
                                 })]
                             })]
-                        })
-                    }, n)
+                        }, n)
+                    })
                 })
             })]
         })]
