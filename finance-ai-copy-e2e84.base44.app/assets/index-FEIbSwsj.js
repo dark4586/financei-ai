@@ -72728,12 +72728,12 @@ function bIe() {
         document.fullscreenElement ? (document.exitFullscreen().catch(() => {}), s(!1)) : (document.documentElement.requestFullscreen().catch(() => {}), s(!0))
     }, le = (() => {
         const K = [],
-            J = new Date(2026, 0, 1),
-            ve = new Date(2027, 11, 1),
-            et = 24;
+            J = new Date(2026, 6, 1),
+            ve = new Date(),
+            et = Math.max(1, (ve.getFullYear() - J.getFullYear()) * 12 + (ve.getMonth() - J.getMonth()) + 1);
         for (let ht = 0; ht < et; ht++) {
             const It = new Date(J);
-            if (It.setMonth(J.getMonth() + ht), It > ve) break;
+            It.setMonth(J.getMonth() + ht);
             const zt = tt(It, "yyyy-MM");
             if (!v.some($e => {
                     var Je;
@@ -73402,17 +73402,15 @@ function bIe() {
                                     className: "w-1 h-5 rounded-full bg-gradient-to-b from-blue-400 to-purple-500"
                                 }), l.jsx("h3", {
                                     className: "text-base font-semibold text-white",
-                                    children: "Projeção Financeira — Jan/26 a Dez/27"
+                                    children: le.length <= 1 ? "Projeção Financeira — Jul/26" : `Projeção Financeira — Jul/26 a ${le[le.length - 1].mes.charAt(0).toUpperCase() + le[le.length - 1].mes.slice(1)}`
                                 })]
                             }), l.jsx("div", {
                                 className: "overflow-x-auto",
                                 ref: K => {
                                     if (!K) return;
-                                    const J = new Date,
-                                        ve = (J.getFullYear() - 2026) * 12 + J.getMonth(),
-                                        et = 60,
+                                    const et = 60,
                                         ht = K.clientWidth,
-                                        It = Math.max(0, ve * et - ht / 2 + et / 2);
+                                        It = Math.max(0, (le.length - 1) * et - ht / 2 + et / 2);
                                     K.scrollLeft = It
                                 },
                                 children: l.jsx("div", {
