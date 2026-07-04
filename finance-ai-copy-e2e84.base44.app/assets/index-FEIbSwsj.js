@@ -54170,6 +54170,14 @@ const bAe = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
 function _Ae({
     routines: e
 }) {
+    const { theme: H } = T7();
+    const isDark = H === "dark";
+    const Ie = {
+        background: isDark ? "#1a1a1a" : "#fff",
+        border: isDark ? "1px solid #2a2a2a" : "1px solid #e5e7eb",
+        borderRadius: 8,
+        color: isDark ? "#fff" : "#000"
+    };
     const t = e.length,
         n = e.filter(c => c.status === "concluida").length,
         r = t - n,
@@ -54234,31 +54242,31 @@ function _Ae({
                 icon: "🔥",
                 color: "#ef4444"
             }].map(c => l.jsxs("div", {
-                className: "bg-[#1a1a1a] rounded-xl p-4",
+                className: isDark ? "bg-[#1a1a1a] rounded-xl p-4 border border-[#2a2a2a]" : "bg-white rounded-xl p-4 border border-gray-100 shadow-sm",
                 children: [l.jsx("div", {
                     className: "text-2xl mb-1",
                     children: c.icon
                 }), l.jsx("div", {
-                    className: "text-2xl font-bold text-white",
+                    className: isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-gray-900",
                     children: c.value
                 }), l.jsx("div", {
-                    className: "text-xs text-gray-400",
+                    className: isDark ? "text-xs text-gray-400" : "text-xs text-gray-500",
                     children: c.label
                 })]
             }, c.label))
         }), l.jsxs("div", {
-            className: "bg-[#1a1a1a] rounded-xl p-4",
+            className: isDark ? "bg-[#1a1a1a] rounded-xl p-4 border border-[#2a2a2a]" : "bg-white rounded-xl p-4 border border-gray-100 shadow-sm",
             children: [l.jsxs("div", {
                 className: "flex justify-between mb-2",
                 children: [l.jsx("span", {
-                    className: "text-white text-sm font-medium",
+                    className: isDark ? "text-white text-sm font-medium" : "text-gray-900 text-sm font-medium",
                     children: "% Concluída"
                 }), l.jsxs("span", {
-                    className: "text-white font-bold",
+                    className: isDark ? "text-white font-bold" : "text-gray-900 font-bold",
                     children: [a, "%"]
                 })]
             }), l.jsx("div", {
-                className: "h-3 bg-[#2a2a2a] rounded-full overflow-hidden",
+                className: isDark ? "h-3 bg-[#2a2a2a] rounded-full overflow-hidden" : "h-3 bg-gray-100 rounded-full overflow-hidden",
                 children: l.jsx("div", {
                     className: "h-full rounded-full transition-all duration-700",
                     style: {
@@ -54268,9 +54276,9 @@ function _Ae({
                 })
             })]
         }), l.jsxs("div", {
-            className: "bg-[#1a1a1a] rounded-xl p-4",
+            className: isDark ? "bg-[#1a1a1a] rounded-xl p-4 border border-[#2a2a2a]" : "bg-white rounded-xl p-4 border border-gray-100 shadow-sm",
             children: [l.jsx("h4", {
-                className: "text-white font-semibold mb-3",
+                className: isDark ? "text-white font-semibold mb-3" : "text-gray-900 font-semibold mb-3",
                 children: "📊 Gráfico Semanal"
             }), l.jsx(Fs, {
                 width: "100%",
@@ -54289,14 +54297,9 @@ function _Ae({
                     }), l.jsx(Ia, {
                         hide: !0
                     }), l.jsx(er, {
-                        contentStyle: {
-                            background: "#1a1a1a",
-                            border: "1px solid #2a2a2a",
-                            borderRadius: 8,
-                            color: "#fff"
-                        },
+                        contentStyle: Ie,
                         cursor: {
-                            fill: "rgba(255,255,255,0.05)"
+                            fill: isDark ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.05)"
                         }
                     }), l.jsx(ai, {
                         dataKey: "total",
@@ -54312,9 +54315,9 @@ function _Ae({
                 })
             })]
         }), o.length > 0 && l.jsxs("div", {
-            className: "bg-[#1a1a1a] rounded-xl p-4",
+            className: isDark ? "bg-[#1a1a1a] rounded-xl p-4 border border-[#2a2a2a]" : "bg-white rounded-xl p-4 border border-gray-100 shadow-sm",
             children: [l.jsx("h4", {
-                className: "text-white font-semibold mb-3",
+                className: isDark ? "text-white font-semibold mb-3" : "text-gray-900 font-semibold mb-3",
                 children: "📈 Gráfico Mensal"
             }), l.jsx(Fs, {
                 width: "100%",
@@ -54322,7 +54325,7 @@ function _Ae({
                 children: l.jsxs(ZC, {
                     data: o,
                     children: [l.jsx(sc, {
-                        stroke: "#2a2a2a",
+                        stroke: isDark ? "#2a2a2a" : "#e5e7eb",
                         strokeDasharray: "3 3"
                     }), l.jsx(Ma, {
                         dataKey: "label",
@@ -54335,12 +54338,7 @@ function _Ae({
                     }), l.jsx(Ia, {
                         hide: !0
                     }), l.jsx(er, {
-                        contentStyle: {
-                            background: "#1a1a1a",
-                            border: "1px solid #2a2a2a",
-                            borderRadius: 8,
-                            color: "#fff"
-                        }
+                        contentStyle: Ie
                     }), l.jsx(ka, {
                         type: "monotone",
                         dataKey: "total",
@@ -71793,6 +71791,20 @@ function vIe() {
 }
 
 function xIe() {
+    const { theme: H } = T7();
+    const isDark = H === "dark";
+    const Ie = {
+        backgroundColor: isDark ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.95)",
+        border: isDark ? "1px solid #2a2a2a" : "1px solid #e5e7eb",
+        borderRadius: "8px"
+    };
+    const labelStyle = {
+        color: isDark ? "#fff" : "#1f2937",
+        fontWeight: "bold"
+    };
+    const itemStyle = {
+        color: isDark ? "#fff" : "#1f2937"
+    };
     const [e, t] = C.useState(!1), [n, r] = C.useState(!1), [a, i] = C.useState("mensal"), [o, s] = C.useState(""), {
         data: c = []
     } = Ve({
@@ -72101,22 +72113,22 @@ function xIe() {
         o && (a === "mensal" ? I = b.find(M => M.monthKey === o) : I = j.find(M => M.weekKey === o)), I || (I = S(a)), k(I, a), r(!1)
     }, O = b.reduce((I, M) => I + M.receitas, 0), P = b.reduce((I, M) => I + M.despesas, 0), $ = O - P;
     return l.jsx("div", {
-        className: "min-h-screen bg-[#0f0f0f] p-4 md:p-8",
+        className: "min-h-screen p-4 md:p-8 " + (isDark ? "bg-[#0f0f0f]" : "bg-gray-50/50"),
         children: l.jsxs("div", {
             className: "max-w-7xl mx-auto space-y-8",
             children: [l.jsxs("div", {
                 className: "flex justify-between items-center",
                 children: [l.jsxs("div", {
                     children: [l.jsx("h1", {
-                        className: "text-3xl font-bold text-white mb-2",
+                        className: "text-3xl font-bold mb-2 " + (isDark ? "text-white" : "text-gray-900"),
                         children: "📅 Histórico Financeiro"
                     }), l.jsx("p", {
-                        className: "text-gray-400",
+                        className: isDark ? "text-gray-400" : "text-gray-500",
                         children: "Acompanhe sua evolução mensal e semanal"
                     })]
                 }), l.jsxs(xe, {
                     onClick: () => r(!0),
-                    className: "bg-white text-black hover:bg-gray-200",
+                    className: isDark ? "bg-white text-black hover:bg-gray-200" : "bg-gray-900 text-white hover:bg-gray-800",
                     children: [l.jsx(Woe, {
                         className: "w-5 h-5 mr-2"
                     }), "Enviar Relatório Manual"]
@@ -72124,7 +72136,7 @@ function xIe() {
             }), l.jsxs("div", {
                 className: "grid grid-cols-1 md:grid-cols-3 gap-6",
                 children: [l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
+                    className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                     children: l.jsxs("div", {
                         className: "flex items-center gap-3 mb-4",
                         children: [l.jsx("div", {
@@ -72134,10 +72146,10 @@ function xIe() {
                             })
                         }), l.jsxs("div", {
                             children: [l.jsx("p", {
-                                className: "text-gray-400 text-sm",
+                                className: isDark ? "text-gray-400 text-sm" : "text-gray-500 text-sm",
                                 children: "💰 Total Recebido"
                             }), l.jsxs("h3", {
-                                className: "text-2xl font-bold text-white",
+                                className: isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-gray-900",
                                 children: ["R$ ", O.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
@@ -72145,7 +72157,7 @@ function xIe() {
                         })]
                     })
                 }), l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
+                    className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                     children: l.jsxs("div", {
                         className: "flex items-center gap-3 mb-4",
                         children: [l.jsx("div", {
@@ -72155,10 +72167,10 @@ function xIe() {
                             })
                         }), l.jsxs("div", {
                             children: [l.jsx("p", {
-                                className: "text-gray-400 text-sm",
+                                className: isDark ? "text-gray-400 text-sm" : "text-gray-500 text-sm",
                                 children: "💸 Total Gasto"
                             }), l.jsxs("h3", {
-                                className: "text-2xl font-bold text-white",
+                                className: isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-gray-900",
                                 children: ["R$ ", P.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
@@ -72166,7 +72178,7 @@ function xIe() {
                         })]
                     })
                 }), l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
+                    className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                     children: l.jsxs("div", {
                         className: "flex items-center gap-3 mb-4",
                         children: [l.jsx("div", {
@@ -72176,10 +72188,10 @@ function xIe() {
                             })
                         }), l.jsxs("div", {
                             children: [l.jsx("p", {
-                                className: "text-gray-400 text-sm",
+                                className: isDark ? "text-gray-400 text-sm" : "text-gray-500 text-sm",
                                 children: "💵 Saldo Acumulado"
                             }), l.jsxs("h3", {
-                                className: `text-2xl font-bold ${$>=0?"text-green-400":"text-red-400"}`,
+                                className: `text-2xl font-bold ${$>=0?(isDark?"text-green-400":"text-green-600"):(isDark?"text-red-400":"text-red-600")}`,
                                 children: ["R$ ", Math.abs($).toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
@@ -72191,7 +72203,7 @@ function xIe() {
                 defaultValue: "mensal",
                 className: "w-full",
                 children: [l.jsxs(tm, {
-                    className: "grid w-full max-w-md grid-cols-2 bg-[#1a1a1a]",
+                    className: "grid w-full max-w-md grid-cols-2 " + (isDark ? "bg-[#1a1a1a]" : "bg-gray-100"),
                     children: [l.jsx(tr, {
                         value: "mensal",
                         children: "📅 Mensal"
@@ -72218,9 +72230,9 @@ function xIe() {
                         })
                     }) : l.jsxs(l.Fragment, {
                         children: [l.jsxs(Oe, {
-                            className: "bg-transparent border-black p-6",
+                            className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                             children: [l.jsx("h3", {
-                                className: "text-lg font-semibold text-white mb-6",
+                                className: "text-lg font-semibold mb-6 " + (isDark ? "text-white" : "text-gray-900"),
                                 children: "📈 Evolução Financeira Mensal"
                             }), l.jsx(Fs, {
                                 width: "100%",
@@ -72229,7 +72241,7 @@ function xIe() {
                                     data: b,
                                     children: [l.jsx(sc, {
                                         strokeDasharray: "3 3",
-                                        stroke: "#404040"
+                                        stroke: isDark ? "#404040" : "#e5e7eb"
                                     }), l.jsx(Ma, {
                                         dataKey: "mes",
                                         stroke: "#94a3b8"
@@ -72237,22 +72249,13 @@ function xIe() {
                                         stroke: "#94a3b8",
                                         tickFormatter: I => `R$ ${(I/1e3).toFixed(1)}k`
                                     }), l.jsx(er, {
-                                        contentStyle: {
-                                            backgroundColor: "rgba(0, 0, 0, 0.95)",
-                                            border: "1px solid #000000",
-                                            borderRadius: "8px"
-                                        },
-                                        labelStyle: {
-                                            color: "#fff",
-                                            fontWeight: "bold"
-                                        },
-                                        itemStyle: {
-                                            color: "#fff"
-                                        },
+                                        contentStyle: Ie,
+                                        labelStyle: labelStyle,
+                                        itemStyle: itemStyle,
                                         formatter: I => `R$ ${I.toLocaleString("pt-BR",{minimumFractionDigits:2})}`
                                     }), l.jsx(Ra, {
                                         wrapperStyle: {
-                                            color: "#fff"
+                                            color: isDark ? "#fff" : "#1f2937"
                                         }
                                     }), l.jsx(ka, {
                                         type: "monotone",
@@ -72348,7 +72351,7 @@ function xIe() {
                     value: "semanal",
                     className: "space-y-6",
                     children: j.length === 0 ? l.jsx(Oe, {
-                        className: "bg-transparent border-black p-12",
+                        className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-12" : "bg-white border-gray-100 shadow-sm p-12",
                         children: l.jsxs("div", {
                             className: "text-center text-gray-400",
                             children: [l.jsx(ii, {
@@ -72360,9 +72363,9 @@ function xIe() {
                         })
                     }) : l.jsxs(l.Fragment, {
                         children: [l.jsxs(Oe, {
-                            className: "bg-transparent border-black p-6",
+                            className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                             children: [l.jsx("h3", {
-                                className: "text-lg font-semibold text-white mb-6",
+                                className: "text-lg font-semibold mb-6 " + (isDark ? "text-white" : "text-gray-900"),
                                 children: "📈 Evolução Financeira Semanal"
                             }), l.jsx(Fs, {
                                 width: "100%",
@@ -72371,7 +72374,7 @@ function xIe() {
                                     data: j,
                                     children: [l.jsx(sc, {
                                         strokeDasharray: "3 3",
-                                        stroke: "#404040"
+                                        stroke: isDark ? "#404040" : "#e5e7eb"
                                     }), l.jsx(Ma, {
                                         dataKey: "semana",
                                         stroke: "#94a3b8"
@@ -72379,22 +72382,13 @@ function xIe() {
                                         stroke: "#94a3b8",
                                         tickFormatter: I => `R$ ${(I/1e3).toFixed(1)}k`
                                     }), l.jsx(er, {
-                                        contentStyle: {
-                                            backgroundColor: "rgba(0, 0, 0, 0.95)",
-                                            border: "1px solid #000000",
-                                            borderRadius: "8px"
-                                        },
-                                        labelStyle: {
-                                            color: "#fff",
-                                            fontWeight: "bold"
-                                        },
-                                        itemStyle: {
-                                            color: "#fff"
-                                        },
+                                        contentStyle: Ie,
+                                        labelStyle: labelStyle,
+                                        itemStyle: itemStyle,
                                         formatter: I => `R$ ${I.toLocaleString("pt-BR",{minimumFractionDigits:2})}`
                                     }), l.jsx(Ra, {
                                         wrapperStyle: {
-                                            color: "#fff"
+                                            color: isDark ? "#fff" : "#1f2937"
                                         }
                                     }), l.jsx(ka, {
                                         type: "monotone",
@@ -72620,6 +72614,14 @@ function Ej({
 function bIe() {
     const e = Jp(),
         t = Ar(),
+        {
+            data: cc = []
+        } = Ve({
+            queryKey: ["settings"],
+            queryFn: () => se.entities.Settings.list()
+        }),
+        activeSettings = cc[0] || {},
+        currentTheme = activeSettings.tema || "dark",
         [n, r] = C.useState(null),
         [a, i] = C.useState(!0),
         [o, s] = C.useState(!1),
@@ -72970,13 +72972,32 @@ function bIe() {
                 }
             })
         },
+        isLiquidGlass = currentTheme === "liquid_glass",
+        isDarkTheme = ["dark", "liquid_glass", "material3_dark"].includes(currentTheme),
         Ie = {
-            backgroundColor: "rgba(5, 5, 15, 0.92)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            backgroundColor: isLiquidGlass 
+                ? "rgba(15, 15, 25, 0.78)" 
+                : isDarkTheme 
+                    ? "rgba(30, 30, 30, 0.95)" 
+                    : "rgba(255, 255, 255, 0.96)",
+            border: isLiquidGlass 
+                ? "1px solid rgba(255, 255, 255, 0.16)" 
+                : isDarkTheme 
+                    ? "1px solid rgba(255, 255, 255, 0.12)" 
+                    : "1px solid rgba(0, 0, 0, 0.12)",
             borderRadius: "12px",
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.5)"
+            backdropFilter: isLiquidGlass ? "blur(14px)" : "none",
+            WebkitBackdropFilter: isLiquidGlass ? "blur(14px)" : "none",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.3)"
+        },
+        tooltipLabelStyle = {
+            color: isDarkTheme ? "#ffffff" : "#1a1a1a",
+            fontWeight: "600",
+            marginBottom: 4
+        },
+        tooltipItemStyle = {
+            color: isDarkTheme ? "#cccccc" : "#4b5563",
+            fontSize: 12
         };
     return l.jsx(g0, {
         children: l.jsx(bP, {
@@ -73448,15 +73469,8 @@ function bIe() {
                                                 tickFormatter: K => `${(K/1e3).toFixed(0)}k`
                                             }), l.jsx(er, {
                                                 contentStyle: Ie,
-                                                labelStyle: {
-                                                    color: "#fff",
-                                                    fontWeight: "600",
-                                                    marginBottom: 4
-                                                },
-                                                itemStyle: {
-                                                    color: "#ccc",
-                                                    fontSize: 12
-                                                },
+                                                labelStyle: tooltipLabelStyle,
+                                                itemStyle: tooltipItemStyle,
                                                 formatter: K => `R$ ${K.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                                                 cursor: {
                                                     fill: "rgba(255,255,255,0.04)"
@@ -73572,14 +73586,8 @@ function bIe() {
                                             }, `cell-${J}`))
                                         }), l.jsx(er, {
                                             contentStyle: Ie,
-                                            labelStyle: {
-                                                color: "#fff",
-                                                fontWeight: 600
-                                            },
-                                            itemStyle: {
-                                                color: "#ccc",
-                                                fontSize: 12
-                                            },
+                                            labelStyle: tooltipLabelStyle,
+                                            itemStyle: tooltipItemStyle,
                                             formatter: (K, J) => [`R$ ${K.toLocaleString("pt-BR",{minimumFractionDigits:2})}`, J]
                                         }), l.jsx(Ra, {
                                             wrapperStyle: {
@@ -75434,7 +75442,12 @@ function CIe() {
     } = Ve({
         queryKey: ["savings"],
         queryFn: () => se.entities.Savings.list()
-    }), t = e.reduce((p, m) => p + m.valor_investido, 0), n = e.reduce((p, m) => p + m.valor_investido * m.taxa_rendimento / 100, 0), r = e.reduce((p, m) => p + (m.retirada_mensal || 0), 0), a = e.reduce((p, m) => p + (m.aporte_mensal || 0), 0), i = n - r + a, s = ((p = 48) => {
+    }), {
+        data: cc = []
+    } = Ve({
+        queryKey: ["settings"],
+        queryFn: () => se.entities.Settings.list()
+    }), activeSettings = cc[0] || {}, currentTheme = activeSettings.tema || "dark", isDark = !["light", "material3_light"].includes(currentTheme), t = e.reduce((p, m) => p + m.valor_investido, 0), n = e.reduce((p, m) => p + m.valor_investido * m.taxa_rendimento / 100, 0), r = e.reduce((p, m) => p + (m.retirada_mensal || 0), 0), a = e.reduce((p, m) => p + (m.aporte_mensal || 0), 0), i = n - r + a, s = ((p = 48) => {
         const m = [],
             g = new Date(2025, 11, 1),
             w = new Date < g ? g : new Date;
@@ -75453,12 +75466,12 @@ function CIe() {
         return m
     })();
     return l.jsx("div", {
-        className: "min-h-screen bg-[#121212] p-4 md:p-8",
+        className: "min-h-screen p-4 md:p-8 transition-colors duration-300 " + (isDark ? "bg-[#0f0f0f]" : "bg-gray-50"),
         children: l.jsxs("div", {
             className: "max-w-7xl mx-auto space-y-8",
             children: [l.jsxs("div", {
                 children: [l.jsx("h1", {
-                    className: "text-3xl font-bold text-white mb-2",
+                    className: "text-3xl font-bold mb-2 " + (isDark ? "text-white" : "text-gray-900"),
                     children: "📊 Planejamento Financeiro"
                 }), l.jsx("p", {
                     className: "text-gray-400",
@@ -75467,10 +75480,7 @@ function CIe() {
             }), l.jsxs("div", {
                 className: "grid grid-cols-1 md:grid-cols-4 gap-6",
                 children: [l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
-                    style: {
-                        border: "1px solid #000000"
-                    },
+                    className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                     children: l.jsxs("div", {
                         className: "flex items-center gap-3 mb-4",
                         children: [l.jsx("div", {
@@ -75483,7 +75493,7 @@ function CIe() {
                                 className: "text-gray-400 text-sm",
                                 children: "💰 Total Investido"
                             }), l.jsxs("h3", {
-                                className: "text-2xl font-bold text-white",
+                                className: "text-2xl font-bold " + (isDark ? "text-white" : "text-gray-900"),
                                 children: ["R$ ", t.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
@@ -75491,10 +75501,7 @@ function CIe() {
                         })]
                     })
                 }), l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
-                    style: {
-                        border: "1px solid #000000"
-                    },
+                    className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                     children: l.jsxs("div", {
                         className: "flex items-center gap-3 mb-4",
                         children: [l.jsx("div", {
@@ -75507,7 +75514,7 @@ function CIe() {
                                 className: "text-gray-400 text-sm",
                                 children: "📈 Rendimento Mensal"
                             }), l.jsxs("h3", {
-                                className: "text-2xl font-bold text-white",
+                                className: "text-2xl font-bold " + (isDark ? "text-white" : "text-gray-900"),
                                 children: ["R$ ", n.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
@@ -75515,10 +75522,7 @@ function CIe() {
                         })]
                     })
                 }), l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
-                    style: {
-                        border: "1px solid #000000"
-                    },
+                    className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                     children: l.jsxs("div", {
                         className: "flex items-center gap-3 mb-4",
                         children: [l.jsx("div", {
@@ -75531,7 +75535,7 @@ function CIe() {
                                 className: "text-gray-400 text-sm",
                                 children: "💵 Aportes Mensais"
                             }), l.jsxs("h3", {
-                                className: "text-2xl font-bold text-white",
+                                className: "text-2xl font-bold " + (isDark ? "text-white" : "text-gray-900"),
                                 children: ["R$ ", a.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
@@ -75539,10 +75543,7 @@ function CIe() {
                         })]
                     })
                 }), l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
-                    style: {
-                        border: "1px solid #000000"
-                    },
+                    className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                     children: l.jsxs("div", {
                         className: "flex items-center gap-3 mb-4",
                         children: [l.jsx("div", {
@@ -75555,7 +75556,7 @@ function CIe() {
                                 className: "text-gray-400 text-sm",
                                 children: "🚀 Crescimento Líquido"
                             }), l.jsxs("h3", {
-                                className: "text-2xl font-bold text-white",
+                                className: "text-2xl font-bold " + (isDark ? "text-white" : "text-gray-900"),
                                 children: ["R$ ", i.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
@@ -75564,12 +75565,9 @@ function CIe() {
                     })
                 })]
             }), l.jsxs(Oe, {
-                className: "bg-transparent border-black p-6",
-                style: {
-                    border: "1px solid #000000"
-                },
+                className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                 children: [l.jsx("h3", {
-                    className: "text-lg font-semibold text-white mb-6",
+                    className: "text-lg font-semibold mb-6 " + (isDark ? "text-white" : "text-gray-900"),
                     children: "📊 Projeção de Crescimento (4 anos)"
                 }), l.jsx(Fs, {
                     width: "100%",
@@ -75610,21 +75608,30 @@ function CIe() {
                             })]
                         }), l.jsx(sc, {
                             strokeDasharray: "3 3",
-                            stroke: "#404040"
+                            stroke: isDark ? "#404040" : "#e5e7eb"
                         }), l.jsx(Ma, {
                             dataKey: "mes",
-                            stroke: "#ffffff"
+                            stroke: isDark ? "#ffffff" : "#6b7280"
                         }), l.jsx(Ia, {
-                            stroke: "#ffffff",
+                            stroke: isDark ? "#ffffff" : "#6b7280",
                             tickFormatter: p => `R$ ${(p/1e3).toFixed(0)}k`
                         }), l.jsx(er, {
                             formatter: p => `R$ ${p.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
-                            contentStyle: {
+                            contentStyle: isDark ? {
                                 backgroundColor: "#1a1a1a",
-                                border: "1px solid #000000"
+                                border: "1px solid #2a2a2a"
+                            } : {
+                                backgroundColor: "#ffffff",
+                                border: "1px solid #e5e7eb",
+                                borderRadius: "8px",
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
                             },
                             itemStyle: {
-                                color: "#fff"
+                                color: isDark ? "#fff" : "#1f2937"
+                            },
+                            labelStyle: {
+                                color: isDark ? "#fff" : "#1f2937",
+                                fontWeight: "bold"
                             }
                         }), l.jsx(Ra, {}), l.jsx(ci, {
                             type: "monotone",
@@ -75644,17 +75651,14 @@ function CIe() {
                     })
                 })]
             }), l.jsxs(Oe, {
-                className: "bg-transparent border-black p-6",
-                style: {
-                    border: "1px solid #000000"
-                },
+                className: isDark ? "bg-[#1a1a1a]/50 border-[#2a2a2a] p-6" : "bg-white border-gray-100 shadow-sm p-6",
                 children: [l.jsx("h3", {
-                    className: "text-lg font-semibold text-white mb-4",
+                    className: "text-lg font-semibold mb-4 " + (isDark ? "text-white" : "text-gray-900"),
                     children: "🔮 Projeção em 4 Anos"
                 }), l.jsxs("div", {
                     className: "grid grid-cols-1 md:grid-cols-3 gap-4",
                     children: [l.jsxs("div", {
-                        className: "p-4 bg-[#2a2a2a] rounded-lg",
+                        className: "p-4 rounded-lg " + (isDark ? "bg-[#2a2a2a]" : "bg-gray-100"),
                         children: [l.jsx("p", {
                             className: "text-gray-400 text-sm mb-1",
                             children: "Patrimônio Projetado"
@@ -75665,7 +75669,7 @@ function CIe() {
                             })]
                         })]
                     }), l.jsxs("div", {
-                        className: "p-4 bg-[#2a2a2a] rounded-lg",
+                        className: "p-4 rounded-lg " + (isDark ? "bg-[#2a2a2a]" : "bg-gray-100"),
                         children: [l.jsx("p", {
                             className: "text-gray-400 text-sm mb-1",
                             children: "Rendimento Final Mensal"
@@ -75676,7 +75680,7 @@ function CIe() {
                             })]
                         })]
                     }), l.jsxs("div", {
-                        className: "p-4 bg-[#2a2a2a] rounded-lg",
+                        className: "p-4 rounded-lg " + (isDark ? "bg-[#2a2a2a]" : "bg-gray-100"),
                         children: [l.jsx("p", {
                             className: "text-gray-400 text-sm mb-1",
                             children: "Crescimento Total"
