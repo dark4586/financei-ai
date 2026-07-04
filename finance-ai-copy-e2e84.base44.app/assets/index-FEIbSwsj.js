@@ -58250,7 +58250,7 @@ function YOe() {
     }), [R, F] = C.useState({
         investimento_id: "",
         valor: "",
-        mes_referencia: "",
+        mes_referencia: new Date().toISOString().split("T")[0],
         descricao: ""
     }), [W, U] = C.useState(!1), [D, H] = C.useState({
         banco_id: "",
@@ -58434,7 +58434,7 @@ function YOe() {
             }), U(!1), F({
                 investimento_id: "",
                 valor: "",
-                mes_referencia: "",
+                mes_referencia: new Date().toISOString().split("T")[0],
                 descricao: ""
             })
         }
@@ -58942,10 +58942,7 @@ function YOe() {
                                                                 className: "text-green-400",
                                                                 children: ["💰 R$ ", Zt.valor.toLocaleString("pt-BR", {
                                                                     minimumFractionDigits: 2
-                                                                }), " em ", new Date(Zt.mes_referencia).toLocaleDateString("pt-BR", {
-                                                                    month: "short",
-                                                                    year: "numeric"
-                                                                })]
+                                                                }), " em ", new Date(Zt.mes_referencia + "T12:00:00").toLocaleDateString("pt-BR")]
                                                             }), l.jsx(xe, {
                                                                 variant: "ghost",
                                                                 size: "icon",
@@ -59859,9 +59856,9 @@ function YOe() {
                                 })]
                             }), l.jsxs("div", {
                                 children: [l.jsx(he, {
-                                    children: "📅 Mês do Aporte"
+                                    children: "📅 Data do Aporte"
                                 }), l.jsx(Re, {
-                                    type: "month",
+                                    type: "date",
                                     value: R.mes_referencia,
                                     onChange: Z => F({ ...R,
                                         mes_referencia: Z.target.value
@@ -67643,7 +67640,7 @@ async function S4e(e) {
                     message: `Tema "${n.tema}" não encontrado. Temas disponíveis: ${a6.join(", ")}.`
                 };
                 const i = await se.entities.Settings.list();
-                return i.length > 0 ? await se.entities.Settings.update(i[0].id, {
+                return i && i.length > 0 && i[0] ? await se.entities.Settings.update(i[0].id, {
                     tema: a
                 }) : await se.entities.Settings.create({
                     tema: a
@@ -67914,7 +67911,7 @@ function N4e() {
     } = Ve({
         queryKey: ["loans"],
         queryFn: () => se.entities.Loan.list()
-    }), U = R[0] || null, D = C.useCallback(() => {
+    }), U = (R && R[0]) || null, D = C.useCallback(() => {
         const B = new Date().toISOString().substring(0, 7),
             ie = E.filter(J => {
                 var ve;
@@ -69620,8 +69617,7 @@ function cIe() {
         } = Ve({
             queryKey: ["settings"],
             queryFn: () => se.entities.Settings.list()
-        }),
-        G = z[0] || {
+        G = (z && z[0]) || {
             tema: "dark",
             liquid_glass_color1: "#667eea",
             liquid_glass_color2: "#764ba2",
@@ -69715,7 +69711,7 @@ function cIe() {
             backup_frequency: "weekly"
         };
     C.useEffect(() => {
-        G && (m(G.app_background_opacity ?? 10), w(G.card_opacity), v(G.card_border_radius), j(G.line_height), k(G.letter_spacing), E(G.notification_duration), P(G.bill_reminder_days), I(G.low_balance_alert), R(G.high_expense_alert), W(G.refresh_interval), D(G.screensaver_timeout), V(G.music_volume), L(G.screensaver_brightness))
+        G && (m(G.app_background_opacity ?? 10), w(G.card_opacity ?? 100), v(G.card_border_radius ?? 12), j(G.line_height ?? 1.5), k(G.letter_spacing ?? 0), E(G.notification_duration ?? 5), P(G.bill_reminder_days ?? 3), I(G.low_balance_alert ?? 100), R(G.high_expense_alert ?? 1000), W(G.refresh_interval ?? 60), D(G.screensaver_timeout ?? 300), V(G.music_volume ?? 50), L(G.screensaver_brightness ?? 100))
     }, [G]);
     const B = st({
             mutationFn: K => se.entities.Settings.create(K),
@@ -70022,9 +70018,9 @@ function cIe() {
                             }), G.app_background_url && l.jsxs("div", {
                                 children: [l.jsxs(he, {
                                     className: "text-white mb-2 block",
-                                    children: ["🔍 Opacidade do Fundo: ", p, "%"]
+                                    children: ["🔍 Opacidade do Fundo: ", p ?? 10, "%"]
                                 }), l.jsx(oo, {
-                                    value: [p],
+                                    value: [p ?? 10],
                                     onValueChange: K => {
                                         m(K[0]), pe({
                                             app_background_opacity: K[0]
@@ -70069,9 +70065,9 @@ function cIe() {
                             children: [l.jsxs("div", {
                                 children: [l.jsxs(he, {
                                     className: "text-white mb-2 block",
-                                    children: ["💫 Opacidade dos Cards: ", g, "%"]
+                                    children: ["💫 Opacidade dos Cards: ", g ?? 100, "%"]
                                 }), l.jsx(oo, {
-                                    value: [g],
+                                    value: [g ?? 100],
                                     onValueChange: K => {
                                         w(K[0]), pe({
                                             card_opacity: K[0]
@@ -70085,9 +70081,9 @@ function cIe() {
                             }), l.jsxs("div", {
                                 children: [l.jsxs(he, {
                                     className: "text-white mb-2 block",
-                                    children: ["📐 Raio da Borda: ", x, "px"]
+                                    children: ["📐 Raio da Borda: ", x ?? 12, "px"]
                                 }), l.jsx(oo, {
-                                    value: [x],
+                                    value: [x ?? 12],
                                     onValueChange: K => {
                                         v(K[0]), pe({
                                             card_border_radius: K[0]
@@ -70209,9 +70205,9 @@ function cIe() {
                             }), l.jsxs("div", {
                                 children: [l.jsxs(he, {
                                     className: "text-white mb-2 block",
-                                    children: ["📏 Altura da Linha: ", b.toFixed(1)]
+                                    children: ["📏 Altura da Linha: ", (b || 1.5).toFixed(1)]
                                 }), l.jsx(oo, {
-                                    value: [b],
+                                    value: [b ?? 1.5],
                                     onValueChange: K => {
                                         j(K[0]), pe({
                                             line_height: K[0]
@@ -70225,9 +70221,9 @@ function cIe() {
                             }), l.jsxs("div", {
                                 children: [l.jsxs(he, {
                                     className: "text-white mb-2 block",
-                                    children: ["🔠 Espaçamento de Letras: ", N, "px"]
+                                    children: ["🔠 Espaçamento de Letras: ", N ?? 0, "px"]
                                 }), l.jsx(oo, {
-                                    value: [N],
+                                    value: [N ?? 0],
                                     onValueChange: K => {
                                         k(K[0]), pe({
                                             letter_spacing: K[0]
@@ -70311,13 +70307,13 @@ function cIe() {
                                 children: [l.jsxs("div", {
                                     children: [l.jsxs(he, {
                                         className: "text-white mb-2 block",
-                                        children: ["⏱️ Tempo de Inatividade: ", Math.floor(U / 60), "min ", U % 60, "s"]
+                                        children: ["⏱️ Tempo de Inatividade: ", Math.floor((U ?? 300) / 60), "min ", (U ?? 300) % 60, "s"]
                                     }), l.jsx(oo, {
-                                        value: [U],
+                                        value: [U ?? 300],
                                         onValueChange: K => {
                                             D(K[0]), pe({
                                                 screensaver_timeout: K[0]
-                                            })
+                                             })
                                         },
                                         min: 10,
                                         max: 1800,
@@ -70327,9 +70323,9 @@ function cIe() {
                                 }), l.jsxs("div", {
                                     children: [l.jsxs(he, {
                                         className: "text-white mb-2 block",
-                                        children: ["🔊 Volume: ", H, "%"]
+                                        children: ["🔊 Volume: ", H ?? 50, "%"]
                                     }), l.jsx(oo, {
-                                        value: [H],
+                                        value: [H ?? 50],
                                         onValueChange: K => {
                                             V(K[0]), pe({
                                                 music_volume: K[0]
@@ -70343,9 +70339,9 @@ function cIe() {
                                 }), l.jsxs("div", {
                                     children: [l.jsxs(he, {
                                         className: "text-white mb-2 block",
-                                        children: ["💡 Brilho: ", X, "%"]
+                                        children: ["💡 Brilho: ", X ?? 100, "%"]
                                     }), l.jsx(oo, {
-                                        value: [X],
+                                        value: [X ?? 100],
                                         onValueChange: K => {
                                             L(K[0]), pe({
                                                 screensaver_brightness: K[0]
@@ -72620,7 +72616,7 @@ function bIe() {
             queryKey: ["settings"],
             queryFn: () => se.entities.Settings.list()
         }),
-        activeSettings = cc[0] || {},
+        activeSettings = (cc && cc[0]) || {},
         currentTheme = activeSettings.tema || "dark",
         [n, r] = C.useState(null),
         [a, i] = C.useState(!0),
@@ -73949,7 +73945,17 @@ function wIe() {
     } = Ve({
         queryKey: ["savings"],
         queryFn: () => se.entities.Savings.list()
-    }), t = c => {
+    }), {
+        data: scheduledList = []
+    } = Ve({
+        queryKey: ["scheduledDeposits"],
+        queryFn: () => se.entities.ScheduledDeposit.list()
+    }), todayStr = new Date().toISOString().split("T")[0],
+    getInvestedValueAsOf = (c, dateStr) => {
+        const val = c.valor_investido || 0;
+        const extras = scheduledList.filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia <= dateStr);
+        return val + extras.reduce((sum, sd) => sum + sd.valor, 0);
+    }, t = c => {
         const d = new Date(2025, 11, 1),
             f = new Date < d ? d : new Date,
             p = $8(f, new Date(c.data_inicio)),
@@ -73957,10 +73963,17 @@ function wIe() {
         let g = c.valor_investido;
         const w = c.taxa_rendimento / 100;
         let x = 0;
+        const extraDeposits = scheduledList.filter(sd => sd.investimento_id === c.id && !sd.efetivado);
         for (let v = 0; v <= Math.min(p + 12, 36); v++) {
-            const b = Ry(new Date(c.data_inicio), v),
-                N = g * w - (c.retirada_mensal || 0);
-            g = g + N + (c.aporte_mensal || 0), x = x + N, m.push({
+            const b = Ry(new Date(c.data_inicio), v);
+            const yearMonthOfB = tt(b, "yyyy-MM");
+            const N = g * w - (c.retirada_mensal || 0);
+            const extraInMonth = extraDeposits
+                .filter(sd => sd.mes_referencia && sd.mes_referencia.startsWith(yearMonthOfB))
+                .reduce((sum, sd) => sum + sd.valor, 0);
+            g = g + N + (c.aporte_mensal || 0) + extraInMonth;
+            x = x + N;
+            m.push({
                 mes: tt(b, "MMM/yy", {
                     locale: bn
                 }),
@@ -73969,7 +73982,7 @@ function wIe() {
             })
         }
         return m
-    }, n = e.reduce((c, d) => c + (d.valor_investido || 0), 0), r = e.reduce((c, d) => c + (d.aporte_mensal || 0), 0), a = e.reduce((c, d) => c + d.valor_investido * d.taxa_rendimento / 100, 0), i = e.reduce((c, d) => c + (d.retirada_mensal || 0), 0), o = a - i, s = {
+    }, n = e.reduce((c, d) => c + getInvestedValueAsOf(d, todayStr), 0), r = e.reduce((c, d) => c + (d.aporte_mensal || 0), 0), a = e.reduce((c, d) => c + getInvestedValueAsOf(d, todayStr) * d.taxa_rendimento / 100, 0), i = e.reduce((c, d) => c + (d.retirada_mensal || 0), 0), o = a - i, s = {
         cdb: "CDB",
         poupanca: "Poupança",
         tesouro_direto: "Tesouro Direto",
@@ -73978,23 +73991,26 @@ function wIe() {
         outros: "Outros"
     };
     return l.jsx("div", {
-        className: "min-h-screen bg-[#121212] p-4 md:p-8",
+        className: "min-h-screen p-4 md:p-8 transition-colors duration-300 ",
         children: l.jsxs("div", {
             className: "max-w-7xl mx-auto space-y-8",
             children: [l.jsxs("div", {
-                children: [l.jsx("h1", {
-                    className: "text-3xl font-bold text-white mb-2",
-                    children: "Meus Investimentos"
-                }), l.jsx("p", {
-                    className: "text-gray-400",
-                    children: "Acompanhe a evolução do seu patrimônio"
+                className: "flex justify-between items-center",
+                children: [l.jsxs("div", {
+                    children: [l.jsx("h1", {
+                        className: "text-3xl font-bold text-white mb-2",
+                        children: "📈 Meus Investimentos"
+                    }), l.jsx("p", {
+                        className: "text-gray-400",
+                        children: "Acompanhe e simule a evolução da sua carteira"
+                    })]
                 })]
             }), l.jsxs("div", {
                 className: "grid grid-cols-1 md:grid-cols-4 gap-6",
                 children: [l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
                     children: l.jsxs("div", {
-                        className: "flex items-center gap-3 mb-4",
+                        className: "flex items-center gap-3",
                         children: [l.jsx("div", {
                             className: "w-12 h-12 bg-purple-500/20 rounded-lg flex items-center justify-center",
                             children: l.jsx(Vu, {
@@ -74013,9 +74029,9 @@ function wIe() {
                         })]
                     })
                 }), l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
                     children: l.jsxs("div", {
-                        className: "flex items-center gap-3 mb-4",
+                        className: "flex items-center gap-3",
                         children: [l.jsx("div", {
                             className: "w-12 h-12 bg-blue-500/20 rounded-lg flex items-center justify-center",
                             children: l.jsx(Oh, {
@@ -74034,9 +74050,9 @@ function wIe() {
                         })]
                     })
                 }), l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
                     children: l.jsxs("div", {
-                        className: "flex items-center gap-3 mb-4",
+                        className: "flex items-center gap-3",
                         children: [l.jsx("div", {
                             className: "w-12 h-12 bg-green-500/20 rounded-lg flex items-center justify-center",
                             children: l.jsx(En, {
@@ -74055,9 +74071,9 @@ function wIe() {
                         })]
                     })
                 }), l.jsx(Oe, {
-                    className: "bg-transparent border-black p-6",
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
                     children: l.jsxs("div", {
-                        className: "flex items-center gap-3 mb-4",
+                        className: "flex items-center gap-3",
                         children: [l.jsx("div", {
                             className: "w-12 h-12 bg-orange-500/20 rounded-lg flex items-center justify-center",
                             children: l.jsx(Co, {
@@ -74078,10 +74094,10 @@ function wIe() {
                 })]
             }), e.map(c => {
                 const d = t(c),
-                    f = c.valor_investido * c.taxa_rendimento / 100,
+                    f = getInvestedValueAsOf(c, todayStr) * c.taxa_rendimento / 100,
                     p = f - (c.retirada_mensal || 0);
                 return l.jsxs(Oe, {
-                    className: "bg-transparent border-black p-6",
+                    className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
                     children: [l.jsxs("div", {
                         className: "mb-6",
                         children: [l.jsxs("div", {
@@ -74101,7 +74117,7 @@ function wIe() {
                                     children: "Valor Atual"
                                 }), l.jsxs("p", {
                                     className: "text-2xl font-bold text-white",
-                                    children: ["R$ ", c.valor_investido.toLocaleString("pt-BR", {
+                                    children: ["R$ ", getInvestedValueAsOf(c, todayStr).toLocaleString("pt-BR", {
                                         minimumFractionDigits: 2
                                     })]
                                 })]
@@ -74253,7 +74269,7 @@ function wIe() {
                     })]
                 }, c.id)
             }), e.length === 0 && l.jsx(Oe, {
-                className: "bg-transparent border-black p-12",
+                className: "bg-[#1a1a1a] border-[#2a2a2a] p-12",
                 children: l.jsxs("div", {
                     className: "text-center text-gray-500",
                     children: [l.jsx(Vu, {
@@ -75470,7 +75486,7 @@ function CIe() {
     } = Ve({
         queryKey: ["settings"],
         queryFn: () => se.entities.Settings.list()
-    }), activeSettings = cc[0] || {}, currentTheme = activeSettings.tema || "dark", isDark = !["light", "material3_light"].includes(currentTheme), t = e.reduce((p, m) => p + m.valor_investido, 0), n = e.reduce((p, m) => p + m.valor_investido * m.taxa_rendimento / 100, 0), r = e.reduce((p, m) => p + (m.retirada_mensal || 0), 0), a = e.reduce((p, m) => p + (m.aporte_mensal || 0), 0), i = n - r + a, s = ((p = 48) => {
+    }), activeSettings = (cc && cc[0]) || {}, currentTheme = activeSettings.tema || "dark", isDark = !["light", "material3_light"].includes(currentTheme), t = e.reduce((p, m) => p + m.valor_investido, 0), n = e.reduce((p, m) => p + m.valor_investido * m.taxa_rendimento / 100, 0), r = e.reduce((p, m) => p + (m.retirada_mensal || 0), 0), a = e.reduce((p, m) => p + (m.aporte_mensal || 0), 0), i = n - r + a, s = ((p = 48) => {
         const m = [],
             g = new Date(2025, 11, 1),
             w = new Date < g ? g : new Date;
@@ -78910,7 +78926,7 @@ function D$e() {
     C.useEffect(() => {
         const m = () => {
             se.entities.Settings.list().then(g => {
-                g.length > 0 && g[0].tema && i(g[0].tema)
+                g && g.length > 0 && g[0] && g[0].tema && i(g[0].tema)
             }).catch(() => {})
         };
         return m(), window.addEventListener("financeai_settings_changed", m), () => window.removeEventListener("financeai_settings_changed", m)
@@ -79553,7 +79569,7 @@ function z$e({
     const x = Y.useCallback(async () => {
         try {
             const v = await se.entities.Settings.list();
-            v.length > 0 ? o(v[0]) : g && o({
+            v && v.length > 0 && v[0] ? o(v[0]) : g && o({
                 tema: "dark"
             })
         } catch (v) {
