@@ -57338,7 +57338,7 @@ function hOe() {
                     className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl",
                     children: [l.jsx(jr, {
                         children: l.jsxs(Nr, {
-                            children: [n ? "✏️ Editar" : "📝 Nova", " Anotação"]
+                            children: n ? "✏️ Editar Anotação" : "📝 Nova Anotação"
                         })
                     }), l.jsxs("form", {
                         onSubmit: m,
@@ -59188,7 +59188,7 @@ function YOe() {
                         className: "bg-[#1a1a1a] border-[#2a2a2a] text-white",
                         children: [l.jsx(jr, {
                             children: l.jsxs(Nr, {
-                                children: [n ? "✏️ Editar" : "🏦 Novo", " Banco"]
+                                children: n ? "✏️ Editar Banco" : "🏦 Novo Banco"
                             })
                         }), l.jsxs("form", {
                             onSubmit: Je,
@@ -59479,7 +59479,7 @@ function YOe() {
                         className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto",
                         children: [l.jsx(jr, {
                             children: l.jsxs(Nr, {
-                                children: [f ? "✏️ Editar" : "💳 Novo", " Cartão de Crédito"]
+                                children: f ? "✏️ Editar Cartão de Crédito" : "💳 Novo Cartão de Crédito"
                             })
                         }), l.jsxs("form", {
                             onSubmit: Fa,
@@ -71560,7 +71560,7 @@ function vIe() {
                     className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto",
                     children: [l.jsx(jr, {
                         children: l.jsxs(Nr, {
-                            children: [n ? "Editar" : "Nova", " Dívida"]
+                            children: n ? "Editar Dívida" : "Nova Dívida"
                         })
                     }), l.jsxs("form", {
                         onSubmit: g,
@@ -74432,7 +74432,7 @@ function wIe() {
                     className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto",
                     children: [l.jsx(jr, {
                         children: l.jsxs(Nr, {
-                            children: [editingSavings ? "✏️ Editar" : "📈 Novo", " Investimento"]
+                            children: editingSavings ? "✏️ Editar Investimento" : "📈 Novo Investimento"
                         })
                     }), l.jsxs("form", {
                         onSubmit: handleSavingsSubmit,
@@ -75275,7 +75275,7 @@ function _Ie() {
                     className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-w-2xl max-h-[90vh] overflow-y-auto",
                     children: [l.jsx(jr, {
                         children: l.jsxs(Nr, {
-                            children: [n ? "Editar" : "Novo", " Objetivo"]
+                            children: n ? "Editar Objetivo" : "Novo Objetivo"
                         })
                     }), l.jsxs("form", {
                         onSubmit: g,
@@ -76977,7 +76977,7 @@ function $Ie() {
                         className: "bg-[#1a1a1a] border-[#2a2a2a] text-white max-h-[90vh] overflow-y-auto",
                         children: [l.jsx(jr, {
                             children: l.jsxs(Nr, {
-                                children: [n ? "✏️ Editar" : "➕ Nova", " Receita"]
+                                children: n ? "✏️ Editar Receita" : "➕ Nova Receita"
                             })
                         }), l.jsxs("form", {
                             onSubmit: k,
