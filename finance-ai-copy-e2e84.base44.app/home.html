@@ -24,6 +24,14 @@
     <script crossorigin="" src="/assets/index-FEIbSwsj_v2.js" type="module">
     </script>
     <link crossorigin="" href="/assets/index-DLTekrBc_v2.css" rel="stylesheet" />
+    <style>
+        .force-center {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+        }
+    </style>
     <meta content="https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png/v1/fill/w_1200,h_630/06ccad4d7_IMG_2980.png" property="og:image" />
     <meta content="https://finance-ai-copy-e2e84.base44.app" property="og:url" />
     <meta content="website" property="og:type" />
@@ -163,7 +171,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch(() => {});
+                navigator.serviceWorker.register('/sw.js?v=2').catch(() => {});
             });
         }
     </script>
