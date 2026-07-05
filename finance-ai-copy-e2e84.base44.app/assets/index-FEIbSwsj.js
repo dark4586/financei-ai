@@ -80557,10 +80557,10 @@ function z$e({
                   }
 
                   /* ---- HARDWARE ACCELERATION & ANTIALIASING FOR LIQUID GLASS ---- */
-                  .bg-\\[\\#1a1a1a\\],
-                  .bg-\\[\\#2a2a2a\\],
-                  [class*="bg-\\[\\#1a1a1a\\]"],
-                  [class*="bg-\\[\\#2a2a2a\\]"],
+                  .bg-\\[\\#1a1a1a\\]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]),
+                  .bg-\\[\\#2a2a2a\\]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]),
+                  [class*="bg-\\[\\#1a1a1a\\]"]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]),
+                  [class*="bg-\\[\\#2a2a2a\\]"]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]),
                   .ios-top-bar,
                   .ios-bottom-bar,
                   nav[role="tablist"],
@@ -80573,8 +80573,8 @@ function z$e({
                   }
 
                   /* ---- GLASS CARD BASE ---- */
-                  .bg-\\[\\#1a1a1a\\],
-                  .bg-transparent[class*="border"] {
+                  .bg-\\[\\#1a1a1a\\]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]),
+                  .bg-transparent[class*="border"]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]) {
                     background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(15, 15, 25, 0.44)":"rgba(15, 15, 25, 0.12)"} !important;
                     backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"4px"}) saturate(190%) !important;
                     -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"20px":"4px"}) saturate(190%) !important;
@@ -80583,7 +80583,7 @@ function z$e({
                   }
 
                   /* ---- GLASS INNER CARD (nested) ---- */
-                  .bg-\\[\\#2a2a2a\\] {
+                  .bg-\\[\\#2a2a2a\\]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]) {
                     background: rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.03":"0.01"}) !important;
                     backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"10px":"2px"}) saturate(180%) !important;
                     -webkit-backdrop-filter: blur(${(i==null?void 0:i.liquid_glass_style)==="frosted"?"10px":"2px"}) saturate(180%) !important;
@@ -80592,11 +80592,11 @@ function z$e({
 
                   /* ---- HOVER (desktop) ---- */
                   @media (hover: hover) {
-                    .bg-\\[\\#1a1a1a\\]:hover {
+                    .bg-\\[\\#1a1a1a\\]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]):hover {
                       background: ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"rgba(15, 15, 25, 0.50)":"rgba(15, 15, 25, 0.16)"} !important;
                       border-color: rgba(255, 255, 255, 0.18) !important;
                     }
-                    .bg-\\[\\#2a2a2a\\]:hover {
+                    .bg-\\[\\#2a2a2a\\]:not([role="dialog"]):not([data-radix-dialog-content]):not([data-radix-alert-dialog-content]):hover {
                       background: rgba(255, 255, 255, ${(i==null?void 0:i.liquid_glass_style)==="frosted"?"0.05":"0.02"}) !important;
                     }
                   }
