@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financeai-v2';
+const CACHE_NAME = 'financeai-v3';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();
@@ -22,7 +22,9 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     // Só intercepta GET do mesmo origin
     if (event.request.method !== 'GET') return;
-    if (!event.request.url.startsWith(self.location.origin)) return;
+    const isSameOrigin = event.request.url.startsWith(self.location.origin);
+    const isMediaDomain = event.request.url.includes('media.base44.com');
+    if (!isSameOrigin && !isMediaDomain) return;
 
     event.respondWith(
         fetch(event.request)

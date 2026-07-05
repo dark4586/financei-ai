@@ -72640,7 +72640,7 @@ function bIe() {
     C.useEffect(() => {
         const K = () => {
             try {
-                const J = JSON.parse(localStorage.getItem("financeai_profile")) || {};
+                const J = f6();
                 r({
                     nome: J.nome || "Lord",
                     foto_perfil: J.foto_perfil || ""
@@ -75557,9 +75557,12 @@ function PG() {
 }
 
 function jIe(e) {
-    localStorage.setItem(AG, JSON.stringify({ ...PG(),
-        ...e
-    }))
+    const merged = { ...PG(), ...e };
+    let finalProfile = { ...merged };
+    if (finalProfile.foto_perfil && finalProfile.foto_perfil.startsWith("data:image/")) {
+        finalProfile.foto_perfil = "[avatar_indexeddb]";
+    }
+    localStorage.setItem(AG, JSON.stringify(finalProfile));
 }
 
 function NIe() {
@@ -75568,18 +75571,25 @@ function NIe() {
         nome: ""
     }), [o, s] = C.useState(null), [c, d] = C.useState(null), [f, p] = C.useState(!1);
     C.useEffect(() => {
-        const v = PG(),
-            b = v.nome || "Lord",
-            j = v.foto_perfil || "";
-        t({
-            nome: b,
-            foto_perfil: j,
-            role: "admin",
-            created_date: v.created_date || new Date().toISOString()
-        }), i({
-            nome: b,
-            foto_perfil: j
-        }), j && d(j)
+        const loadProfile = () => {
+            const v = PG(),
+                b = v.nome || "Lord",
+                j = v.foto_perfil || "";
+            t({
+                nome: b,
+                foto_perfil: j,
+                role: "admin",
+                created_date: v.created_date || new Date().toISOString()
+            });
+            i({
+                nome: b,
+                foto_perfil: j
+            });
+            if (j) d(j);
+        };
+        loadProfile();
+        window.addEventListener("financeai_profile_changed", loadProfile);
+        return () => window.removeEventListener("financeai_profile_changed", loadProfile);
     }, []);
     const m = v => {
             const b = v.target.files[0];
@@ -78234,7 +78244,8 @@ function E$e() {
 
 function f6() {
     try {
-        return JSON.parse(localStorage.getItem("financeai_profile")) || {}
+        const e = JSON.parse(localStorage.getItem("financeai_profile")) || {};
+        return window.__financeai_profile_avatar_base64 && (e.foto_perfil = window.__financeai_profile_avatar_base64), e
     } catch {
         return {}
     }
