@@ -55133,7 +55133,8 @@ const $Ae = new SQ({
     defaultOptions: {
         queries: {
             refetchOnWindowFocus: !1,
-            retry: 1
+            retry: 1,
+            staleTime: 60000
         }
     }
 });
