@@ -67759,7 +67759,7 @@ function o6(e) {
 
 function _4e(e, t, n, r, a, i, o, s) {
     const c = r.filter(p => p.status === "ativa").reduce((p, m) => p + m.valor_total, 0),
-        d = r.filter(p => p.status === "ativa").reduce((p, m) => p + m.valor_parcela, 0),
+        d = r.reduce((p, m) => p + getDebtInstallmentForMonth(m, tt(new Date(), "yyyy-MM")), 0),
         f = {
             dark: "Escuro",
             blue: "Azul",
@@ -67871,6 +67871,31 @@ function j4e(e) {
     }
 }
 
+function getDebtInstallmentForMonth(debt, targetMonthStr) {
+    if (!debt) return 0;
+    if (!debt.mes_referencia) {
+        return debt.status === "ativa" ? (debt.valor_parcela || debt.valor_total || 0) : 0;
+    }
+    const startYear = parseInt(debt.mes_referencia.substring(0, 4));
+    const startMonth = parseInt(debt.mes_referencia.substring(5, 7));
+    const targetYear = parseInt(targetMonthStr.substring(0, 4));
+    const targetMonth = parseInt(targetMonthStr.substring(5, 7));
+    if (isNaN(startYear) || isNaN(startMonth) || isNaN(targetYear) || isNaN(targetMonth)) {
+        return debt.status === "ativa" ? (debt.valor_parcela || debt.valor_total || 0) : 0;
+    }
+    const diff = (targetYear - startYear) * 12 + (targetMonth - startMonth);
+    const totalInstallments = debt.parcelas_total || 1;
+    if (diff >= 0 && diff < totalInstallments) {
+        return debt.valor_parcela || debt.valor_total || 0;
+    }
+    return 0;
+}
+
+function isDebtPaidInMonth(debt, targetMonthStr) {
+    if (!debt || !debt.ultimo_pagamento) return false;
+    return debt.ultimo_pagamento.substring(0, 7) === targetMonthStr;
+}
+
 function N4e() {
     const [e, t] = C.useState([]), [n, r] = C.useState(""), [a, i] = C.useState(!1), [o, s] = C.useState("chat"), [c, d] = C.useState(!1), [f, p] = C.useState([]), [m, g] = C.useState(null), [w, x] = C.useState(null), [v, b] = C.useState(!1), j = C.useRef(null), N = C.useRef(null), k = C.useRef(null), S = Ar(), {
         data: E = []
@@ -67927,7 +67952,7 @@ function N4e() {
             me = W.reduce((J, ve) => J + Wv(ve, B), 0),
             le = ie + be + me,
             pe = O.filter(J => J.ativa).reduce((J, ve) => J + (ve.valor || 0), 0),
-            ae = P.filter(J => J.status === "ativa").reduce((J, ve) => J + (ve.valor_parcela || 0), 0),
+            ae = P.reduce((J, ve) => J + getDebtInstallmentForMonth(ve, B), 0),
             ge = $.filter(J => J.status === "ativo").reduce((J, ve) => J + (ve.economia_mensal || 0), 0),
             Se = I.reduce((J, ve) => J + (ve.aporte_mensal || 0), 0),
             ce = F.filter(J => {
@@ -71288,7 +71313,8 @@ function vIe() {
         dia_vencimento: "",
         banco_id: "",
         banco_nome: "",
-        auto_pagar: !1
+        auto_pagar: !1,
+        mes_referencia: tt(new Date, "yyyy-MM-dd")
     }), o = Ar(), {
         data: s = []
     } = Ve({
@@ -71336,7 +71362,8 @@ function vIe() {
             dia_vencimento: "",
             banco_id: "",
             banco_nome: "",
-            auto_pagar: !1
+            auto_pagar: !1,
+            mes_referencia: tt(new Date, "yyyy-MM-dd")
         }), r(null)
     }, g = k => {
         k.preventDefault();
@@ -71369,7 +71396,8 @@ function vIe() {
             dia_vencimento: ((P = k.dia_vencimento) == null ? void 0 : P.toString()) || "",
             banco_id: k.banco_id || "",
             banco_nome: k.banco_nome || "",
-            auto_pagar: k.auto_pagar || !1
+            auto_pagar: k.auto_pagar || !1,
+            mes_referencia: k.mes_referencia || tt(new Date, "yyyy-MM-dd")
         }), t(!0)
     }, x = async k => {
         const S = c.find($ => $.id === k.banco_id);
@@ -71389,7 +71417,7 @@ function vIe() {
                 status: P ? "quitada" : "ativa"
             }
         })
-    }, v = s.filter(k => k.status === "ativa"), b = v.reduce((k, S) => k + (S.valor_total - S.valor_pago), 0), j = v.reduce((k, S) => k + S.valor_parcela, 0), N = {
+    }, v = s.filter(k => k.status === "ativa"), b = v.reduce((k, S) => k + (S.valor_total - S.valor_pago), 0), j = s.reduce((k, S) => k + getDebtInstallmentForMonth(S, new Date().toISOString().substring(0, 7)), 0), N = {
         cartao_credito: "Cartão de Crédito",
         emprestimo: "Empréstimo",
         financiamento: "Financiamento",
@@ -71733,6 +71761,20 @@ function vIe() {
                                 })]
                             }), l.jsxs("div", {
                                 children: [l.jsx(he, {
+                                    htmlFor: "mes_referencia",
+                                    children: "📆 Mês de Referência"
+                                }), l.jsx(Re, {
+                                    id: "mes_referencia",
+                                    type: "month",
+                                    value: a.mes_referencia ? a.mes_referencia.substring(0, 7) : "",
+                                    onChange: k => i({ ...a,
+                                        mes_referencia: k.target.value ? k.target.value + "-01" : ""
+                                    }),
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                    required: !0
+                                })]
+                            }), l.jsxs("div", {
+                                children: [l.jsx(he, {
                                     htmlFor: "banco_id",
                                     children: "🏦 Banco para Débito"
                                 }), l.jsxs(Pt, {
@@ -71877,7 +71919,7 @@ function xIe() {
                     return ge && Se && (ce === V || ae.recorrente)
                 }).reduce((ae, ge) => ae + ge.valor, 0),
                 L = d.filter(ae => ae.ativa).reduce((ae, ge) => ae + ge.valor, 0),
-                z = f.filter(ae => ae.status === "ativa").reduce((ae, ge) => ae + ge.valor_parcela, 0),
+                z = f.reduce((ae, ge) => ae + getDebtInstallmentForMonth(ge, V), 0),
                 G = p.filter(ae => {
                     const ge = ae.data_vencimento ? new Date(ae.data_vencimento) : null;
                     return ge ? tt(ge, "yyyy-MM") === V && (ae.valor_fatura_atual || 0) > 0 : !1
@@ -71933,7 +71975,7 @@ function xIe() {
                 }).reduce((pe, ae) => pe + ae.valor, 0),
                 V = 4.33,
                 X = d.filter(pe => pe.ativa).reduce((pe, ae) => pe + ae.valor, 0) / V,
-                L = f.filter(pe => pe.status === "ativa").reduce((pe, ae) => pe + ae.valor_parcela, 0) / V,
+                L = f.reduce((pe, ae) => pe + getDebtInstallmentForMonth(ae, tt(U, "yyyy-MM")), 0) / V,
                 z = 0,
                 G = m.filter(pe => pe.status === "ativo").reduce((pe, ae) => pe + (ae.economia_mensal || 0), 0) / V,
                 B = g.filter(pe => new Date(pe.data_inicio) <= D).reduce((pe, ae) => pe + (ae.aporte_mensal || 0), 0) / V,
@@ -72092,7 +72134,7 @@ function xIe() {
             R = c.filter(G => G.tipo !== "devedor").reduce((G, B) => G + (B.tipo === "salario_semanal" ? (B.valor || 0) * 4.33 : B.valor || 0), 0),
             F = g.reduce((G, B) => G + (B.retirada_mensal || 0), 0),
             W = d.filter(G => G.ativa).reduce((G, B) => G + B.valor, 0),
-            U = f.filter(G => G.status === "ativa").reduce((G, B) => G + B.valor_parcela, 0),
+            U = f.reduce((G, B) => G + getDebtInstallmentForMonth(B, new Date().toISOString().substring(0, 7)), 0),
             D = p.reduce((G, B) => G + (B.valor_fatura_atual || 0), 0),
             H = m.filter(G => G.status === "ativo").reduce((G, B) => G + (B.economia_mensal || 0), 0),
             V = g.reduce((G, B) => G + (B.aporte_mensal || 0), 0),
@@ -72717,7 +72759,7 @@ function bIe() {
     }).reduce((K, J) => {
         const ve = J.valor || 0;
         return K + ve
-    }, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente").reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa).reduce((K, J) => K + J.valor, 0), R = x.filter(K => K.status === "ativa").reduce((K, J) => K + J.valor_parcela, 0), F = N.filter(K => {
+    }, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente").reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.filter(K => {
         const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
             ve = J && J.getMonth() === new Date().getMonth() && J.getFullYear() === new Date().getFullYear();
         return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0
@@ -72784,7 +72826,7 @@ function bIe() {
                     return $e + St
                 }, 0),
                 Pr = w.filter($e => $e.ativa).reduce(($e, Je) => $e + Je.valor, 0),
-                at = x.filter($e => $e.status === "ativa").reduce(($e, Je) => $e + Je.valor_parcela, 0),
+                at = x.reduce(($e, Je) => $e + getDebtInstallmentForMonth(Je, zt), 0),
                 de = Pr + at + F + V + W,
                 Ce = k.reduce(($e, Je) => $e + Wv(Je, zt), 0);
             K.push({
@@ -72910,9 +72952,12 @@ function bIe() {
         const ve = J.categoria || "outros";
         return K[ve] = (K[ve] || 0) + J.valor, K
     }, {});
-    x.filter(K => K.status === "ativa").forEach(K => {
+    x.forEach(K => {
         const J = `divida_${K.nome}`;
-        pe[J] = (pe[J] || 0) + K.valor_parcela
+        const val = getDebtInstallmentForMonth(K, S);
+        if (val > 0) {
+            pe[J] = (pe[J] || 0) + val;
+        }
     }), N.filter(K => {
         const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
             ve = J && J.getMonth() === new Date().getMonth() && J.getFullYear() === new Date().getFullYear();
@@ -78323,7 +78368,7 @@ function A$e({
     }).reduce((L, z) => {
         const G = z.valor || 0;
         return L + G
-    }, 0), b = p.reduce((L, z) => L + (z.retirada_mensal || 0), 0), j = w.reduce((L, z) => L + Wv(z, x), 0), N = v + b + j, k = d.filter(L => L.ativa).reduce((L, z) => L + (z.valor || 0), 0), S = f.filter(L => L.status === "ativa").reduce((L, z) => L + (z.valor_parcela || 0), 0), E = p.reduce((L, z) => L + (z.valor_investido || 0), 0), O = m.filter(L => {
+    }, 0), b = p.reduce((L, z) => L + (z.retirada_mensal || 0), 0), j = w.reduce((L, z) => L + Wv(z, x), 0), N = v + b + j, k = d.filter(L => L.ativa).reduce((L, z) => L + (z.valor || 0), 0), S = f.reduce((L, z) => L + getDebtInstallmentForMonth(z, x), 0), E = p.reduce((L, z) => L + (z.valor_investido || 0), 0), O = m.filter(L => {
         const z = L.data_vencimento ? new Date(L.data_vencimento) : null,
             G = z && z.getMonth() === new Date().getMonth() && z.getFullYear() === new Date().getFullYear();
         return (L.status === "aberta" || G) && (L.valor_fatura_atual || 0) > 0
