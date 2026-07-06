@@ -79642,15 +79642,45 @@ function $$e({
                         background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
                         animation: "icon-glow 2.8s ease-in-out infinite"
                     }
-                }), l.jsx("span", {
+                }), l.jsxs("svg", {
+                    viewBox: "0 0 24 24",
+                    fill: "none",
+                    stroke: "url(#logoGrad)",
+                    strokeWidth: 1.8,
+                    strokeLinecap: "round",
+                    strokeLinejoin: "round",
                     style: {
                         position: "relative",
-                        fontSize: 52,
-                        lineHeight: 1,
-                        animation: "emoji-bounce 2.6s ease-in-out 0.5s infinite",
-                        display: "block"
+                        width: 56,
+                        height: 56,
+                        filter: "drop-shadow(0 0 12px rgba(165,180,252,0.5))",
+                        animation: "emoji-bounce 2.6s ease-in-out 0.5s infinite"
                     },
-                    children: "💰"
+                    children: [l.jsx("defs", {
+                        children: l.jsxs("linearGradient", {
+                            id: "logoGrad",
+                            x1: "0%",
+                            y1: "0%",
+                            x2: "100%",
+                            y2: "100%",
+                            children: [l.jsx("stop", {
+                                offset: "0%",
+                                stopColor: "#ffffff"
+                            }), l.jsx("stop", {
+                                offset: "100%",
+                                stopColor: "#a5b4fc"
+                            })]
+                        })
+                    }), l.jsx("circle", {
+                        cx: "12",
+                        cy: "12",
+                        r: "10",
+                        fill: "rgba(255,255,255,0.03)"
+                    }), l.jsx("path", {
+                        d: "M12 6v12"
+                    }), l.jsx("path", {
+                        d: "M15 9.5H11.5a2.5 2.5 0 0 0 0 5H13a2.5 2.5 0 0 1 0 5H9.5"
+                    })]
                 })]
             }), l.jsxs("div", {
                 style: {
