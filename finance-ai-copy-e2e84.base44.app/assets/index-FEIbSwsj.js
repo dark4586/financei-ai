@@ -54176,8 +54176,16 @@ const bAe = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
 function _Ae({
     routines: e
 }) {
-    const { theme: H } = T7();
-    const isDark = H === "dark";
+    const {
+        data: cc = []
+    } = Ve({
+        queryKey: ["settings"],
+        queryFn: () => se.entities.Settings.list(),
+        staleTime: 3e4
+    });
+    const activeSettings = (cc && cc[0]) || {};
+    const currentTheme = activeSettings.tema || "dark";
+    const isDark = ["dark", "liquid_glass", "material3_dark"].includes(currentTheme);
     const Ie = {
         background: isDark ? "#1a1a1a" : "#fff",
         border: isDark ? "1px solid #2a2a2a" : "1px solid #e5e7eb",
@@ -67759,8 +67767,9 @@ function o6(e) {
 }
 
 function _4e(e, t, n, r, a, i, o, s) {
+    const selectedMonthForLuna = localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM");
     const c = r.filter(p => p.status === "ativa").reduce((p, m) => p + m.valor_total, 0),
-        d = r.reduce((p, m) => p + getDebtInstallmentForMonth(m, tt(new Date(), "yyyy-MM")), 0),
+        d = r.reduce((p, m) => p + getDebtInstallmentForMonth(m, selectedMonthForLuna), 0),
         f = {
             dark: "Escuro",
             blue: "Azul",
@@ -67798,11 +67807,11 @@ ${t.map(p=>{var m;return`- [ID:${p.id}] ${p.descricao}: R$ ${(m=p.valor)==null?v
     `)||"Nenhuma"}
 
 ## DESPESAS
-${n.filter(p=>p.ativa).map(p=>{var m;return`- [ID:${p.id}] ${p.nome}: R$ ${(m=p.valor)==null?void 0:m.toFixed(2)} (${p.categoria}, ${p.status==="pago"?"PAGO":"PENDENTE"})`}).join(`
+${n.filter(p=>p.ativa && (!p.mes_referencia || p.mes_referencia.includes(selectedMonthForLuna))).map(p=>{var m;return`- [ID:${p.id}] ${p.nome}: R$ ${(m=p.valor)==null?void 0:m.toFixed(2)} (${p.categoria}, ${isFixedExpensePaidInMonth(p, selectedMonthForLuna)?"PAGO":"PENDENTE"})`}).join(`
     `)||"Nenhuma"}
 
 ## DÍVIDAS
-${r.filter(p=>p.status==="ativa").map(p=>{var m;return`- [ID:${p.id}] ${p.nome}: R$ ${(m=p.valor_parcela)==null?void 0:m.toFixed(2)}/mês, ${p.parcelas_pagas}/${p.parcelas_total} parcelas`}).join(`
+${r.filter(p=>p.status==="ativa").map(p=>{var m;return`- [ID:${p.id}] ${p.nome}: R$ ${(m=p.valor_parcela)==null?void 0:m.toFixed(2)}/mês, ${p.parcelas_pagas}/${p.parcelas_total} parcelas (${isDebtPaidInMonth(p, selectedMonthForLuna)?"PAGO":"PENDENTE"})`}).join(`
     `)||"Nenhuma"}
 
 ## INVESTIMENTOS
@@ -67874,19 +67883,23 @@ function j4e(e) {
 
 function getDebtInstallmentForMonth(debt, targetMonthStr) {
     if (!debt) return 0;
+    const wasPaidInMonth = isDebtPaidInMonth(debt, targetMonthStr);
     if (!debt.mes_referencia) {
-        return debt.status === "ativa" ? (debt.valor_parcela || debt.valor_total || 0) : 0;
+        return (debt.status === "ativa" || wasPaidInMonth) ? (debt.valor_parcela || debt.valor_total || 0) : 0;
     }
     const startYear = parseInt(debt.mes_referencia.substring(0, 4));
     const startMonth = parseInt(debt.mes_referencia.substring(5, 7));
     const targetYear = parseInt(targetMonthStr.substring(0, 4));
     const targetMonth = parseInt(targetMonthStr.substring(5, 7));
     if (isNaN(startYear) || isNaN(startMonth) || isNaN(targetYear) || isNaN(targetMonth)) {
-        return debt.status === "ativa" ? (debt.valor_parcela || debt.valor_total || 0) : 0;
+        return (debt.status === "ativa" || wasPaidInMonth) ? (debt.valor_parcela || debt.valor_total || 0) : 0;
     }
     const diff = (targetYear - startYear) * 12 + (targetMonth - startMonth);
     const totalInstallments = debt.parcelas_total || 1;
     if (diff >= 0 && diff < totalInstallments) {
+        return debt.valor_parcela || debt.valor_total || 0;
+    }
+    if (wasPaidInMonth) {
         return debt.valor_parcela || debt.valor_total || 0;
     }
     return 0;
@@ -67894,7 +67907,42 @@ function getDebtInstallmentForMonth(debt, targetMonthStr) {
 
 function isDebtPaidInMonth(debt, targetMonthStr) {
     if (!debt || !debt.ultimo_pagamento) return false;
-    return debt.ultimo_pagamento.substring(0, 7) === targetMonthStr;
+    const up = debt.ultimo_pagamento;
+    if (typeof up === "string") {
+        return up.substring(0, 7) === targetMonthStr;
+    }
+    if (up instanceof Date) {
+        const year = up.getFullYear();
+        const month = String(up.getMonth() + 1).padStart(2, '0');
+        return `${year}-${month}` === targetMonthStr;
+    }
+    if (typeof up === "number") {
+        const d = new Date(up);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        return `${year}-${month}` === targetMonthStr;
+    }
+    return false;
+}
+
+function isFixedExpensePaidInMonth(expense, targetMonthStr) {
+    if (!expense || !expense.ultimo_pagamento) return false;
+    const up = expense.ultimo_pagamento;
+    if (typeof up === "string") {
+        return up.substring(0, 7) === targetMonthStr;
+    }
+    if (up instanceof Date) {
+        const year = up.getFullYear();
+        const month = String(up.getMonth() + 1).padStart(2, '0');
+        return `${year}-${month}` === targetMonthStr;
+    }
+    if (typeof up === "number") {
+        const d = new Date(up);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        return `${year}-${month}` === targetMonthStr;
+    }
+    return false;
 }
 
 function N4e() {
@@ -67943,8 +67991,11 @@ function N4e() {
     } = Ve({
         queryKey: ["loans"],
         queryFn: () => se.entities.Loan.list()
-    }), U = (R && R[0]) || null, D = C.useCallback(() => {
-        const B = new Date().toISOString().substring(0, 7),
+    }), U = (R && R[0]) || null,
+    [selectedMonth, setSelectedMonth] = C.useState(() => localStorage.getItem("financeai_selected_month") || new Date().toISOString().substring(0, 7)),
+    D = C.useCallback(() => {
+        const B = selectedMonth,
+            [targetYear, targetMonth] = B.split("-").map(Number),
             ie = E.filter(J => {
                 var ve;
                 return J.tipo !== "devedor" && (J.recorrente || J.tipo === "salario_semanal" || ((ve = J.mes_referencia) == null ? void 0 : ve.includes(B)))
@@ -67952,13 +68003,13 @@ function N4e() {
             be = I.reduce((J, ve) => J + (ve.retirada_mensal || 0), 0),
             me = W.reduce((J, ve) => J + Wv(ve, B), 0),
             le = ie + be + me,
-            pe = O.filter(J => J.ativa).reduce((J, ve) => J + (ve.valor || 0), 0),
+            pe = O.filter(J => J.ativa && (!J.mes_referencia || J.mes_referencia.includes(B))).reduce((J, ve) => J + (ve.valor || 0), 0),
             ae = P.reduce((J, ve) => J + getDebtInstallmentForMonth(ve, B), 0),
             ge = $.filter(J => J.status === "ativo").reduce((J, ve) => J + (ve.economia_mensal || 0), 0),
             Se = I.reduce((J, ve) => J + (ve.aporte_mensal || 0), 0),
             ce = F.filter(J => {
                 const ve = J.data_vencimento ? new Date(J.data_vencimento) : null,
-                    et = ve && ve.getMonth() === new Date().getMonth() && ve.getFullYear() === new Date().getFullYear();
+                    et = ve && (ve.getMonth() + 1) === targetMonth && ve.getFullYear() === targetYear;
                 return (J.status === "aberta" || et) && (J.valor_fatura_atual || 0) > 0
             }).reduce((J, ve) => J + (ve.valor_fatura_atual || 0), 0),
             qe = pe + ae + ge + Se + ce,
@@ -67984,10 +68035,17 @@ function N4e() {
             metasAtivas: $.filter(J => J.status === "ativo").length,
             dividasAtivas: P.filter(J => J.status === "ativa").length
         }
-    }, [E, O, P, $, I, F, W]);
+    }, [E, O, P, $, I, F, W, selectedMonth]);
+    C.useEffect(() => {
+        const handleMonthChange = () => {
+            setSelectedMonth(localStorage.getItem("financeai_selected_month") || new Date().toISOString().substring(0, 7));
+        };
+        window.addEventListener("financeai_month_changed", handleMonthChange);
+        return () => window.removeEventListener("financeai_month_changed", handleMonthChange);
+    }, []);
     C.useEffect(() => {
         E.length + O.length + P.length > 0 && p(o6(D()))
-    }, [E, O, P, $, I]), C.useEffect(() => {
+    }, [E, O, P, $, I, selectedMonth]), C.useEffect(() => {
         if (e.length === 0 && !sessionStorage.getItem("luna_welcomed_v2")) {
             sessionStorage.setItem("luna_welcomed_v2", "1");
             const B = D(),
@@ -68004,6 +68062,31 @@ Além de análises e conselhos, posso **executar ações diretamente no app** �
             }])
         }
     }, []), C.useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("insight") === "true") {
+            if (!sessionStorage.getItem("luna_insight_appended")) {
+                sessionStorage.setItem("luna_insight_appended", "1");
+                const B = D();
+                const diff = B.saldoMensal;
+                let insightMsg = `Olá! Vi que você clicou no meu insight diário. 🤖
+
+Analisei seus números agora mesmo:
+- **Receita Mensal:** R$ ${B.receitaMensal.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+- **Despesas e Dívidas:** R$ ${B.despesasMensais.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+- **Saldo Disponível:** R$ ${diff.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+
+${diff < 0 
+  ? "🚨 **Alerta de Orçamento:** Você está com déficit este mês. Sugiro revisar suas despesas fixas e tentar cortar gastos supérfluos imediatamente." 
+  : "💡 **Dica de Investimento:** Seu saldo está positivo! Que tal destinar uma parte desse valor sobressalente para suas metas ativas?"}
+
+Deseja que eu te dê mais conselhos ou simule um plano de economia?`;
+                t(le => [...le, {
+                    role: "assistant",
+                    content: insightMsg
+                }]);
+            }
+        }
+    }, [D]), C.useEffect(() => {
         var B;
         (B = j.current) == null || B.scrollIntoView({
             behavior: "smooth"
@@ -70664,7 +70747,8 @@ function uIe() {
         status: "pendente",
         banco_id: "",
         banco_nome: "",
-        auto_pagar: !1
+        auto_pagar: !1,
+        mes_referencia: ""
     }), o = Ar(), {
         data: s = []
     } = Ve({
@@ -70723,7 +70807,8 @@ function uIe() {
             status: "pendente",
             banco_id: "",
             banco_nome: "",
-            auto_pagar: !1
+            auto_pagar: !1,
+            mes_referencia: ""
         }), r(null)
     }, g = S => {
         S.preventDefault();
@@ -70748,7 +70833,8 @@ function uIe() {
             status: S.status || "pendente",
             banco_id: S.banco_id || "",
             banco_nome: S.banco_nome || "",
-            auto_pagar: S.auto_pagar || !1
+            auto_pagar: S.auto_pagar || !1,
+            mes_referencia: S.mes_referencia || ""
         }), t(!0)
     }, x = async S => {
         const E = new Date;
@@ -70769,8 +70855,9 @@ function uIe() {
         })
     }, v = s.filter(S => S.ativa).reduce((S, E) => S + (E.valor || 0), 0);
     s.filter(S => S.ativa).length;
-    const b = s.filter(S => S.status === "pago").length,
-        j = s.filter(S => S.status === "pendente" && S.ativa).length,
+    const currentMonthStr = tt(new Date(), "yyyy-MM");
+    const b = s.filter(S => isFixedExpensePaidInMonth(S, currentMonthStr)).length,
+        j = s.filter(S => !isFixedExpensePaidInMonth(S, currentMonthStr) && S.ativa).length,
         N = {
             aluguel: "Aluguel",
             condominio: "Condomínio",
@@ -70947,10 +71034,10 @@ function uIe() {
                                         children: [l.jsx("span", {
                                             className: "text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded",
                                             children: N[S.categoria] || "Categoria"
-                                        }), S.status === "pago" && l.jsx("span", {
+                                        }), isFixedExpensePaidInMonth(S, tt(new Date(), "yyyy-MM")) && l.jsx("span", {
                                             className: "text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded",
                                             children: "✅ Pago"
-                                        }), S.status === "pendente" && S.ativa && l.jsx("span", {
+                                        }), !isFixedExpensePaidInMonth(S, tt(new Date(), "yyyy-MM")) && S.ativa && l.jsx("span", {
                                             className: "text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded",
                                             children: "⏳ Pendente"
                                         }), !S.ativa && l.jsx("span", {
@@ -70964,7 +71051,7 @@ function uIe() {
                                             children: ["R$ ", S.valor.toLocaleString("pt-BR", {
                                                 minimumFractionDigits: 2
                                             })]
-                                        }), S.status === "pendente" && S.ativa && l.jsxs(xe, {
+                                        }), !isFixedExpensePaidInMonth(S, tt(new Date(), "yyyy-MM")) && S.ativa && l.jsxs(xe, {
                                             variant: "ghost",
                                             size: "sm",
                                             onClick: () => x(S),
@@ -71118,6 +71205,19 @@ function uIe() {
                                     }),
                                     className: "bg-[#2a2a2a] border-[#404040] text-white",
                                     required: !0
+                                })]
+                            }), l.jsxs("div", {
+                                children: [l.jsx(he, {
+                                    htmlFor: "mes_referencia",
+                                    children: "📆 Mês de Referência (Opcional)"
+                                }), l.jsx(Re, {
+                                    id: "mes_referencia",
+                                    type: "month",
+                                    value: a.mes_referencia ? a.mes_referencia.substring(0, 7) : "",
+                                    onChange: S => i({ ...a,
+                                        mes_referencia: S.target.value ? S.target.value + "-01" : ""
+                                    }),
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white"
                                 })]
                             }), l.jsxs("div", {
                                 className: "flex items-center justify-between",
@@ -71415,7 +71515,9 @@ function vIe() {
             data: { ...k,
                 parcelas_pagas: E,
                 valor_pago: O,
-                status: P ? "quitada" : "ativa"
+                status: P ? "quitada" : "ativa",
+                mes_atual_pago: !0,
+                ultimo_pagamento: tt(new Date(), "yyyy-MM-dd")
             }
         })
     }, v = s.filter(k => k.status === "ativa"), b = v.reduce((k, S) => k + (S.valor_total - S.valor_pago), 0), j = s.reduce((k, S) => k + getDebtInstallmentForMonth(S, new Date().toISOString().substring(0, 7)), 0), N = {
@@ -71538,6 +71640,9 @@ function vIe() {
                                             }), k.status === "quitada" && l.jsx("span", {
                                                 className: "text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded",
                                                 children: "Quitada"
+                                            }), k.status === "ativa" && isDebtPaidInMonth(k, tt(new Date(), "yyyy-MM")) && l.jsx("span", {
+                                                className: "text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded",
+                                                children: "✅ Parcela Paga"
                                             })]
                                         }), l.jsxs("p", {
                                             className: "text-xs text-gray-400 mt-1",
@@ -71549,7 +71654,7 @@ function vIe() {
                                         className: "flex flex-col items-end gap-1 flex-shrink-0",
                                         children: [l.jsxs("div", {
                                             className: "flex items-center gap-1 flex-wrap justify-end",
-                                            children: [k.status === "ativa" && l.jsxs(xe, {
+                                            children: [k.status === "ativa" && !isDebtPaidInMonth(k, tt(new Date(), "yyyy-MM")) && l.jsxs(xe, {
                                                 variant: "ghost",
                                                 size: "sm",
                                                 onClick: () => x(k),
@@ -71843,8 +71948,16 @@ function vIe() {
 }
 
 function xIe() {
-    const { theme: H } = T7();
-    const isDark = H === "dark";
+    const {
+        data: cc = []
+    } = Ve({
+        queryKey: ["settings"],
+        queryFn: () => se.entities.Settings.list(),
+        staleTime: 3e4
+    });
+    const activeSettings = (cc && cc[0]) || {};
+    const currentTheme = activeSettings.tema || "dark";
+    const isDark = ["dark", "liquid_glass", "material3_dark"].includes(currentTheme);
     const Ie = {
         backgroundColor: isDark ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.95)",
         border: isDark ? "1px solid #2a2a2a" : "1px solid #e5e7eb",
@@ -72121,11 +72234,12 @@ function xIe() {
 </div>
 </body>
 </html>`;
+            const userEmail = (w && w.email) ? w.email : N;
             await se.integrations.Core.SendEmail({
-                to: N,
+                to: userEmail,
                 subject: `💰 Relatório ${R?"Semanal":"Mensal"} Detalhado - ${F}`,
                 body: V
-            }), alert("✅ Relatório enviado com sucesso para " + N)
+            }), alert("✅ Relatório enviado com sucesso para " + userEmail)
         } catch (R) {
             console.error("Erro ao enviar relatório:", R), alert("❌ Erro ao enviar relatório. Tente novamente.")
         }
@@ -72663,6 +72777,224 @@ function Ej({
     })
 }
 
+const playCustomNotificationSound = () => {
+    try {
+        const audio = new Audio("/assets/notification_sound.wav?v=8");
+        audio.volume = 0.5;
+        audio.play().catch(e => console.warn("Som de notificacao bloqueado:", e));
+    } catch (e) {
+        console.error("Erro ao reproduzir som da notificacao:", e);
+    }
+};
+
+const requestNotificationPermission = async () => {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "default") {
+        await Notification.requestPermission();
+    }
+};
+
+async function checkAndTriggerNotifications(data) {
+    if (!data || !("Notification" in window) || Notification.permission !== "granted") return;
+
+    const dbOpen = () => new Promise((resolve) => {
+        const req = indexedDB.open("financeai_offline", 1);
+        req.onsuccess = e => resolve(e.target.result);
+        req.onerror = () => resolve(null);
+    });
+
+    const db = await dbOpen();
+    if (!db) return;
+
+    const isNotificationShown = (id) => new Promise((resolve) => {
+        try {
+            const tx = db.transaction("notifications", "readonly");
+            const store = tx.objectStore("notifications");
+            const getReq = store.get(id);
+            getReq.onsuccess = () => resolve(!!getReq.result);
+            getReq.onerror = () => resolve(false);
+        } catch {
+            resolve(false);
+        }
+    });
+
+    const markNotificationShown = (id) => new Promise((resolve) => {
+        try {
+            const tx = db.transaction("notifications", "readwrite");
+            const store = tx.objectStore("notifications");
+            store.put({ id, shown_at: Date.now() });
+            tx.oncomplete = () => resolve(true);
+            tx.onerror = () => resolve(false);
+        } catch {
+            resolve(false);
+        }
+    });
+
+    const showLocalNotification = (id, title, body, url) => {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.showNotification(title, {
+                body: body,
+                icon: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png",
+                badge: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png",
+                data: { url: url },
+                vibrate: [200, 100, 200],
+                sound: "/assets/notification_sound.wav?v=8"
+            });
+            playCustomNotificationSound();
+        });
+        markNotificationShown(id);
+    };
+
+    const { fixedExpenses = [], debts = [], incomes = [], savings = [], goals = [], creditCards = [], loans = [], settings = {} } = data;
+    const now = new Date();
+    const yearMonth = tt(now, "yyyy-MM");
+    const todayStr = tt(now, "yyyy-MM-dd");
+
+    // 1. Rendimento Diario
+    let dailyYield = 0;
+    savings.forEach(s => {
+        const val = parseFloat(s.valor_investido || 0);
+        const rate = parseFloat(s.taxa_rendimento || 0);
+        if (val > 0 && rate > 0) {
+            dailyYield += (val * (rate / 100)) / 365;
+        }
+    });
+    if (dailyYield > 0.01) {
+        const id = `daily_yield_${todayStr}`;
+        if (!(await isNotificationShown(id))) {
+            showLocalNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${dailyYield.toFixed(2)} hoje!`, "/MeusInvestimentos");
+        }
+    }
+
+    // 2. Cartao Negativo
+    for (const card of creditCards) {
+        const disp = parseFloat(card.limite_disponivel || 0);
+        if (disp < 0) {
+            const id = `card_negative_${card.id}_${todayStr}`;
+            if (!(await isNotificationShown(id))) {
+                showLocalNotification(id, "🚨 Limite de Cartao Estourado!", `O limite disponivel do cartao "${card.nome}" esta negativo (R$ ${disp.toFixed(2)}).`, "/Bancos");
+            }
+        }
+    }
+
+    // 3. Limite de Cartao Critico
+    for (const card of creditCards) {
+        const disp = parseFloat(card.limite_disponivel || 0);
+        const total = parseFloat(card.limite_total || 0);
+        if (total > 0 && disp >= 0 && (disp / total) <= 0.10) {
+            const id = `card_low_limit_${card.id}_${yearMonth}`;
+            if (!(await isNotificationShown(id))) {
+                showLocalNotification(id, "💳 Limite Critico no Cartao", `Voce utilizou mais de 90% do limite do cartao "${card.nome}". Resta apenas R$ ${disp.toFixed(2)}.`, "/Bancos");
+            }
+        }
+    }
+
+    // 4. Porcentagem de Despesas sobre Receitas (>80%)
+    const totalIncome = incomes.filter(inc => {
+        var ref;
+        return inc.tipo !== "devedor" && (inc.recorrente || inc.tipo === "salario_semanal" || ((ref = inc.mes_referencia) == null ? void 0 : ref.includes(yearMonth)))
+    }).reduce((sum, inc) => sum + (inc.tipo === "salario_semanal" ? (inc.valor || 0) * 4.33 : inc.valor || 0), 0);
+
+    const totalExpense = fixedExpenses.filter(e => e.ativa).reduce((sum, e) => sum + (e.valor || 0), 0) +
+                         debts.reduce((sum, d) => sum + getDebtInstallmentForMonth(d, yearMonth), 0);
+
+    if (totalIncome > 0 && (totalExpense / totalIncome) >= 0.80) {
+        const id = `high_expense_ratio_${yearMonth}`;
+        if (!(await isNotificationShown(id))) {
+            const pct = ((totalExpense / totalIncome) * 100).toFixed(0);
+            showLocalNotification(id, "🚨 Despesas Altas!", `Suas despesas fixas e dividas ja consomem ${pct}% da sua receita total do mes.`, "/");
+        }
+    }
+
+    // 5. Meta Quase Atingida (>= 90%)
+    for (const goal of goals.filter(g => g.status === "ativo")) {
+        const target = parseFloat(goal.valor_alvo || 0);
+        const saved = parseFloat(goal.valor_economizado || 0);
+        if (target > 0) {
+            const pct = (saved / target) * 100;
+            if (pct >= 90 && pct < 100) {
+                const id = `goal_almost_${goal.id}_${yearMonth}`;
+                if (!(await isNotificationShown(id))) {
+                    showLocalNotification(id, "🎯 Meta Quase Alcancada!", `Falta muito pouco! Voce esta a ${pct.toFixed(0)}% de concluir o objetivo "${goal.nome}".`, "/Objetivos");
+                }
+            }
+        }
+    }
+
+    // 6. Meta Concluida
+    for (const goal of goals.filter(g => g.status === "ativo")) {
+        const target = parseFloat(goal.valor_alvo || 0);
+        const saved = parseFloat(goal.valor_economizado || 0);
+        if (target > 0 && saved >= target) {
+            const id = `goal_completed_${goal.id}`;
+            if (!(await isNotificationShown(id))) {
+                showLocalNotification(id, "🏆 Objetivo Concluido!", `Parabens! Voce alcancou sua meta de guardar R$ ${target.toFixed(2)} para "${goal.nome}"!`, "/Objetivos");
+            }
+        }
+    }
+
+    // 7 & 8. Contas Proximas ao Vencimento ou Vencidas
+    const currentDay = now.getDate();
+    for (const exp of fixedExpenses.filter(e => e.ativa)) {
+        if (exp.status === "pendente") {
+            const dueDay = parseInt(exp.dia_vencimento || 0);
+            if (dueDay > 0) {
+                const daysDiff = dueDay - currentDay;
+                if (daysDiff >= 0 && daysDiff <= 3) {
+                    const id = `exp_due_${exp.id}_${yearMonth}`;
+                    if (!(await isNotificationShown(id))) {
+                        showLocalNotification(id, "📅 Conta Proxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${exp.valor.toFixed(2)}`, "/DespesasFixas");
+                    }
+                } else if (daysDiff < 0) {
+                    const id = `exp_overdue_${exp.id}_${yearMonth}`;
+                    if (!(await isNotificationShown(id))) {
+                        showLocalNotification(id, "🚨 Conta Vencida!", `A conta "${exp.nome}" venceu ha ${Math.abs(daysDiff)} dia(s). Evite juros!`, "/DespesasFixas");
+                    }
+                }
+            }
+        }
+    }
+
+    // 9. Reserva de Emergencia Baixa
+    const totalSavings = savings.reduce((sum, s) => sum + (s.valor_investido || 0), 0);
+    if (totalExpense > 0 && totalSavings < (totalExpense * 3)) {
+        const id = `low_emergency_${yearMonth}`;
+        if (!(await isNotificationShown(id))) {
+            const months = (totalSavings / totalExpense).toFixed(1);
+            showLocalNotification(id, "🛡️ Alerta de Reserva", `Seu saldo guardado cobre apenas ${months} meses de despesas. Ideal seria no minimo 6 meses.`, "/MeusInvestimentos");
+        }
+    }
+
+    // 10. Saldo Livre Negativo
+    if (totalIncome > 0 && totalExpense > totalIncome) {
+        const id = `budget_deficit_${yearMonth}`;
+        if (!(await isNotificationShown(id))) {
+            const diff = totalExpense - totalIncome;
+            showLocalNotification(id, "💸 Orquamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${diff.toFixed(2)} este mes.`, "/");
+        }
+    }
+
+    // 11. Insight da IA
+    const idAI = `ai_insight_${todayStr}`;
+    if (!(await isNotificationShown(idAI))) {
+        showLocalNotification(idAI, "🤖 Luna: Novo Insight Financeiro", "Luna analisou seus gastos recentes e tem uma nova sugestao de economia para voce. Clique para ver!", "/ChatIA?insight=true");
+    }
+
+    // 12. Mensagem Motivacional (toda segunda-feira)
+    const currentDayOfWeek = now.getDay();
+    const idMotiv = `motivacional_${yearMonth}_week_${Math.ceil(currentDay / 7)}`;
+    if (currentDayOfWeek === 1 && !(await isNotificationShown(idMotiv))) {
+        const quotes = [
+            "Economizar hoje e garantir a paz e a tranquilidade de amanha. Voce consegue! 💪",
+            "Mantenha o foco nos seus objetivos financeiros. Cada pequeno passo conta! 🎯",
+            "Planejar o orquamento nao e limitar seus gastos, e direcionar sua liberdade! 🌟",
+            "Sua disciplina de hoje constroi a prosperidade de amanha. Continue assim! 🚀"
+        ];
+        const quote = quotes[Math.floor(Math.random() * quotes.length)];
+        showLocalNotification(idMotiv, "✨ Mensagem Motivacional", quote, "/");
+    }
+}
+
 function bIe() {
     const e = Jp(),
         t = Ar(),
@@ -72670,7 +73002,8 @@ function bIe() {
             data: cc = []
         } = Ve({
             queryKey: ["settings"],
-            queryFn: () => se.entities.Settings.list()
+            queryFn: () => se.entities.Settings.list(),
+            staleTime: 3e4
         }),
         activeSettings = (cc && cc[0]) || {},
         currentTheme = activeSettings.tema || "dark",
@@ -72679,7 +73012,27 @@ function bIe() {
         [o, s] = C.useState(!1),
         [c, d] = C.useState(null),
         [f, p] = C.useState(0),
-        [m, g] = C.useState({});
+        [m, g] = C.useState({}),
+        [S, setS] = C.useState(() => localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
+    C.useEffect(() => {
+        localStorage.setItem("financeai_selected_month", S);
+        window.dispatchEvent(new Event("financeai_month_changed"));
+    }, [S]);
+    const [selectedYear, selectedMonth] = S.split("-").map(Number);
+    const getMonthOptions = () => {
+        const options = [];
+        const start = new Date();
+        start.setMonth(start.getMonth() - 12);
+        for (let i = 0; i <= 24; i++) {
+            const date = new Date(start.getFullYear(), start.getMonth() + i, 1);
+            const label = tt(date, "MMMM 'de' yyyy", { locale: bn });
+            options.push({
+                value: tt(date, "yyyy-MM"),
+                label: label.charAt(0).toUpperCase() + label.slice(1)
+            });
+        }
+        return options;
+    };
     C.useEffect(() => {
         const K = () => {
             try {
@@ -72722,49 +73075,56 @@ function bIe() {
         data: w = []
     } = Ve({
         queryKey: ["fixedExpenses"],
-        queryFn: () => se.entities.FixedExpense.list()
+        queryFn: () => se.entities.FixedExpense.list(),
+        staleTime: 3e4
     }), {
         data: x = []
     } = Ve({
         queryKey: ["debts"],
-        queryFn: () => se.entities.Debt.list()
+        queryFn: () => se.entities.Debt.list(),
+        staleTime: 3e4
     }), {
         data: v = []
     } = Ve({
         queryKey: ["incomes"],
-        queryFn: () => se.entities.Income.list()
+        queryFn: () => se.entities.Income.list(),
+        staleTime: 3e4
     }), {
         data: b = []
     } = Ve({
         queryKey: ["savings"],
-        queryFn: () => se.entities.Savings.list()
+        queryFn: () => se.entities.Savings.list(),
+        staleTime: 3e4
     }), {
         data: j = []
     } = Ve({
         queryKey: ["goals"],
-        queryFn: () => se.entities.Goal.list()
+        queryFn: () => se.entities.Goal.list(),
+        staleTime: 3e4
     }), {
         data: N = []
     } = Ve({
         queryKey: ["creditCards"],
-        queryFn: () => se.entities.CreditCard.list()
+        queryFn: () => se.entities.CreditCard.list(),
+        staleTime: 3e4
     }), {
         data: k = []
     } = Ve({
         queryKey: ["loans"],
-        queryFn: () => se.entities.Loan.list()
-    }), S = tt(new Date, "yyyy-MM"), O = new Date().getDate(), P = v.filter(K => {
-        var ht;
-        const J = ((ht = K.mes_referencia) == null ? void 0 : ht.includes(S)) || K.recorrente || K.tipo === "salario_semanal";
-        return K.tipo !== "devedor" && J
-    }).reduce((K, J) => {
-        const ve = J.valor || 0;
-        return K + ve
-    }, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente").reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.filter(K => {
-        const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
-            ve = J && J.getMonth() === new Date().getMonth() && J.getFullYear() === new Date().getFullYear();
-        return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0
-    }).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), W = b.filter(K => new Date(K.data_inicio) <= new Date).reduce((K, J) => K + (J.aporte_mensal || 0), 0), U = b.reduce((K, J) => K + (J.valor_investido || 0), 0), D = b.reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), H = b.reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo").reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V + W, z = X - L, G = j.filter(K => K.status === "ativo"), ie = X === 0 ? z >= 0 ? {
+        queryFn: () => se.entities.Loan.list(),
+        staleTime: 3e4
+    }), O = new Date().getDate(), P = v.filter(K => {
+    var ht;
+    const J = ((ht = K.mes_referencia) == null ? void 0 : ht.includes(S)) || K.recorrente || K.tipo === "salario_semanal";
+    return K.tipo !== "devedor" && J
+}).reduce((K, J) => {
+    const ve = J.valor || 0;
+    return K + ve
+}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente").reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S))).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.filter(K => {
+    const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
+        ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
+    return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0
+}).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), W = b.filter(K => new Date(K.data_inicio) <= new Date).reduce((K, J) => K + (J.aporte_mensal || 0), 0), U = b.reduce((K, J) => K + (J.valor_investido || 0), 0), D = b.reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), H = b.reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo").reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V + W, z = X - L, G = j.filter(K => K.status === "ativo"), ie = X === 0 ? z >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/20 text-yellow-400",
         emoji: "😊"
@@ -72826,7 +73186,7 @@ function bIe() {
                     const St = Je.valor || 0;
                     return $e + St
                 }, 0),
-                Pr = w.filter($e => $e.ativa).reduce(($e, Je) => $e + Je.valor, 0),
+                Pr = w.filter($e => $e.ativa && (!$e.mes_referencia || $e.mes_referencia.includes(zt))).reduce(($e, Je) => $e + Je.valor, 0),
                 at = x.reduce(($e, Je) => $e + getDebtInstallmentForMonth(Je, zt), 0),
                 de = Pr + at + F + V + W,
                 Ce = k.reduce(($e, Je) => $e + Wv(Je, zt), 0);
@@ -72880,7 +73240,7 @@ function bIe() {
                     message: `Você tem ${ve.length} dívida(s) ativa(s) totalizando R$ ${at.toLocaleString("pt-BR",{minimumFractionDigits:2})}. Priorize quitá-las!`
                 })
             }
-            const et = w.filter(at => at.ativa).reduce((at, de) => at + de.valor, 0);
+            const et = w.filter(at => at.ativa && (!at.mes_referencia || at.mes_referencia.includes(S))).reduce((at, de) => at + de.valor, 0);
             X > 0 && et > X * .5 && J.push({
                 type: "warning",
                 title: "🏠 Despesas Altas",
@@ -73071,6 +73431,51 @@ function bIe() {
             color: isDarkTheme ? "#cccccc" : "#4b5563",
             fontSize: 12
         };
+    C.useEffect(() => {
+        requestNotificationPermission();
+    }, []);
+
+    C.useEffect(() => {
+        const syncData = {
+            fixedExpenses: w,
+            debts: x,
+            incomes: v,
+            savings: b,
+            goals: j,
+            creditCards: N,
+            loans: k,
+            settings: activeSettings
+        };
+        try {
+            const request = indexedDB.open("financeai_offline", 1);
+            request.onupgradeneeded = e => {
+                const db = e.target.result;
+                db.objectStoreNames.contains("state") || db.createObjectStore("state", { keyPath: "key" });
+                db.objectStoreNames.contains("notifications") || db.createObjectStore("notifications", { keyPath: "id" });
+            };
+            request.onsuccess = e => {
+                const db = e.target.result;
+                const tx = db.transaction("state", "readwrite");
+                tx.objectStore("state").put({ key: "app_data", value: syncData, updated_at: Date.now() });
+            };
+        } catch (err) {
+            console.error("IndexedDB sync error:", err);
+        }
+
+        if (w.length > 0 || x.length > 0 || v.length > 0 || b.length > 0 || j.length > 0 || N.length > 0) {
+            checkAndTriggerNotifications({
+                fixedExpenses: w,
+                debts: x,
+                incomes: v,
+                savings: b,
+                goals: j,
+                creditCards: N,
+                loans: k,
+                settings: activeSettings
+            });
+        }
+    }, [w, x, v, b, j, N, k, activeSettings]);
+
     return l.jsx(g0, {
         children: l.jsx(bP, {
             onRefresh: ce,
@@ -73127,6 +73532,21 @@ function bIe() {
                                 }), l.jsx("p", {
                                     className: "text-gray-400 text-sm",
                                     children: "Visão completa das suas finanças"
+                                }), l.jsxs("div", {
+                                    className: "flex items-center gap-2 mt-2 mb-1",
+                                    children: [l.jsx("span", {
+                                        className: "text-xs text-gray-500 font-medium",
+                                        children: "Mês de Referência:"
+                                    }), l.jsx("select", {
+                                        value: S,
+                                        onChange: K => setS(K.target.value),
+                                        className: "bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg px-2 py-1 text-xs outline-none cursor-pointer focus:border-blue-500 transition-colors",
+                                        children: getMonthOptions().map(K => l.jsx("option", {
+                                            value: K.value,
+                                            className: "bg-[#1a1a1a] text-white",
+                                            children: K.label
+                                        }, K.value))
+                                    })]
                                 }), l.jsxs("div", {
                                     className: "flex flex-wrap gap-1.5 mt-2",
                                     children: [l.jsxs(Be.button, {
@@ -78849,37 +79269,56 @@ function P$e() {
 
 function O$e() {
     const {
-        data: e = []
+        data: e = [],
+        isSuccess: o1
     } = Ve({
         queryKey: ["incomes"],
         queryFn: () => se.entities.Income.list()
     }), {
-        data: t = []
+        data: t = [],
+        isSuccess: o2
     } = Ve({
         queryKey: ["fixedExpenses"],
         queryFn: () => se.entities.FixedExpense.list()
     }), {
-        data: n = []
+        data: n = [],
+        isSuccess: o3
     } = Ve({
         queryKey: ["debts"],
         queryFn: () => se.entities.Debt.list()
     }), {
-        data: r = []
+        data: r = [],
+        isSuccess: o4
     } = Ve({
         queryKey: ["creditCards"],
         queryFn: () => se.entities.CreditCard.list()
     }), {
-        data: a = []
+        data: a = [],
+        isSuccess: o5
     } = Ve({
         queryKey: ["goals"],
         queryFn: () => se.entities.Goal.list()
     }), {
-        data: i = []
+        data: i = [],
+        isSuccess: o6
     } = Ve({
         queryKey: ["savings"],
         queryFn: () => se.entities.Savings.list()
+    }), {
+        data: u,
+        isSuccess: o7
+    } = Ve({
+        queryKey: ["user"],
+        queryFn: async () => {
+            try {
+                return await se.auth.me();
+            } catch (err) {
+                return { email: "lorddrk662@gmail.com" };
+            }
+        }
     });
     C.useEffect(() => {
+        if (!o1 || !o2 || !o3 || !o4 || !o5 || !o6 || !o7) return;
         const m = new Date,
             g = m.getDay(),
             w = m.getDate(),
@@ -78888,19 +79327,26 @@ function O$e() {
             b = localStorage.getItem(`report_weekly_${v}`),
             j = localStorage.getItem(`report_monthly_${v}`),
             N = w === x;
-        g === 6 && !b && f(m, v), N && !j && p(m, v)
-    }, [!0]);
+        if (g === 6 && !b) {
+            localStorage.setItem(`report_weekly_${v}`, "sent");
+            f(m, v);
+        }
+        if (N && !j) {
+            localStorage.setItem(`report_monthly_${v}`, "sent");
+            p(m, v);
+        }
+    }, [o1, o2, o3, o4, o5, o6, o7]);
     const s = m => {
             const g = tt(m, "yyyy-MM"),
                 w = e.filter(P => {
                     const $ = P.tipo !== "devedor",
                         I = P.status === "recebido",
-                        M = P.mes_referencia ? tt(new Date(P.mes_referencia), "yyyy-MM") : null;
+                        M = P.mes_referencia ? P.mes_referencia.substring(0, 7) : null;
                     return $ && I && (M === g || P.recorrente)
                 }).reduce((P, $) => P + ($.valor), 0),
                 x = i.reduce((P, $) => P + ($.retirada_mensal || 0), 0),
                 v = t.filter(P => P.ativa).reduce((P, $) => P + $.valor, 0),
-                b = n.filter(P => P.status === "ativa").reduce((P, $) => P + $.valor_parcela, 0),
+                b = n.reduce((P, $) => P + getDebtInstallmentForMonth($, g), 0),
                 j = r.filter(P => (P.valor_fatura_atual || 0) > 0).reduce((P, $) => P + ($.valor_fatura_atual || 0), 0),
                 N = a.filter(P => P.status === "ativo").reduce((P, $) => P + ($.economia_mensal || 0), 0),
                 k = i.reduce((P, $) => P + ($.aporte_mensal || 0), 0),
@@ -79067,7 +79513,7 @@ function O$e() {
 </body>
 </html>`
         },
-        d = "lorddrk662@gmail.com",
+        d = (u && u.email) || "lorddrk662@gmail.com",
         f = async (m, g) => {
             try {
                 const w = Ms(m, {
@@ -79248,6 +79694,10 @@ const Jc = {
         url: Qe("ChatIA"),
         icon: f8
     }, {
+        title: "Receitas",
+        url: Qe("Receitas"),
+        icon: En
+    }, {
         title: "Despesas",
         url: Qe("DespesasFixas"),
         icon: sx
@@ -79258,10 +79708,6 @@ const Jc = {
         isMore: !0
     }],
     m6 = [{
-        title: "Receitas",
-        url: Qe("Receitas"),
-        icon: En
-    }, {
         title: "Dívidas",
         url: Qe("Dividas"),
         icon: Yl
@@ -79561,7 +80007,7 @@ function $$e({
             overflow: "hidden",
             opacity: t === "exit" ? 0 : 1,
             transform: t === "exit" ? "scale(1.04)" : "scale(1)",
-            transition: t === "exit" ? "opacity 0.65s ease, transform 0.65s ease" : "none",
+            transition: "opacity 0.65s ease, transform 0.65s ease",
             pointerEvents: t === "exit" ? "none" : "all"
         },
         children: [l.jsx("style", {
@@ -79645,7 +80091,7 @@ function $$e({
                 }), l.jsxs("svg", {
                     viewBox: "0 0 24 24",
                     fill: "none",
-                    stroke: "url(#logoGrad)",
+                    stroke: "#ffffff",
                     strokeWidth: 1.8,
                     strokeLinecap: "round",
                     strokeLinejoin: "round",
@@ -79654,24 +80100,11 @@ function $$e({
                         width: 56,
                         height: 56,
                         filter: "drop-shadow(0 0 12px rgba(165,180,252,0.5))",
-                        animation: "emoji-bounce 2.6s ease-in-out 0.5s infinite"
+                        animation: "emoji-bounce 2.6s ease-in-out 0.5s infinite",
+                        willChange: "transform",
+                        backfaceVisibility: "hidden"
                     },
-                    children: [l.jsx("defs", {
-                        children: l.jsxs("linearGradient", {
-                            id: "logoGrad",
-                            x1: "0%",
-                            y1: "0%",
-                            x2: "100%",
-                            y2: "100%",
-                            children: [l.jsx("stop", {
-                                offset: "0%",
-                                stopColor: "#ffffff"
-                            }), l.jsx("stop", {
-                                offset: "100%",
-                                stopColor: "#a5b4fc"
-                            })]
-                        })
-                    }), l.jsx("circle", {
+                    children: [l.jsx("circle", {
                         cx: "12",
                         cy: "12",
                         r: "10",
