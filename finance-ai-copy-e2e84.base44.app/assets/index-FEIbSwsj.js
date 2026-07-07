@@ -70230,10 +70230,10 @@ function cIe() {
                             })]
                         })]
                     })]
-                }), l.jsx(Hn, {
+                }), l.jsxs(Hn, {
                     value: "interface",
                     className: "space-y-6",
-                    children: l.jsxs(Oe, {
+                    children: [l.jsxs(Oe, {
                         className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
                         children: [l.jsx("h2", {
                             className: "text-xl font-semibold text-white mb-4",
@@ -70287,7 +70287,66 @@ function cIe() {
                                 })]
                             }), l.jsx(lIe, {})]
                         })]
-                    })
+                    }), l.jsxs(Oe, {
+                        className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
+                        children: [l.jsx("h2", {
+                            className: "text-xl font-semibold text-white mb-4",
+                            children: "🔔 Notificações do Sistema"
+                        }), l.jsxs("div", {
+                            className: "space-y-4",
+                            children: [l.jsx("p", {
+                                className: "text-sm text-gray-400",
+                                children: "Receba alertas sobre vencimento de contas, limites estourados, investimentos e mensagens da Luna."
+                            }), l.jsxs("div", {
+                                className: "flex flex-col gap-3",
+                                children: [l.jsxs("div", {
+                                    className: "flex items-center justify-between p-4 bg-[#2a2a2a] rounded-lg",
+                                    children: [l.jsxs("div", {
+                                        children: [l.jsx(he, {
+                                            className: "text-white",
+                                            children: "Autorização de Notificações"
+                                        }), l.jsx("p", {
+                                            className: "text-sm text-gray-400",
+                                            children: "Status: " + (Notification.permission === "granted" ? "Ativado ✅" : Notification.permission === "denied" ? "Bloqueado ❌" : "Não solicitado ❓")
+                                        })]
+                                    }), Notification.permission !== "granted" ? l.jsx(xe, {
+                                        onClick: async () => {
+                                            const res = await Notification.requestPermission();
+                                            if (res === "granted") {
+                                                alert("Notificações autorizadas com sucesso!");
+                                                if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                                                    navigator.serviceWorker.ready.then(reg => {
+                                                        reg.showNotification("🔔 Notificações Ativadas!", {
+                                                            body: "Tudo pronto! Você receberá avisos importantes por aqui.",
+                                                            icon: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png"
+                                                        });
+                                                    });
+                                                }
+                                            } else {
+                                                alert("Permissão negada. Por favor, ative nas preferências do seu navegador.");
+                                            }
+                                            window.dispatchEvent(new Event("financeai_settings_changed"));
+                                        },
+                                        className: "bg-white text-black hover:bg-gray-200",
+                                        children: "Permitir"
+                                    }) : l.jsx(xe, {
+                                        onClick: () => {
+                                            if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+                                                navigator.serviceWorker.ready.then(reg => {
+                                                    reg.showNotification("🎉 Teste de Notificação", {
+                                                        body: "Sua notificação de teste está funcionando perfeitamente!",
+                                                        icon: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png"
+                                                    });
+                                                });
+                                            }
+                                        },
+                                        className: "bg-gray-700 text-white hover:bg-gray-600",
+                                        children: "Testar"
+                                    })]
+                                })]
+                            })]
+                        })]
+                    })]
                 }), l.jsx(Hn, {
                     value: "typography",
                     className: "space-y-6",
