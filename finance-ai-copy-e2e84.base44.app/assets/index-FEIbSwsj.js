@@ -71030,6 +71030,21 @@ function uIe() {
                         }), l.jsx("p", {
                             className: "text-gray-400 mb-2",
                             children: "Gerencie suas despesas mensais recorrentes"
+                        }), l.jsxs("div", {
+                            className: "flex items-center gap-2 mt-2 mb-1",
+                            children: [l.jsx("span", {
+                                className: "text-xs text-gray-500 font-medium",
+                                children: "Mês de Referência:"
+                            }), l.jsx("select", {
+                                value: selectedMonth,
+                                onChange: K => handleMonthSelect(K.target.value),
+                                className: "bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg px-2 py-1 text-xs outline-none cursor-pointer focus:border-blue-500 transition-colors",
+                                children: getMonthOptions().map(K => l.jsx("option", {
+                                    value: K.value,
+                                    className: "bg-[#1a1a1a] text-white",
+                                    children: K.label
+                                }, K.value))
+                            })]
                         })]
                     }), l.jsxs(xe, {
                         onClick: () => {
@@ -71702,6 +71717,21 @@ function vIe() {
                     }), l.jsx("p", {
                         className: "text-gray-400 mb-2",
                         children: "Acompanhe e gerencie seus débitos"
+                    }), l.jsxs("div", {
+                        className: "flex items-center gap-2 mt-2 mb-1",
+                        children: [l.jsx("span", {
+                            className: "text-xs text-gray-500 font-medium",
+                            children: "Mês de Referência:"
+                        }), l.jsx("select", {
+                            value: selectedMonth,
+                            onChange: K => handleMonthSelect(K.target.value),
+                            className: "bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg px-2 py-1 text-xs outline-none cursor-pointer focus:border-blue-500 transition-colors",
+                            children: getMonthOptions().map(K => l.jsx("option", {
+                                value: K.value,
+                                className: "bg-[#1a1a1a] text-white",
+                                children: K.label
+                            }, K.value))
+                        })]
                     })]
                 }), l.jsxs(xe, {
                     onClick: () => t(!0),
