@@ -70842,17 +70842,9 @@ function uIe() {
         auto_pagar: !1,
         mes_referencia: ""
     }), o = Ar();
-    const [selectedMonth, setSelectedMonth] = C.useState(() => localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
-    C.useEffect(() => {
-        const handleMonthChange = () => {
-            setSelectedMonth(localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
-        };
-        window.addEventListener("financeai_month_changed", handleMonthChange);
-        return () => window.removeEventListener("financeai_month_changed", handleMonthChange);
-    }, []);
+    const [selectedMonth, setSelectedMonth] = C.useState(() => tt(new Date(), "yyyy-MM"));
     const handleMonthSelect = (newMonth) => {
         setSelectedMonth(newMonth);
-        localStorage.setItem("financeai_selected_month", newMonth);
         window.dispatchEvent(new Event("financeai_month_changed"));
     };
     const getMonthOptions = () => {
@@ -71030,21 +71022,6 @@ function uIe() {
                         }), l.jsx("p", {
                             className: "text-gray-400 mb-2",
                             children: "Gerencie suas despesas mensais recorrentes"
-                        }), l.jsxs("div", {
-                            className: "flex items-center gap-2 mt-2 mb-1",
-                            children: [l.jsx("span", {
-                                className: "text-xs text-gray-500 font-medium",
-                                children: "Mês de Referência:"
-                            }), l.jsx("select", {
-                                value: selectedMonth,
-                                onChange: K => handleMonthSelect(K.target.value),
-                                className: "bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg px-2 py-1 text-xs outline-none cursor-pointer focus:border-blue-500 transition-colors",
-                                children: getMonthOptions().map(K => l.jsx("option", {
-                                    value: K.value,
-                                    className: "bg-[#1a1a1a] text-white",
-                                    children: K.label
-                                }, K.value))
-                            })]
                         })]
                     }), l.jsxs(xe, {
                         onClick: () => {
@@ -71561,17 +71538,9 @@ function vIe() {
         auto_pagar: !1,
         mes_referencia: tt(new Date, "yyyy-MM-dd")
     }), o = Ar();
-    const [selectedMonth, setSelectedMonth] = C.useState(() => localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
-    C.useEffect(() => {
-        const handleMonthChange = () => {
-            setSelectedMonth(localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
-        };
-        window.addEventListener("financeai_month_changed", handleMonthChange);
-        return () => window.removeEventListener("financeai_month_changed", handleMonthChange);
-    }, []);
+    const [selectedMonth, setSelectedMonth] = C.useState(() => tt(new Date(), "yyyy-MM"));
     const handleMonthSelect = (newMonth) => {
         setSelectedMonth(newMonth);
-        localStorage.setItem("financeai_selected_month", newMonth);
         window.dispatchEvent(new Event("financeai_month_changed"));
     };
     const getMonthOptions = () => {
@@ -71717,21 +71686,6 @@ function vIe() {
                     }), l.jsx("p", {
                         className: "text-gray-400 mb-2",
                         children: "Acompanhe e gerencie seus débitos"
-                    }), l.jsxs("div", {
-                        className: "flex items-center gap-2 mt-2 mb-1",
-                        children: [l.jsx("span", {
-                            className: "text-xs text-gray-500 font-medium",
-                            children: "Mês de Referência:"
-                        }), l.jsx("select", {
-                            value: selectedMonth,
-                            onChange: K => handleMonthSelect(K.target.value),
-                            className: "bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg px-2 py-1 text-xs outline-none cursor-pointer focus:border-blue-500 transition-colors",
-                            children: getMonthOptions().map(K => l.jsx("option", {
-                                value: K.value,
-                                className: "bg-[#1a1a1a] text-white",
-                                children: K.label
-                            }, K.value))
-                        })]
                     })]
                 }), l.jsxs(xe, {
                     onClick: () => t(!0),
@@ -73488,20 +73442,9 @@ function bIe() {
         [c, d] = C.useState(null),
         [f, p] = C.useState(0),
         [m, g] = C.useState({}),
-        [S, setS] = C.useState(() => localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
+        [S, setS] = C.useState(() => tt(new Date(), "yyyy-MM"));
     C.useEffect(() => {
-        localStorage.setItem("financeai_selected_month", S);
         window.dispatchEvent(new Event("financeai_month_changed"));
-    }, [S]);
-    C.useEffect(() => {
-        const handleMonthChange = () => {
-            const stored = localStorage.getItem("financeai_selected_month");
-            if (stored && stored !== S) {
-                setS(stored);
-            }
-        };
-        window.addEventListener("financeai_month_changed", handleMonthChange);
-        return () => window.removeEventListener("financeai_month_changed", handleMonthChange);
     }, [S]);
     const [selectedYear, selectedMonth] = S.split("-").map(Number);
     const getMonthOptions = () => {
