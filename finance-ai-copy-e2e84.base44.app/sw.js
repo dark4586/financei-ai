@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financeai-v13';
+const CACHE_NAME = 'financeai-v18';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();
@@ -275,7 +275,7 @@ async function checkAndTriggerNotificationsSW(data) {
     // 4. Porcentagem de Despesas sobre Receitas (>80%)
     const totalIncome = incomes.filter(inc => {
         var ref;
-        return inc.tipo !== "devedor" && (inc.recorrente || inc.tipo === "salario_semanal" || ((ref = inc.mes_referencia) == null ? void 0 : ref.includes(yearMonth)))
+        return (inc.tipo !== "devedor" || inc.status === "recebido") && (inc.recorrente || inc.tipo === "salario_semanal" || ((ref = inc.mes_referencia) == null ? void 0 : ref.includes(yearMonth)))
     }).reduce((sum, inc) => sum + (inc.tipo === "salario_semanal" ? (inc.valor || 0) * 4.33 : inc.valor || 0), 0);
 
     const totalExpense = fixedExpenses.filter(e => e.ativa).reduce((sum, e) => sum + (e.valor || 0), 0) +

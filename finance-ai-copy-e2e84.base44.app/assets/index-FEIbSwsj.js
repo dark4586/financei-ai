@@ -67674,7 +67674,28 @@ async function S4e(e) {
     }
 }
 
+const isItemCreatedBeforeOrInMonth = (item, targetMonthStr) => {
+    if (!item) return false;
+    let createdDate = item.created_date;
+    if (!createdDate) return true;
+    try {
+        if (createdDate instanceof Date) {
+            createdDate = createdDate.toISOString();
+        } else if (typeof createdDate === "number") {
+            createdDate = new Date(createdDate).toISOString();
+        }
+        if (typeof createdDate === "string") {
+            const creationMonth = createdDate.substring(0, 7); // "YYYY-MM"
+            return creationMonth <= targetMonthStr;
+        }
+    } catch (e) {
+        console.error("Error parsing created_date:", e);
+    }
+    return true;
+};
+
 function Wv(e, t) {
+    if (!isItemCreatedBeforeOrInMonth(e, t)) return 0;
     if (!(e != null && e.valor_parcela)) return 0;
     if (Array.isArray(e.parcelas_datas) && e.parcelas_datas.length > 0) return e.parcelas_datas.reduce((o, s) => s && s.substring(0, 7) === t ? o + e.valor_parcela : o, 0);
     if (!(e != null && e.data_emprestimo)) return 0;
@@ -67767,7 +67788,7 @@ function o6(e) {
 }
 
 function _4e(e, t, n, r, a, i, o, s) {
-    const selectedMonthForLuna = localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM");
+    const selectedMonthForLuna = tt(new Date(), "yyyy-MM");
     const c = r.filter(p => p.status === "ativa").reduce((p, m) => p + m.valor_total, 0),
         d = r.reduce((p, m) => p + getDebtInstallmentForMonth(m, selectedMonthForLuna), 0),
         f = {
@@ -67883,7 +67904,11 @@ function j4e(e) {
 
 function getDebtInstallmentForMonth(debt, targetMonthStr) {
     if (!debt) return 0;
+    if (!isItemCreatedBeforeOrInMonth(debt, targetMonthStr)) return 0;
     const wasPaidInMonth = isDebtPaidInMonth(debt, targetMonthStr);
+    if (debt.status === "quitada") {
+        return wasPaidInMonth ? (debt.valor_parcela || debt.valor_total || 0) : 0;
+    }
     if (!debt.mes_referencia) {
         return (debt.status === "ativa" || wasPaidInMonth) ? (debt.valor_parcela || debt.valor_total || 0) : 0;
     }
@@ -67906,7 +67931,11 @@ function getDebtInstallmentForMonth(debt, targetMonthStr) {
 }
 
 function isDebtPaidInMonth(debt, targetMonthStr) {
-    if (!debt || !debt.ultimo_pagamento) return false;
+    if (!debt) return false;
+    if (debt.pagamentos && Array.isArray(debt.pagamentos) && debt.pagamentos.includes(targetMonthStr)) {
+        return true;
+    }
+    if (!debt.ultimo_pagamento) return false;
     const up = debt.ultimo_pagamento;
     if (typeof up === "string") {
         return up.substring(0, 7) === targetMonthStr;
@@ -67926,7 +67955,11 @@ function isDebtPaidInMonth(debt, targetMonthStr) {
 }
 
 function isFixedExpensePaidInMonth(expense, targetMonthStr) {
-    if (!expense || !expense.ultimo_pagamento) return false;
+    if (!expense) return false;
+    if (expense.pagamentos && Array.isArray(expense.pagamentos) && expense.pagamentos.includes(targetMonthStr)) {
+        return true;
+    }
+    if (!expense.ultimo_pagamento) return false;
     const up = expense.ultimo_pagamento;
     if (typeof up === "string") {
         return up.substring(0, 7) === targetMonthStr;
@@ -67992,18 +68025,18 @@ function N4e() {
         queryKey: ["loans"],
         queryFn: () => se.entities.Loan.list()
     }), U = (R && R[0]) || null,
-    [selectedMonth, setSelectedMonth] = C.useState(() => localStorage.getItem("financeai_selected_month") || new Date().toISOString().substring(0, 7)),
+    [selectedMonth, setSelectedMonth] = C.useState(() => new Date().toISOString().substring(0, 7)),
     D = C.useCallback(() => {
         const B = selectedMonth,
             [targetYear, targetMonth] = B.split("-").map(Number),
             ie = E.filter(J => {
                 var ve;
-                return J.tipo !== "devedor" && (J.recorrente || J.tipo === "salario_semanal" || ((ve = J.mes_referencia) == null ? void 0 : ve.includes(B)))
+                return (J.tipo !== "devedor" || J.status === "recebido") && (J.recorrente || J.tipo === "salario_semanal" || ((ve = J.mes_referencia) == null ? void 0 : ve.includes(B)))
             }).reduce((J, ve) => J + (ve.tipo === "salario_semanal" ? (ve.valor || 0) * 4.33 : ve.valor || 0), 0),
             be = I.reduce((J, ve) => J + (ve.retirada_mensal || 0), 0),
             me = W.reduce((J, ve) => J + Wv(ve, B), 0),
             le = ie + be + me,
-            pe = O.filter(J => J.ativa && (!J.mes_referencia || J.mes_referencia.includes(B))).reduce((J, ve) => J + (ve.valor || 0), 0),
+            pe = O.filter(J => J.ativa && (!J.mes_referencia || J.mes_referencia.includes(B)) && isItemCreatedBeforeOrInMonth(J, B)).reduce((J, ve) => J + (ve.valor || 0), 0),
             ae = P.reduce((J, ve) => J + getDebtInstallmentForMonth(ve, B), 0),
             ge = $.filter(J => J.status === "ativo").reduce((J, ve) => J + (ve.economia_mensal || 0), 0),
             Se = I.reduce((J, ve) => J + (ve.aporte_mensal || 0), 0),
@@ -68038,7 +68071,7 @@ function N4e() {
     }, [E, O, P, $, I, F, W, selectedMonth]);
     C.useEffect(() => {
         const handleMonthChange = () => {
-            setSelectedMonth(localStorage.getItem("financeai_selected_month") || new Date().toISOString().substring(0, 7));
+            setSelectedMonth(new Date().toISOString().substring(0, 7));
         };
         window.addEventListener("financeai_month_changed", handleMonthChange);
         return () => window.removeEventListener("financeai_month_changed", handleMonthChange);
@@ -70808,7 +70841,35 @@ function uIe() {
         banco_nome: "",
         auto_pagar: !1,
         mes_referencia: ""
-    }), o = Ar(), {
+    }), o = Ar();
+    const [selectedMonth, setSelectedMonth] = C.useState(() => localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
+    C.useEffect(() => {
+        const handleMonthChange = () => {
+            setSelectedMonth(localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
+        };
+        window.addEventListener("financeai_month_changed", handleMonthChange);
+        return () => window.removeEventListener("financeai_month_changed", handleMonthChange);
+    }, []);
+    const handleMonthSelect = (newMonth) => {
+        setSelectedMonth(newMonth);
+        localStorage.setItem("financeai_selected_month", newMonth);
+        window.dispatchEvent(new Event("financeai_month_changed"));
+    };
+    const getMonthOptions = () => {
+        const options = [];
+        const start = new Date();
+        start.setMonth(start.getMonth() - 12);
+        for (let i = 0; i <= 24; i++) {
+            const date = new Date(start.getFullYear(), start.getMonth() + i, 1);
+            const label = tt(date, "MMMM 'de' yyyy", { locale: bn });
+            options.push({
+                value: tt(date, "yyyy-MM"),
+                label: label.charAt(0).toUpperCase() + label.slice(1)
+            });
+        }
+        return options;
+    };
+    const {
         data: s = []
     } = Ve({
         queryKey: ["fixedExpenses"],
@@ -70905,18 +70966,27 @@ function uIe() {
                 queryKey: ["banks"]
             }))
         }
+        const todayStr = tt(new Date(), "yyyy-MM-dd");
+        let payDate = todayStr;
+        if (selectedMonth !== tt(new Date(), "yyyy-MM")) {
+            payDate = `${selectedMonth}-01`;
+        }
+        const pags = Array.isArray(S.pagamentos) ? [...S.pagamentos] : [];
+        if (!pags.includes(selectedMonth)) {
+            pags.push(selectedMonth);
+        }
         f.mutate({
             id: S.id,
             data: { ...S,
                 status: "pago",
-                ultimo_pagamento: tt(E, "yyyy-MM-dd")
+                ultimo_pagamento: payDate,
+                pagamentos: pags
             }
         })
-    }, v = s.filter(S => S.ativa).reduce((S, E) => S + (E.valor || 0), 0);
-    s.filter(S => S.ativa).length;
-    const currentMonthStr = tt(new Date(), "yyyy-MM");
-    const b = s.filter(S => isFixedExpensePaidInMonth(S, currentMonthStr)).length,
-        j = s.filter(S => !isFixedExpensePaidInMonth(S, currentMonthStr) && S.ativa).length,
+    }, v = s.filter(S => S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).reduce((S, E) => S + (E.valor || 0), 0);
+    s.filter(S => S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length;
+    const b = s.filter(S => isFixedExpensePaidInMonth(S, selectedMonth) && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length,
+        j = s.filter(S => !isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length,
         N = {
             aluguel: "Aluguel",
             condominio: "Condomínio",
@@ -70958,7 +71028,7 @@ function uIe() {
                             className: "text-3xl font-bold text-white mb-2",
                             children: "🏠 Despesas"
                         }), l.jsx("p", {
-                            className: "text-gray-400",
+                            className: "text-gray-400 mb-2",
                             children: "Gerencie suas despesas mensais recorrentes"
                         })]
                     }), l.jsxs(xe, {
@@ -71053,7 +71123,7 @@ function uIe() {
                             children: "📋 Todas as Despesas"
                         }), l.jsxs("div", {
                             className: "space-y-3",
-                            children: [s.map(S => l.jsxs("div", {
+                            children: [s.filter(S => isItemCreatedBeforeOrInMonth(S, selectedMonth)).map(S => l.jsxs("div", {
                                 className: `p-4 rounded-lg transition-colors ${S.ativa?"bg-[#2a2a2a] hover:bg-[#333333]":"bg-[#1a1a1a] opacity-60"}`,
                                 children: [l.jsxs("div", {
                                     className: "flex items-start justify-between gap-2 mb-2",
@@ -71093,10 +71163,10 @@ function uIe() {
                                         children: [l.jsx("span", {
                                             className: "text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded",
                                             children: N[S.categoria] || "Categoria"
-                                        }), isFixedExpensePaidInMonth(S, tt(new Date(), "yyyy-MM")) && l.jsx("span", {
+                                        }), isFixedExpensePaidInMonth(S, selectedMonth) && l.jsx("span", {
                                             className: "text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded",
                                             children: "✅ Pago"
-                                        }), !isFixedExpensePaidInMonth(S, tt(new Date(), "yyyy-MM")) && S.ativa && l.jsx("span", {
+                                        }), !isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa && l.jsx("span", {
                                             className: "text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded",
                                             children: "⏳ Pendente"
                                         }), !S.ativa && l.jsx("span", {
@@ -71110,7 +71180,7 @@ function uIe() {
                                             children: ["R$ ", S.valor.toLocaleString("pt-BR", {
                                                 minimumFractionDigits: 2
                                             })]
-                                        }), !isFixedExpensePaidInMonth(S, tt(new Date(), "yyyy-MM")) && S.ativa && l.jsxs(xe, {
+                                        }), !isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa && l.jsxs(xe, {
                                             variant: "ghost",
                                             size: "sm",
                                             onClick: () => x(S),
@@ -71475,7 +71545,35 @@ function vIe() {
         banco_nome: "",
         auto_pagar: !1,
         mes_referencia: tt(new Date, "yyyy-MM-dd")
-    }), o = Ar(), {
+    }), o = Ar();
+    const [selectedMonth, setSelectedMonth] = C.useState(() => localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
+    C.useEffect(() => {
+        const handleMonthChange = () => {
+            setSelectedMonth(localStorage.getItem("financeai_selected_month") || tt(new Date(), "yyyy-MM"));
+        };
+        window.addEventListener("financeai_month_changed", handleMonthChange);
+        return () => window.removeEventListener("financeai_month_changed", handleMonthChange);
+    }, []);
+    const handleMonthSelect = (newMonth) => {
+        setSelectedMonth(newMonth);
+        localStorage.setItem("financeai_selected_month", newMonth);
+        window.dispatchEvent(new Event("financeai_month_changed"));
+    };
+    const getMonthOptions = () => {
+        const options = [];
+        const start = new Date();
+        start.setMonth(start.getMonth() - 12);
+        for (let i = 0; i <= 24; i++) {
+            const date = new Date(start.getFullYear(), start.getMonth() + i, 1);
+            const label = tt(date, "MMMM 'de' yyyy", { locale: bn });
+            options.push({
+                value: tt(date, "yyyy-MM"),
+                label: label.charAt(0).toUpperCase() + label.slice(1)
+            });
+        }
+        return options;
+    };
+    const {
         data: s = []
     } = Ve({
         queryKey: ["debts"],
@@ -71569,6 +71667,11 @@ function vIe() {
         const E = (k.parcelas_pagas || 0) + 1,
             O = (k.valor_pago || 0) + (k.valor_parcela || 0),
             P = k.parcelas_total && E >= k.parcelas_total;
+        const payDate = selectedMonth === tt(new Date(), "yyyy-MM") ? tt(new Date(), "yyyy-MM-dd") : `${selectedMonth}-01`;
+        const pags = Array.isArray(k.pagamentos) ? [...k.pagamentos] : [];
+        if (!pags.includes(selectedMonth)) {
+            pags.push(selectedMonth);
+        }
         f.mutate({
             id: k.id,
             data: { ...k,
@@ -71576,10 +71679,11 @@ function vIe() {
                 valor_pago: O,
                 status: P ? "quitada" : "ativa",
                 mes_atual_pago: !0,
-                ultimo_pagamento: tt(new Date(), "yyyy-MM-dd")
+                ultimo_pagamento: payDate,
+                pagamentos: pags
             }
         })
-    }, v = s.filter(k => k.status === "ativa"), b = v.reduce((k, S) => k + (S.valor_total - S.valor_pago), 0), j = s.reduce((k, S) => k + getDebtInstallmentForMonth(S, new Date().toISOString().substring(0, 7)), 0), N = {
+    }, v = s.filter(k => k.status === "ativa" && isItemCreatedBeforeOrInMonth(k, selectedMonth)), b = v.reduce((k, S) => k + (S.valor_total - S.valor_pago), 0), j = s.reduce((k, S) => k + getDebtInstallmentForMonth(S, selectedMonth), 0), N = {
         cartao_credito: "Cartão de Crédito",
         emprestimo: "Empréstimo",
         financiamento: "Financiamento",
@@ -71596,7 +71700,7 @@ function vIe() {
                         className: "text-3xl font-bold text-white mb-2",
                         children: "Dívidas"
                     }), l.jsx("p", {
-                        className: "text-gray-400",
+                        className: "text-gray-400 mb-2",
                         children: "Acompanhe e gerencie seus débitos"
                     })]
                 }), l.jsxs(xe, {
@@ -71679,7 +71783,7 @@ function vIe() {
                         children: "Todas as Dívidas"
                     }), l.jsxs("div", {
                         className: "space-y-4",
-                        children: [s.map(k => {
+                        children: [s.filter(k => isItemCreatedBeforeOrInMonth(k, selectedMonth)).map(k => {
                             const S = k.parcelas_total ? k.parcelas_pagas / k.parcelas_total * 100 : 0,
                                 E = k.valor_total - k.valor_pago;
                             return l.jsxs("div", {
@@ -71699,7 +71803,7 @@ function vIe() {
                                             }), k.status === "quitada" && l.jsx("span", {
                                                 className: "text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded",
                                                 children: "Quitada"
-                                            }), k.status === "ativa" && isDebtPaidInMonth(k, tt(new Date(), "yyyy-MM")) && l.jsx("span", {
+                                            }), k.status === "ativa" && isDebtPaidInMonth(k, selectedMonth) && l.jsx("span", {
                                                 className: "text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded",
                                                 children: "✅ Parcela Paga"
                                             })]
@@ -71713,7 +71817,7 @@ function vIe() {
                                         className: "flex flex-col items-end gap-1 flex-shrink-0",
                                         children: [l.jsxs("div", {
                                             className: "flex items-center gap-1 flex-wrap justify-end",
-                                            children: [k.status === "ativa" && !isDebtPaidInMonth(k, tt(new Date(), "yyyy-MM")) && l.jsxs(xe, {
+                                            children: [k.status === "ativa" && !isDebtPaidInMonth(k, selectedMonth) && l.jsxs(xe, {
                                                 variant: "ghost",
                                                 size: "sm",
                                                 onClick: () => x(k),
@@ -71750,7 +71854,7 @@ function vIe() {
                                     className: "h-2"
                                 })]
                             }, k.id)
-                        }), s.length === 0 && l.jsx("div", {
+                        }), s.filter(k => isItemCreatedBeforeOrInMonth(k, selectedMonth)).length === 0 && l.jsx("div", {
                             className: "text-center py-12 text-gray-500",
                             children: "Nenhuma dívida cadastrada"
                         })]
@@ -72029,7 +72133,7 @@ function xIe() {
     const itemStyle = {
         color: isDark ? "#fff" : "#1f2937"
     };
-    const [e, t] = C.useState(!1), [n, r] = C.useState(!1), [a, i] = C.useState("mensal"), [o, s] = C.useState(""), {
+    const [e, t] = C.useState(!1), [n, r] = C.useState(!1), [a, i] = C.useState("mensal"), [o, s] = C.useState(""), [detailOpen, setDetailOpen] = C.useState(!1), [selectedDetailPeriod, setSelectedDetailPeriod] = C.useState(null), [detailType, setDetailType] = C.useState("mensal"), {
         data: c = []
     } = Ve({
         queryKey: ["incomes"],
@@ -72086,12 +72190,12 @@ function xIe() {
             if (H.setMonth(F.getMonth() + D), Gw(R, RM(H))) break;
             const V = tt(H, "yyyy-MM"),
                 X = c.filter(ae => {
-                    const ge = ae.tipo !== "devedor",
+                    const ge = ae.tipo !== "devedor" || ae.status === "recebido",
                         Se = ae.status === "recebido",
                         ce = ae.mes_referencia ? tt(new Date(ae.mes_referencia), "yyyy-MM") : null;
                     return ge && Se && (ce === V || ae.recorrente)
                 }).reduce((ae, ge) => ae + ge.valor, 0),
-                L = d.filter(ae => ae.ativa).reduce((ae, ge) => ae + ge.valor, 0),
+                L = d.filter(ae => ae.ativa && (!ae.mes_referencia || ae.mes_referencia.includes(V)) && isItemCreatedBeforeOrInMonth(ae, V)).reduce((ae, ge) => ae + ge.valor, 0),
                 z = f.reduce((ae, ge) => ae + getDebtInstallmentForMonth(ge, V), 0),
                 G = p.filter(ae => {
                     const ge = ae.data_vencimento ? new Date(ae.data_vencimento) : null;
@@ -72144,10 +72248,10 @@ function xIe() {
                     return ae && nue(ae, {
                         start: U,
                         end: D
-                    }) && pe.status === "recebido" && pe.tipo !== "devedor"
+                    }) && pe.status === "recebido" && (pe.tipo !== "devedor" || pe.status === "recebido")
                 }).reduce((pe, ae) => pe + ae.valor, 0),
                 V = 4.33,
-                X = d.filter(pe => pe.ativa).reduce((pe, ae) => pe + ae.valor, 0) / V,
+                X = d.filter(pe => pe.ativa && (!pe.mes_referencia || pe.mes_referencia.includes(tt(U, "yyyy-MM"))) && isItemCreatedBeforeOrInMonth(pe, tt(U, "yyyy-MM"))).reduce((pe, ae) => pe + ae.valor, 0) / V,
                 L = f.reduce((pe, ae) => pe + getDebtInstallmentForMonth(ae, tt(U, "yyyy-MM")), 0) / V,
                 z = 0,
                 G = m.filter(pe => pe.status === "ativo").reduce((pe, ae) => pe + (ae.economia_mensal || 0), 0) / V,
@@ -72159,6 +72263,8 @@ function xIe() {
             I.push({
                 semana: `${tt(U,"dd/MM",{locale:bn})} - ${tt(D,"dd/MM/yy",{locale:bn})}`,
                 semanaCompleta: `Semana de ${tt(U,"dd/MM/yyyy",{locale:bn})} a ${tt(D,"dd/MM/yyyy",{locale:bn})}`,
+                start: U,
+                end: D,
                 weekKey: tt(U, "yyyy-ww"),
                 receitas: be,
                 despesas: me,
@@ -72305,7 +72411,7 @@ function xIe() {
         t(!1)
     }, S = I => {
         const M = new Date,
-            R = c.filter(G => G.tipo !== "devedor").reduce((G, B) => G + (B.tipo === "salario_semanal" ? (B.valor || 0) * 4.33 : B.valor || 0), 0),
+            R = c.filter(G => G.tipo !== "devedor" || G.status === "recebido").reduce((G, B) => G + (B.tipo === "salario_semanal" ? (B.valor || 0) * 4.33 : B.valor || 0), 0),
             F = g.reduce((G, B) => G + (B.retirada_mensal || 0), 0),
             W = d.filter(G => G.ativa).reduce((G, B) => G + B.valor, 0),
             U = f.reduce((G, B) => G + getDebtInstallmentForMonth(B, new Date().toISOString().substring(0, 7)), 0),
@@ -72337,6 +72443,47 @@ function xIe() {
         let I;
         o && (a === "mensal" ? I = b.find(M => M.monthKey === o) : I = j.find(M => M.weekKey === o)), I || (I = S(a)), k(I, a), r(!1)
     }, O = b.reduce((I, M) => I + M.receitas, 0), P = b.reduce((I, M) => I + M.despesas, 0), $ = O - P;
+    const getDetailItems = () => {
+        if (!selectedDetailPeriod) return { incomes: [], fixedExpenses: [], debts: [], creditCards: [] };
+        if (detailType === "mensal") {
+            const V = selectedDetailPeriod.monthKey;
+            const periodIncomes = c.filter(inc => {
+                const isPaidDevedor = inc.tipo === "devedor" && inc.status === "recebido";
+                const isNormalIncome = inc.tipo !== "devedor";
+                const hasRef = inc.mes_referencia && inc.mes_referencia.includes(V);
+                const isRecur = inc.recorrente || inc.tipo === "salario_semanal";
+                return (isNormalIncome || isPaidDevedor) && (hasRef || isRecur);
+            });
+            const periodExpenses = d.filter(fe => fe.ativa && (!fe.mes_referencia || fe.mes_referencia.includes(V)) && isItemCreatedBeforeOrInMonth(fe, V));
+            const periodDebts = f.filter(debt => getDebtInstallmentForMonth(debt, V) > 0);
+            const periodCards = p.filter(card => {
+                const cardDate = card.data_vencimento ? new Date(card.data_vencimento) : null;
+                return cardDate ? tt(cardDate, "yyyy-MM") === V && (card.valor_fatura_atual || 0) > 0 : !1;
+            });
+            return { incomes: periodIncomes, fixedExpenses: periodExpenses, debts: periodDebts, creditCards: periodCards };
+        } else {
+            const start = selectedDetailPeriod.start;
+            const end = selectedDetailPeriod.end;
+            const monthKey = tt(start, "yyyy-MM");
+            const periodIncomes = c.filter(inc => {
+                const incDate = inc.mes_referencia ? new Date(inc.mes_referencia) : null;
+                const isPaidDevedor = inc.tipo === "devedor" && inc.status === "recebido";
+                const isNormalIncome = inc.tipo !== "devedor";
+                return (isNormalIncome || isPaidDevedor) && incDate && nue(incDate, { start, end });
+            });
+            const periodExpenses = d.filter(fe => fe.ativa && (!fe.mes_referencia || fe.mes_referencia.includes(monthKey)) && isItemCreatedBeforeOrInMonth(fe, monthKey)).map(fe => ({
+                ...fe,
+                valor: fe.valor / 4.33,
+                isWeeklyProportional: !0
+            }));
+            const periodDebts = f.filter(debt => getDebtInstallmentForMonth(debt, monthKey) > 0).map(debt => ({
+                ...debt,
+                valor: getDebtInstallmentForMonth(debt, monthKey) / 4.33,
+                isWeeklyProportional: !0
+            }));
+            return { incomes: periodIncomes, fixedExpenses: periodExpenses, debts: periodDebts, creditCards: [] };
+        }
+    };
     return l.jsx("div", {
         className: "min-h-screen p-4 md:p-8 " + (isDark ? "bg-[#0f0f0f]" : "bg-gray-50/50"),
         children: l.jsxs("div", {
@@ -72534,7 +72681,12 @@ function xIe() {
                                         })
                                     }), l.jsx("tbody", {
                                         children: b.map((I, M) => l.jsxs("tr", {
-                                            className: "border-b border-[#1a1a1a] hover:bg-[#1a1a1a] transition-colors",
+                                            className: "border-b border-[#1a1a1a] hover:bg-[#1a1a1a]/80 transition-colors cursor-pointer",
+                                            onClick: () => {
+                                                setSelectedDetailPeriod(I);
+                                                setDetailType("mensal");
+                                                setDetailOpen(!0);
+                                            },
                                             children: [l.jsx("td", {
                                                 className: "py-4 px-4 text-white font-medium",
                                                 children: I.mesCompleto
@@ -72553,9 +72705,22 @@ function xIe() {
                                                 children: ["R$ ", Math.abs(I.saldo).toLocaleString("pt-BR", {
                                                     minimumFractionDigits: 2
                                                 })]
-                                            }), l.jsx("td", {
-                                                className: "py-4 px-4 text-center",
-                                                children: l.jsx(xe, {
+                                            }), l.jsxs("td", {
+                                                className: "py-4 px-4 text-center flex items-center justify-center gap-2",
+                                                onClick: G => G.stopPropagation(),
+                                                children: [l.jsx(xe, {
+                                                    onClick: () => {
+                                                        setSelectedDetailPeriod(I);
+                                                        setDetailType("mensal");
+                                                        setDetailOpen(!0);
+                                                    },
+                                                    variant: "ghost",
+                                                    size: "sm",
+                                                    className: "text-gray-400 hover:text-white hover:bg-white/10",
+                                                    children: l.jsx(Qoe, {
+                                                        className: "w-4 h-4"
+                                                    })
+                                                }), l.jsx(xe, {
                                                     onClick: () => k(I, "mensal"),
                                                     disabled: e,
                                                     variant: "ghost",
@@ -72564,7 +72729,7 @@ function xIe() {
                                                     children: l.jsx(zw, {
                                                         className: "w-4 h-4"
                                                     })
-                                                })
+                                                })]
                                             })]
                                         }, M))
                                     })]
@@ -72667,7 +72832,12 @@ function xIe() {
                                         })
                                     }), l.jsx("tbody", {
                                         children: j.map((I, M) => l.jsxs("tr", {
-                                            className: "border-b border-[#1a1a1a] hover:bg-[#1a1a1a] transition-colors",
+                                            className: "border-b border-[#1a1a1a] hover:bg-[#1a1a1a]/80 transition-colors cursor-pointer",
+                                            onClick: () => {
+                                                setSelectedDetailPeriod(I);
+                                                setDetailType("semanal");
+                                                setDetailOpen(!0);
+                                            },
                                             children: [l.jsx("td", {
                                                 className: "py-4 px-4 text-white font-medium",
                                                 children: I.semanaCompleta
@@ -72686,9 +72856,22 @@ function xIe() {
                                                 children: ["R$ ", Math.abs(I.saldo).toLocaleString("pt-BR", {
                                                     minimumFractionDigits: 2
                                                 })]
-                                            }), l.jsx("td", {
-                                                className: "py-4 px-4 text-center",
-                                                children: l.jsx(xe, {
+                                            }), l.jsxs("td", {
+                                                className: "py-4 px-4 text-center flex items-center justify-center gap-2",
+                                                onClick: G => G.stopPropagation(),
+                                                children: [l.jsx(xe, {
+                                                    onClick: () => {
+                                                        setSelectedDetailPeriod(I);
+                                                        setDetailType("semanal");
+                                                        setDetailOpen(!0);
+                                                    },
+                                                    variant: "ghost",
+                                                    size: "sm",
+                                                    className: "text-gray-400 hover:text-white hover:bg-white/10",
+                                                    children: l.jsx(Qoe, {
+                                                        className: "w-4 h-4"
+                                                    })
+                                                }), l.jsx(xe, {
                                                     onClick: () => k(I, "semanal"),
                                                     disabled: e,
                                                     variant: "ghost",
@@ -72697,7 +72880,7 @@ function xIe() {
                                                     children: l.jsx(zw, {
                                                         className: "w-4 h-4"
                                                     })
-                                                })
+                                                })]
                                             })]
                                         }, M))
                                     })]
@@ -72798,6 +72981,209 @@ function xIe() {
                         })]
                     })]
                 })
+            }), l.jsx(zr, {
+                open: detailOpen,
+                onOpenChange: setDetailOpen,
+                children: selectedDetailPeriod && (() => {
+                    const { incomes: detailIncomes, fixedExpenses: detailExpenses, debts: detailDebts, creditCards: detailCards } = getDetailItems();
+                    return l.jsxs(_r, {
+                        className: "bg-[#1a1a1a] border-[#2a2a2a] text-white w-[90vw] max-w-2xl",
+                        children: [l.jsx(jr, {
+                            children: l.jsxs(Nr, {
+                                className: "text-xl font-bold flex items-center justify-between",
+                                children: [l.jsxs("span", {
+                                    children: [detailType === "mensal" ? "📅 Histórico: " : "📆 Histórico: ", detailType === "mensal" ? selectedDetailPeriod.mesCompleto : selectedDetailPeriod.semanaCompleta]
+                                }), l.jsxs("span", {
+                                    className: `text-xs px-2.5 py-1 rounded-full font-semibold ${selectedDetailPeriod.saldo>=0?"bg-green-500/20 text-green-400":"bg-red-500/20 text-red-400"}`,
+                                    children: ["Saldo: R$ ", selectedDetailPeriod.saldo.toLocaleString("pt-BR", {
+                                        minimumFractionDigits: 2
+                                    })]
+                                })]
+                            })
+                        }), l.jsxs("div", {
+                            className: "max-h-[60vh] overflow-y-auto space-y-6 pr-1 mt-4",
+                            children: [l.jsxs("div", {
+                                className: "space-y-2",
+                                children: [l.jsxs("h4", {
+                                    className: "text-sm font-semibold text-green-400 border-b border-[#2a2a2a] pb-1 flex justify-between items-center",
+                                    children: [l.jsx("span", {
+                                        children: "💰 Receitas"
+                                    }), l.jsxs("span", {
+                                        className: "text-xs font-normal text-gray-400",
+                                        children: ["Total: R$ ", selectedDetailPeriod.receitas.toLocaleString("pt-BR", {
+                                            minimumFractionDigits: 2
+                                        })]
+                                    })]
+                                }), detailIncomes.length === 0 ? l.jsx("p", {
+                                    className: "text-gray-500 text-sm italic py-1",
+                                    children: "Nenhuma receita registrada."
+                                }) : l.jsx("div", {
+                                    className: "space-y-1.5",
+                                    children: detailIncomes.map((item, idx) => l.jsxs("div", {
+                                        className: "flex justify-between items-center bg-[#222] p-2.5 rounded border border-[#2a2a2a]",
+                                        children: [l.jsxs("div", {
+                                            children: [l.jsx("p", {
+                                                className: "text-sm font-medium text-white",
+                                                children: item.devedor_nome ? `👤 ${item.devedor_nome}` : item.descricao
+                                            }), l.jsx("p", {
+                                                className: "text-[11px] text-gray-400",
+                                                children: item.tipo === "salario_semanal" ? "Salário Semanal" : item.tipo === "devedor" ? "Devedor (A Receber)" : "Receita"
+                                            })]
+                                        }), l.jsxs("div", {
+                                            className: "flex items-center gap-2",
+                                            children: [l.jsxs("span", {
+                                                className: "text-sm font-semibold text-green-400",
+                                                children: ["R$ ", item.valor.toLocaleString("pt-BR", {
+                                                    minimumFractionDigits: 2
+                                                })]
+                                            }), l.jsx("span", {
+                                                className: `text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${item.status==="recebido"?"bg-green-500/20 text-green-400":"bg-yellow-500/20 text-yellow-400"}`,
+                                                children: item.status === "recebido" ? "Recebido" : "Pendente"
+                                            })]
+                                        })]
+                                    }, idx))
+                                })]
+                            }), l.jsxs("div", {
+                                className: "space-y-2",
+                                children: [l.jsxs("h4", {
+                                    className: "text-sm font-semibold text-red-400 border-b border-[#2a2a2a] pb-1 flex justify-between items-center",
+                                    children: [l.jsx("span", {
+                                        children: "💸 Despesas Fixas"
+                                    }), l.jsxs("span", {
+                                        className: "text-xs font-normal text-gray-400",
+                                        children: ["Total: R$ ", detailExpenses.reduce((sum, item) => sum + item.valor, 0).toLocaleString("pt-BR", {
+                                            minimumFractionDigits: 2
+                                        })]
+                                    })]
+                                }), detailExpenses.length === 0 ? l.jsx("p", {
+                                    className: "text-gray-500 text-sm italic py-1",
+                                    children: "Nenhuma despesa fixa registrada."
+                                }) : l.jsx("div", {
+                                    className: "space-y-1.5",
+                                    children: detailExpenses.map((item, idx) => {
+                                        const isPaid = isFixedExpensePaidInMonth(item, detailType === "mensal" ? selectedDetailPeriod.monthKey : tt(selectedDetailPeriod.start, "yyyy-MM"));
+                                        return l.jsxs("div", {
+                                            className: "flex justify-between items-center bg-[#222] p-2.5 rounded border border-[#2a2a2a]",
+                                            children: [l.jsxs("div", {
+                                                children: [l.jsx("p", {
+                                                    className: "text-sm font-medium text-white",
+                                                    children: item.descricao
+                                                }), item.isWeeklyProportional && l.jsx("p", {
+                                                    className: "text-[10px] text-orange-400",
+                                                    children: "(proporcional semanal)"
+                                                })]
+                                            }), l.jsxs("div", {
+                                                className: "flex items-center gap-2",
+                                                children: [l.jsxs("span", {
+                                                    className: "text-sm font-semibold text-red-400",
+                                                    children: ["R$ ", item.valor.toLocaleString("pt-BR", {
+                                                        minimumFractionDigits: 2
+                                                    })]
+                                                }), l.jsx("span", {
+                                                    className: `text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${isPaid?"bg-green-500/20 text-green-400":"bg-red-500/20 text-red-400"}`,
+                                                    children: isPaid ? "Pago" : "Pendente"
+                                                })]
+                                            })]
+                                        }, idx);
+                                    })
+                                })]
+                            }), l.jsxs("div", {
+                                className: "space-y-2",
+                                children: [l.jsxs("h4", {
+                                    className: "text-sm font-semibold text-orange-400 border-b border-[#2a2a2a] pb-1 flex justify-between items-center",
+                                    children: [l.jsx("span", {
+                                        children: "🛑 Dívidas"
+                                    }), l.jsxs("span", {
+                                        className: "text-xs font-normal text-gray-400",
+                                        children: ["Total: R$ ", detailDebts.reduce((sum, item) => sum + (item.isWeeklyProportional ? item.valor : getDebtInstallmentForMonth(item, detailType === "mensal" ? selectedDetailPeriod.monthKey : tt(selectedDetailPeriod.start, "yyyy-MM"))), 0).toLocaleString("pt-BR", {
+                                            minimumFractionDigits: 2
+                                        })]
+                                    })]
+                                }), detailDebts.length === 0 ? l.jsx("p", {
+                                    className: "text-gray-500 text-sm italic py-1",
+                                    children: "Nenhuma dívida registrada."
+                                }) : l.jsx("div", {
+                                    className: "space-y-1.5",
+                                    children: detailDebts.map((item, idx) => {
+                                        const monthKey = detailType === "mensal" ? selectedDetailPeriod.monthKey : tt(selectedDetailPeriod.start, "yyyy-MM");
+                                        const installmentVal = item.isWeeklyProportional ? item.valor : getDebtInstallmentForMonth(item, monthKey);
+                                        const isPaid = isDebtPaidInMonth(item, monthKey);
+                                        return l.jsxs("div", {
+                                            className: "flex justify-between items-center bg-[#222] p-2.5 rounded border border-[#2a2a2a]",
+                                            children: [l.jsxs("div", {
+                                                children: [l.jsx("p", {
+                                                    className: "text-sm font-medium text-white",
+                                                    children: item.descricao
+                                                }), l.jsxs("p", {
+                                                    className: "text-[11px] text-gray-400",
+                                                    children: [item.total_parcelas ? `Parcela ${item.parcela_atual||1} de ${item.total_parcelas}` : "Dívida Simples", item.isWeeklyProportional ? " • (proporcional semanal)" : ""]
+                                                })]
+                                            }), l.jsxs("div", {
+                                                className: "flex items-center gap-2",
+                                                children: [l.jsxs("span", {
+                                                    className: "text-sm font-semibold text-red-400",
+                                                    children: ["R$ ", installmentVal.toLocaleString("pt-BR", {
+                                                        minimumFractionDigits: 2
+                                                    })]
+                                                }), l.jsx("span", {
+                                                    className: `text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${isPaid?"bg-green-500/20 text-green-400":"bg-red-500/20 text-red-400"}`,
+                                                    children: isPaid ? "Pago" : "Pendente"
+                                                })]
+                                            })]
+                                        }, idx);
+                                    })
+                                })]
+                            }), detailType === "mensal" && l.jsxs("div", {
+                                className: "space-y-2",
+                                children: [l.jsxs("h4", {
+                                    className: "text-sm font-semibold text-blue-400 border-b border-[#2a2a2a] pb-1 flex justify-between items-center",
+                                    children: [l.jsx("span", {
+                                        children: "💳 Cartões de Crédito"
+                                    }), l.jsxs("span", {
+                                        className: "text-xs font-normal text-gray-400",
+                                        children: ["Total: R$ ", detailCards.reduce((sum, item) => sum + (item.valor_fatura_atual || 0), 0).toLocaleString("pt-BR", {
+                                            minimumFractionDigits: 2
+                                        })]
+                                    })]
+                                }), detailCards.length === 0 ? l.jsx("p", {
+                                    className: "text-gray-500 text-sm italic py-1",
+                                    children: "Nenhuma fatura de cartão registrada."
+                                }) : l.jsx("div", {
+                                    className: "space-y-1.5",
+                                    children: detailCards.map((item, idx) => l.jsxs("div", {
+                                        className: "flex justify-between items-center bg-[#222] p-2.5 rounded border border-[#2a2a2a]",
+                                        children: [l.jsxs("div", {
+                                            children: [l.jsx("p", {
+                                                className: "text-sm font-medium text-white",
+                                                children: `💳 ${item.nome}`
+                                            }), l.jsx("p", {
+                                                className: "text-[11px] text-gray-400",
+                                                children: `Vence dia ${item.dia_vencimento}`
+                                            })]
+                                        }), l.jsxs("div", {
+                                            className: "flex items-center gap-2",
+                                            children: [l.jsxs("span", {
+                                                className: "text-sm font-semibold text-red-400",
+                                                children: ["R$ ", (item.valor_fatura_atual || 0).toLocaleString("pt-BR", {
+                                                    minimumFractionDigits: 2
+                                                })]
+                                            }), l.jsx("span", {
+                                                className: "text-[9px] uppercase font-bold px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-400",
+                                                children: "Fatura Atual"
+                                            })]
+                                        })]
+                                    }, idx))
+                                })]
+                            })]
+                        }), l.jsx(AU, {
+                            children: l.jsx(xe, {
+                                onClick: () => setDetailOpen(!1),
+                                className: "bg-white text-black hover:bg-gray-200 mt-4",
+                                children: "Fechar"
+                            })
+                        })]
+                    })
+                })()
             })]
         })
     })
@@ -72951,7 +73337,7 @@ async function checkAndTriggerNotifications(data) {
     // 4. Porcentagem de Despesas sobre Receitas (>80%)
     const totalIncome = incomes.filter(inc => {
         var ref;
-        return inc.tipo !== "devedor" && (inc.recorrente || inc.tipo === "salario_semanal" || ((ref = inc.mes_referencia) == null ? void 0 : ref.includes(yearMonth)))
+        return (inc.tipo !== "devedor" || inc.status === "recebido") && (inc.recorrente || inc.tipo === "salario_semanal" || ((ref = inc.mes_referencia) == null ? void 0 : ref.includes(yearMonth)))
     }).reduce((sum, inc) => sum + (inc.tipo === "salario_semanal" ? (inc.valor || 0) * 4.33 : inc.valor || 0), 0);
 
     const totalExpense = fixedExpenses.filter(e => e.ativa).reduce((sum, e) => sum + (e.valor || 0), 0) +
@@ -73077,6 +73463,16 @@ function bIe() {
         localStorage.setItem("financeai_selected_month", S);
         window.dispatchEvent(new Event("financeai_month_changed"));
     }, [S]);
+    C.useEffect(() => {
+        const handleMonthChange = () => {
+            const stored = localStorage.getItem("financeai_selected_month");
+            if (stored && stored !== S) {
+                setS(stored);
+            }
+        };
+        window.addEventListener("financeai_month_changed", handleMonthChange);
+        return () => window.removeEventListener("financeai_month_changed", handleMonthChange);
+    }, [S]);
     const [selectedYear, selectedMonth] = S.split("-").map(Number);
     const getMonthOptions = () => {
         const options = [];
@@ -73174,16 +73570,16 @@ function bIe() {
         staleTime: 3e4
     }), O = new Date().getDate(), P = v.filter(K => {
     var ht;
-    const J = ((ht = K.mes_referencia) == null ? void 0 : ht.includes(S)) || K.recorrente || K.tipo === "salario_semanal";
-    return K.tipo !== "devedor" && J
+    const J = (((ht = K.mes_referencia) == null ? void 0 : ht.includes(S)) || K.recorrente || K.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(K, S);
+    return (K.tipo !== "devedor" || K.status === "recebido") && J
 }).reduce((K, J) => {
     const ve = J.valor || 0;
     return K + ve
-}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente").reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S))).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.filter(K => {
+}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.filter(K => {
     const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
         ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
-    return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0
-}).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), W = b.filter(K => new Date(K.data_inicio) <= new Date).reduce((K, J) => K + (J.aporte_mensal || 0), 0), U = b.reduce((K, J) => K + (J.valor_investido || 0), 0), D = b.reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), H = b.reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo").reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V + W, z = X - L, G = j.filter(K => K.status === "ativo"), ie = X === 0 ? z >= 0 ? {
+    return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
+}).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.valor_investido || 0), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V + W, z = X - L, activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), ie = X === 0 ? z >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/20 text-yellow-400",
         emoji: "😊"
@@ -73225,7 +73621,7 @@ function bIe() {
             const meInvestimento = b.filter($e => new Date($e.data_inicio) <= It).reduce(($e, Je) => $e + (Je.aporte_mensal || 0), 0);
             if (!v.some($e => {
                     var Je;
-                    return $e.tipo !== "devedor" && ((Je = $e.mes_referencia) == null ? void 0 : Je.startsWith(zt))
+                    return ($e.tipo !== "devedor" || $e.status === "recebido") && ((Je = $e.mes_referencia) == null ? void 0 : Je.startsWith(zt))
                 })) {
                 K.push({
                     mes: tt(It, "MMM/yy", {
@@ -73240,7 +73636,7 @@ function bIe() {
             }
             const rr = v.filter($e => {
                     var Je;
-                    return $e.tipo !== "devedor" && ((Je = $e.mes_referencia) == null ? void 0 : Je.startsWith(zt))
+                    return ($e.tipo !== "devedor" || $e.status === "recebido") && ((Je = $e.mes_referencia) == null ? void 0 : Je.startsWith(zt))
                 }).reduce(($e, Je) => {
                     const St = Je.valor || 0;
                     return $e + St
@@ -73290,7 +73686,7 @@ function bIe() {
                 title: "💳 Faturas de Cartão Altas",
                 message: `Suas faturas representam ${(F/X*100).toFixed(0)}% da sua renda. Cuidado com o endividamento!`
             });
-            const ve = x.filter(at => at.status === "ativa");
+            const ve = x.filter(at => at.status === "ativa" && isItemCreatedBeforeOrInMonth(at, S));
             if (ve.length > 0) {
                 const at = ve.reduce((de, Ce) => de + ((Ce.valor_total || 0) - (Ce.valor_pago || 0)), 0);
                 J.push({
@@ -73307,7 +73703,7 @@ function bIe() {
             });
             const ht = new Date,
                 It = ht.getDate(),
-                zt = w.filter(at => at.ativa && at.status === "pendente").filter(at => {
+                zt = w.filter(at => at.ativa && (!at.mes_referencia || at.mes_referencia.includes(S)) && !isFixedExpensePaidInMonth(at, S)).filter(at => {
                     if (typeof at.dia_vencimento != "number" || at.dia_vencimento < 1 || at.dia_vencimento > 31) return !1;
                     let de = at.dia_vencimento - It;
                     return de < 0 && (de = new Date(ht.getFullYear(), ht.getMonth() + 1, 0).getDate() - It + at.dia_vencimento), de <= 3 && de >= 0
@@ -73353,7 +73749,7 @@ function bIe() {
                 title: "🎉 Parabéns!",
                 message: `Seu saldo livre de R$ ${z.toLocaleString("pt-BR",{minimumFractionDigits:2})} está excelente! Continue com essa disciplina financeira!`
             });
-            const rr = w.filter(at => at.ativa && at.status === "pendente").length;
+            const rr = w.filter(at => at.ativa && (!at.mes_referencia || at.mes_referencia.includes(S)) && !isFixedExpensePaidInMonth(at, S)).length;
             rr > 5 && J.push({
                 type: "warning",
                 title: "📋 Despesas Pendentes",
@@ -73366,7 +73762,7 @@ function bIe() {
             }
         };
         w.length > 0 || x.length > 0 || v.length > 0 || b.length > 0 || j.length > 0 || N.length > 0 ? K() : i(!1)
-    }, [w, x, v, b, j, N, z, D, H, F, X, M, $, G, U, f, O]);
+    }, [w, x, v, b, j, N, z, D, H, F, X, M, $, G, U, f, O, S]);
     const pe = w.reduce((K, J) => {
         if (!J.ativa) return K;
         const ve = J.categoria || "outros";
@@ -73420,12 +73816,12 @@ function bIe() {
             }
         }),
         ge = ["#ef4444", "#f97316", "#f59e0b", "#84cc16", "#10b981", "#14b8a6", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e"],
-        Se = [...w.filter(K => K.ativa && K.status === "pendente").map(K => ({
+        Se = [...w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && !isFixedExpensePaidInMonth(K, S) && isItemCreatedBeforeOrInMonth(K, S)).map(K => ({
             nome: K.nome,
             valor: K.valor,
             vencimento: K.dia_vencimento,
             tipo: "Despesa"
-        })), ...x.filter(K => K.status === "ativa" && (!K.mes_atual_pago || K.mes_atual_pago === !1)).map(K => ({
+        })), ...x.filter(K => getDebtInstallmentForMonth(K, S) > 0 && !isDebtPaidInMonth(K, S) && isItemCreatedBeforeOrInMonth(K, S)).map(K => ({
             nome: K.nome,
             valor: K.valor_parcela,
             vencimento: K.dia_vencimento || 5,
@@ -73592,21 +73988,6 @@ function bIe() {
                                     className: "text-gray-400 text-sm",
                                     children: "Visão completa das suas finanças"
                                 }), l.jsxs("div", {
-                                    className: "flex items-center gap-2 mt-2 mb-1",
-                                    children: [l.jsx("span", {
-                                        className: "text-xs text-gray-500 font-medium",
-                                        children: "Mês de Referência:"
-                                    }), l.jsx("select", {
-                                        value: S,
-                                        onChange: K => setS(K.target.value),
-                                        className: "bg-[#1a1a1a] border border-[#2a2a2a] text-white rounded-lg px-2 py-1 text-xs outline-none cursor-pointer focus:border-blue-500 transition-colors",
-                                        children: getMonthOptions().map(K => l.jsx("option", {
-                                            value: K.value,
-                                            className: "bg-[#1a1a1a] text-white",
-                                            children: K.label
-                                        }, K.value))
-                                    })]
-                                }), l.jsxs("div", {
                                     className: "flex flex-wrap gap-1.5 mt-2",
                                     children: [l.jsxs(Be.button, {
                                         whileTap: {
@@ -73642,13 +74023,13 @@ function bIe() {
                                         children: ["📈 +R$ ", D.toLocaleString("pt-BR", {
                                             minimumFractionDigits: 2
                                         }), "/mês"]
-                                    }), x.filter(K => K.status === "ativa").length > 0 && l.jsxs(Be.button, {
+                                    }), activeDebts.length > 0 && l.jsxs(Be.button, {
                                         whileTap: {
                                             scale: .95
                                         },
                                         onClick: () => e(Qe("Dividas")),
                                         className: "text-xs px-3 py-1 rounded-full bg-orange-500/20 text-orange-400 font-semibold hover:opacity-80 transition-opacity",
-                                        children: ["💳 ", x.filter(K => K.status === "ativa").length, " dívida", x.filter(K => K.status === "ativa").length !== 1 ? "s" : ""]
+                                        children: ["💳 ", activeDebts.length, " dívida", activeDebts.length !== 1 ? "s" : ""]
                                     }), G.length > 0 && l.jsxs(Be.button, {
                                         whileTap: {
                                             scale: .95
@@ -77283,7 +77664,7 @@ function $Ie() {
                 status: V <= .01 ? "recebido" : "pendente"
             }
         }), i(!1), d("")
-    }, $ = g.filter(D => D.status === "recebido" && D.tipo !== "devedor").reduce((D, H) => D + (H.valor || 0), 0), I = g.filter(D => D.recorrente && D.status === "recebido").reduce((D, H) => D + H.valor, 0), M = g.filter(D => D.status === "pendente").reduce((D, H) => D + (H.valor - (H.valor_recebido || 0)), 0), R = C.useCallback(async () => {
+    }, $ = g.filter(D => D.status === "recebido" && (D.tipo !== "devedor" || D.status === "recebido")).reduce((D, H) => D + (H.valor || 0), 0), I = g.filter(D => D.recorrente && D.status === "recebido").reduce((D, H) => D + H.valor, 0), M = g.filter(D => D.status === "pendente").reduce((D, H) => D + (H.valor - (H.valor_recebido || 0)), 0), R = C.useCallback(async () => {
         await m.invalidateQueries({
             queryKey: ["incomes"]
         })
@@ -78844,7 +79225,7 @@ function A$e({
     }), x = tt(new Date, "yyyy-MM"), v = c.filter(L => {
         var B;
         const z = ((B = L.mes_referencia) == null ? void 0 : B.includes(x)) || L.recorrente || L.tipo === "salario_semanal";
-        return L.tipo !== "devedor" && z
+        return (L.tipo !== "devedor" || L.status === "recebido") && z
     }).reduce((L, z) => {
         const G = z.valor || 0;
         return L + G
@@ -79398,7 +79779,7 @@ function O$e() {
     const s = m => {
             const g = tt(m, "yyyy-MM"),
                 w = e.filter(P => {
-                    const $ = P.tipo !== "devedor",
+                    const $ = P.tipo !== "devedor" || P.status === "recebido",
                         I = P.status === "recebido",
                         M = P.mes_referencia ? P.mes_referencia.substring(0, 7) : null;
                     return $ && I && (M === g || P.recorrente)
