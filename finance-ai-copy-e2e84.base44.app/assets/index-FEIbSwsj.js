@@ -13930,8 +13930,27 @@ function $k(e) {
 function us(e) {
     try {
         const t = localStorage.getItem($k(e));
-        const parsed = t ? JSON.parse(t) : [];
-        return Array.isArray(parsed) ? parsed : [];
+        let parsed = t ? JSON.parse(t) : [];
+        if (!Array.isArray(parsed)) parsed = [];
+        if (e === "Settings" && parsed.length > 0 && parsed[0]) {
+            let modified = false;
+            if (parsed[0].liquid_glass_color1 === "#667eea") {
+                parsed[0].liquid_glass_color1 = "#7c3aed";
+                modified = true;
+            }
+            if (parsed[0].liquid_glass_gradient === "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)") {
+                parsed[0].liquid_glass_gradient = "linear-gradient(135deg, #7c3aed 0%, #764ba2 50%, #f093fb 100%)";
+                modified = true;
+            }
+            if (modified) {
+                try {
+                    localStorage.setItem($k(e), JSON.stringify(parsed));
+                } catch (err) {
+                    console.error("Failed to save patched Settings to localStorage:", err);
+                }
+            }
+        }
+        return parsed;
     } catch {
         return []
     }
