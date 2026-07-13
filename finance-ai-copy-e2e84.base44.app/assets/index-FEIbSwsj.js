@@ -68027,48 +68027,57 @@ function N4e() {
     }), U = (R && R[0]) || null,
     [selectedMonth, setSelectedMonth] = C.useState(() => new Date().toISOString().substring(0, 7)),
     D = C.useCallback(() => {
-        const B = selectedMonth,
-            [targetYear, targetMonth] = B.split("-").map(Number),
-            ie = E.filter(J => {
+        const B = selectedMonth;
+        const calculateBalanceForMonth = (monthKey) => {
+            const [tYear, tMonth] = monthKey.split("-").map(Number);
+            const incVal = E.filter(J => {
                 var ve;
-                const matchesMonth = (((ve = J.mes_referencia) == null ? void 0 : ve.includes(B)) || J.recorrente || J.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(J, B);
-                return (J.tipo !== "devedor" || J.status === "recebido") && matchesMonth
-            }).reduce((J, ve) => J + (ve.valor || 0), 0),
-            be = I.filter(J => isItemCreatedBeforeOrInMonth(J, B)).reduce((J, ve) => J + (ve.retirada_mensal || 0), 0),
-            me = W.reduce((J, ve) => J + Wv(ve, B), 0),
-            le = ie + be + me,
-            pe = O.filter(J => J.ativa && (!J.mes_referencia || J.mes_referencia.includes(B)) && isItemCreatedBeforeOrInMonth(J, B)).reduce((J, ve) => J + (ve.valor || 0), 0),
-            ae = P.reduce((J, ve) => J + getDebtInstallmentForMonth(ve, B), 0),
-            ge = $.filter(J => J.status === "ativo" && isItemCreatedBeforeOrInMonth(J, B)).reduce((J, ve) => J + (ve.economia_mensal || 0), 0),
-            Se = I.filter(J => isItemCreatedBeforeOrInMonth(J, B) && (!J.data_inicio || J.data_inicio.substring(0, 7) <= B)).reduce((J, ve) => J + (ve.aporte_mensal || 0), 0),
-            ce = F.filter(J => {
+                const matchesMonth = (((ve = J.mes_referencia) == null ? void 0 : ve.includes(monthKey)) || J.recorrente || J.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(J, monthKey);
+                return (J.tipo !== "devedor" || J.status === "recebido") && matchesMonth;
+            }).reduce((J, ve) => J + (ve.valor || 0), 0);
+            const retVal = I.filter(J => isItemCreatedBeforeOrInMonth(J, monthKey)).reduce((J, ve) => J + (ve.retirada_mensal || 0), 0);
+            const loanVal = W.reduce((J, ve) => J + Wv(ve, monthKey), 0);
+            const totalInc = incVal + retVal + loanVal;
+
+            const expVal = O.filter(J => J.ativa && (!J.mes_referencia || J.mes_referencia.includes(monthKey)) && isItemCreatedBeforeOrInMonth(J, monthKey)).reduce((J, ve) => J + (ve.valor || 0), 0);
+            const debtVal = P.reduce((J, ve) => J + getDebtInstallmentForMonth(ve, monthKey), 0);
+            const goalVal = $.filter(J => J.status === "ativo" && isItemCreatedBeforeOrInMonth(J, monthKey)).reduce((J, ve) => J + (ve.economia_mensal || 0), 0);
+            const investVal = I.filter(J => isItemCreatedBeforeOrInMonth(J, monthKey) && (!J.data_inicio || J.data_inicio.substring(0, 7) <= monthKey)).reduce((J, ve) => J + (ve.aporte_mensal || 0), 0);
+            const cardVal = F.filter(J => {
                 const ve = J.data_vencimento ? new Date(J.data_vencimento) : null,
-                    et = ve && (ve.getMonth() + 1) === targetMonth && ve.getFullYear() === targetYear;
-                return (J.status === "aberta" || et) && (J.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(J, B)
-            }).reduce((J, ve) => J + (ve.valor_fatura_atual || 0), 0),
-            qe = pe + ae + ge + Se + ce,
-            Ie = le - qe,
-            K = Array.from({
-                length: 6
-            }, (J, ve) => {
-                const et = new Date;
-                return et.setMonth(et.getMonth() + ve + 1), {
-                    mes: et.toLocaleDateString("pt-BR", {
-                        month: "long",
-                        year: "numeric"
-                    }),
-                    saldo: Ie
-                }
-            });
+                    et = ve && (ve.getMonth() + 1) === tMonth && ve.getFullYear() === tYear;
+                return (J.status === "aberta" || et) && (J.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(J, monthKey);
+            }).reduce((J, ve) => J + (ve.valor_fatura_atual || 0), 0);
+
+            const totalExp = expVal + debtVal + goalVal + investVal + cardVal;
+            return { totalInc, totalExp, balance: totalInc - totalExp };
+        };
+
+        const currentMonthData = calculateBalanceForMonth(B);
+        const K = Array.from({
+            length: 6
+        }, (J, ve) => {
+            const et = new Date();
+            et.setMonth(et.getMonth() + ve + 1);
+            const monthKey = tt(et, "yyyy-MM");
+            return {
+                mes: et.toLocaleDateString("pt-BR", {
+                    month: "long",
+                    year: "numeric"
+                }),
+                saldo: calculateBalanceForMonth(monthKey).balance
+            };
+        });
+
         return {
-            receitaMensal: le,
-            despesasMensais: qe,
-            saldoMensal: Ie,
+            receitaMensal: currentMonthData.totalInc,
+            despesasMensais: currentMonthData.totalExp,
+            saldoMensal: currentMonthData.balance,
             proximosMeses: K,
             totalInvestido: I.filter(J => isItemCreatedBeforeOrInMonth(J, B)).reduce((J, ve) => J + (ve.valor_investido || 0), 0),
             metasAtivas: $.filter(J => J.status === "ativo" && isItemCreatedBeforeOrInMonth(J, B)).length,
             dividasAtivas: P.filter(J => J.status === "ativa" && isItemCreatedBeforeOrInMonth(J, B)).length
-        }
+        };
     }, [E, O, P, $, I, F, W, selectedMonth]);
     C.useEffect(() => {
         const handleMonthChange = () => {
