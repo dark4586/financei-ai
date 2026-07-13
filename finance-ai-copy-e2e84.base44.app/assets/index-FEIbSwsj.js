@@ -69958,16 +69958,25 @@ function cIe() {
         ce = async K => {
             const J = K.target.files[0];
             if (J) {
-                f(!0);
+                f(true);
                 try {
-                    const ve = await be.mutateAsync(J);
-                    await le({
-                        app_background_url: ve.file_url
-                    })
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                        const base64Url = reader.result;
+                        await le({
+                            app_background_url: base64Url
+                        });
+                        f(false);
+                    };
+                    reader.onerror = () => {
+                        console.error("Erro ao ler o arquivo");
+                        f(false);
+                    };
+                    reader.readAsDataURL(J);
                 } catch (ve) {
-                    console.error("Erro ao fazer upload:", ve)
+                    console.error("Erro no upload/leitura:", ve);
+                    f(false);
                 }
-                f(!1)
             }
         },
         qe = [{
