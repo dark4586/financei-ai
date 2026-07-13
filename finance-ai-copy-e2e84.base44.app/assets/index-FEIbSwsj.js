@@ -73795,7 +73795,7 @@ function bIe() {
         const J = `aporte_${K.nome}`;
         pe[J] = (pe[J] || 0) + (K.aporte_mensal || 0)
     });
-    const ae = Object.entries(pe).map(([K, J]) => {
+        const ae = Object.entries(pe).map(([K, J]) => {
             let ve = K;
             const et = {
                 aluguel: "🏠 Aluguel",
@@ -73824,7 +73824,7 @@ function bIe() {
                 name: ve,
                 value: J
             }
-        }),
+        }).sort((a, b) => b.value - a.value),
         ge = ["#ef4444", "#f97316", "#f59e0b", "#84cc16", "#10b981", "#14b8a6", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e"],
         Se = [...w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && !isFixedExpensePaidInMonth(K, S) && isItemCreatedBeforeOrInMonth(K, S)).map(K => ({
             nome: K.nome,
