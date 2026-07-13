@@ -73224,205 +73224,224 @@ const requestNotificationPermission = async () => {
     }
 };
 
-async function checkAndTriggerNotifications(data) {
+let frontendCheckTimeout = null;
+const frontendTriggeredNotificationIds = new Set();
+
+function checkAndTriggerNotifications(data) {
     if (!data || !("Notification" in window) || Notification.permission !== "granted") return;
 
-    const dbOpen = () => new Promise((resolve) => {
-        const req = indexedDB.open("financeai_offline", 1);
-        req.onsuccess = e => resolve(e.target.result);
-        req.onerror = () => resolve(null);
-    });
+    if (frontendCheckTimeout) clearTimeout(frontendCheckTimeout);
 
-    const db = await dbOpen();
-    if (!db) return;
-
-    const isNotificationShown = (id) => new Promise((resolve) => {
-        try {
-            const tx = db.transaction("notifications", "readonly");
-            const store = tx.objectStore("notifications");
-            const getReq = store.get(id);
-            getReq.onsuccess = () => resolve(!!getReq.result);
-            getReq.onerror = () => resolve(false);
-        } catch {
-            resolve(false);
-        }
-    });
-
-    const markNotificationShown = (id) => new Promise((resolve) => {
-        try {
-            const tx = db.transaction("notifications", "readwrite");
-            const store = tx.objectStore("notifications");
-            store.put({ id, shown_at: Date.now() });
-            tx.oncomplete = () => resolve(true);
-            tx.onerror = () => resolve(false);
-        } catch {
-            resolve(false);
-        }
-    });
-
-    const showLocalNotification = (id, title, body, url) => {
-        navigator.serviceWorker.ready.then(registration => {
-            registration.showNotification(title, {
-                body: body,
-                icon: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png",
-                badge: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png",
-                data: { url: url },
-                vibrate: [200, 100, 200],
-                sound: "/assets/notification_sound.wav?v=8"
-            });
-            playCustomNotificationSound();
+    frontendCheckTimeout = setTimeout(async () => {
+        const dbOpen = () => new Promise((resolve) => {
+            const req = indexedDB.open("financeai_offline", 1);
+            req.onsuccess = e => resolve(e.target.result);
+            req.onerror = () => resolve(null);
         });
-        markNotificationShown(id);
-    };
 
-    const { fixedExpenses = [], debts = [], incomes = [], savings = [], goals = [], creditCards = [], loans = [], settings = {} } = data;
-    const now = new Date();
-    const yearMonth = tt(now, "yyyy-MM");
-    const todayStr = tt(now, "yyyy-MM-dd");
+        const db = await dbOpen();
+        if (!db) return;
 
-    // 1. Rendimento Diario
-    let dailyYield = 0;
-    savings.forEach(s => {
-        const val = parseFloat(s.valor_investido || 0);
-        const rate = parseFloat(s.taxa_rendimento || 0);
-        if (val > 0 && rate > 0) {
-            dailyYield += (val * (rate / 100)) / 365;
-        }
-    });
-    if (dailyYield > 0.01) {
-        const id = `daily_yield_${todayStr}`;
-        if (!(await isNotificationShown(id))) {
-            showLocalNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${dailyYield.toFixed(2)} hoje!`, "/MeusInvestimentos");
-        }
-    }
+        const isNotificationShown = (id) => new Promise((resolve) => {
+            if (frontendTriggeredNotificationIds.has(id)) {
+                resolve(true);
+                return;
+            }
+            try {
+                const tx = db.transaction("notifications", "readonly");
+                const store = tx.objectStore("notifications");
+                const getReq = store.get(id);
+                getReq.onsuccess = () => resolve(!!getReq.result);
+                getReq.onerror = () => resolve(false);
+            } catch {
+                resolve(false);
+            }
+        });
 
-    // 2. Cartao Negativo
-    for (const card of creditCards) {
-        const disp = parseFloat(card.limite_disponivel || 0);
-        if (disp < 0) {
-            const id = `card_negative_${card.id}_${todayStr}`;
+        const markNotificationShown = (id) => new Promise((resolve) => {
+            frontendTriggeredNotificationIds.add(id);
+            try {
+                const tx = db.transaction("notifications", "readwrite");
+                const store = tx.objectStore("notifications");
+                store.put({ id, shown_at: Date.now() });
+                tx.oncomplete = () => resolve(true);
+                tx.onerror = () => resolve(false);
+            } catch {
+                resolve(false);
+            }
+        });
+
+        let notificationsShownCount = 0;
+        const MAX_NOTIFICATIONS_PER_BATCH = 3;
+
+        const showLocalNotification = (id, title, body, url) => {
+            if (notificationsShownCount >= MAX_NOTIFICATIONS_PER_BATCH) return;
+            notificationsShownCount++;
+            frontendTriggeredNotificationIds.add(id);
+
+            navigator.serviceWorker.ready.then(registration => {
+                registration.showNotification(title, {
+                    body: body,
+                    icon: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png",
+                    badge: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png",
+                    data: { url: url },
+                    vibrate: [200, 100, 200],
+                    sound: "/assets/notification_sound.wav?v=8"
+                });
+                playCustomNotificationSound();
+            });
+            markNotificationShown(id);
+        };
+
+        const { fixedExpenses = [], debts = [], incomes = [], savings = [], goals = [], creditCards = [], loans = [], settings = {} } = data;
+        const now = new Date();
+        const yearMonth = tt(now, "yyyy-MM");
+        const todayStr = tt(now, "yyyy-MM-dd");
+
+        // 1. Rendimento Diario
+        let dailyYield = 0;
+        savings.forEach(s => {
+            const val = parseFloat(s.valor_investido || 0);
+            const rate = parseFloat(s.taxa_rendimento || 0);
+            if (val > 0 && rate > 0) {
+                dailyYield += (val * (rate / 100)) / 365;
+            }
+        });
+        if (dailyYield > 0.01) {
+            const id = `daily_yield_${todayStr}`;
             if (!(await isNotificationShown(id))) {
-                showLocalNotification(id, "🚨 Limite de Cartao Estourado!", `O limite disponivel do cartao "${card.nome}" esta negativo (R$ ${disp.toFixed(2)}).`, "/Bancos");
+                showLocalNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${dailyYield.toFixed(2)} hoje!`, "/MeusInvestimentos");
             }
         }
-    }
 
-    // 3. Limite de Cartao Critico
-    for (const card of creditCards) {
-        const disp = parseFloat(card.limite_disponivel || 0);
-        const total = parseFloat(card.limite_total || 0);
-        if (total > 0 && disp >= 0 && (disp / total) <= 0.10) {
-            const id = `card_low_limit_${card.id}_${yearMonth}`;
-            if (!(await isNotificationShown(id))) {
-                showLocalNotification(id, "💳 Limite Critico no Cartao", `Voce utilizou mais de 90% do limite do cartao "${card.nome}". Resta apenas R$ ${disp.toFixed(2)}.`, "/Bancos");
-            }
-        }
-    }
-
-    // 4. Porcentagem de Despesas sobre Receitas (>80%)
-    const totalIncome = incomes.filter(inc => {
-        var ref;
-        return (inc.tipo !== "devedor" || inc.status === "recebido") && (inc.recorrente || inc.tipo === "salario_semanal" || ((ref = inc.mes_referencia) == null ? void 0 : ref.includes(yearMonth)))
-    }).reduce((sum, inc) => sum + (inc.tipo === "salario_semanal" ? (inc.valor || 0) * 4.33 : inc.valor || 0), 0);
-
-    const totalExpense = fixedExpenses.filter(e => e.ativa).reduce((sum, e) => sum + (e.valor || 0), 0) +
-                         debts.reduce((sum, d) => sum + getDebtInstallmentForMonth(d, yearMonth), 0);
-
-    if (totalIncome > 0 && (totalExpense / totalIncome) >= 0.80) {
-        const id = `high_expense_ratio_${yearMonth}`;
-        if (!(await isNotificationShown(id))) {
-            const pct = ((totalExpense / totalIncome) * 100).toFixed(0);
-            showLocalNotification(id, "🚨 Despesas Altas!", `Suas despesas fixas e dividas ja consomem ${pct}% da sua receita total do mes.`, "/");
-        }
-    }
-
-    // 5. Meta Quase Atingida (>= 90%)
-    for (const goal of goals.filter(g => g.status === "ativo")) {
-        const target = parseFloat(goal.valor_alvo || 0);
-        const saved = parseFloat(goal.valor_economizado || 0);
-        if (target > 0) {
-            const pct = (saved / target) * 100;
-            if (pct >= 90 && pct < 100) {
-                const id = `goal_almost_${goal.id}_${yearMonth}`;
+        // 2. Cartao Negativo
+        for (const card of creditCards) {
+            const disp = parseFloat(card.limite_disponivel || 0);
+            if (disp < 0) {
+                const id = `card_negative_${card.id}_${todayStr}`;
                 if (!(await isNotificationShown(id))) {
-                    showLocalNotification(id, "🎯 Meta Quase Alcancada!", `Falta muito pouco! Voce esta a ${pct.toFixed(0)}% de concluir o objetivo "${goal.nome}".`, "/Objetivos");
+                    showLocalNotification(id, "🚨 Limite de Cartao Estourado!", `O limite disponivel do cartao "${card.nome}" esta negativo (R$ ${disp.toFixed(2)}).`, "/Bancos");
                 }
             }
         }
-    }
 
-    // 6. Meta Concluida
-    for (const goal of goals.filter(g => g.status === "ativo")) {
-        const target = parseFloat(goal.valor_alvo || 0);
-        const saved = parseFloat(goal.valor_economizado || 0);
-        if (target > 0 && saved >= target) {
-            const id = `goal_completed_${goal.id}`;
+        // 3. Limite de Cartao Critico
+        for (const card of creditCards) {
+            const disp = parseFloat(card.limite_disponivel || 0);
+            const total = parseFloat(card.limite_total || 0);
+            if (total > 0 && disp >= 0 && (disp / total) <= 0.10) {
+                const id = `card_low_limit_${card.id}_${yearMonth}`;
+                if (!(await isNotificationShown(id))) {
+                    showLocalNotification(id, "💳 Limite Critico no Cartao", `Voce utilizou mais de 90% do limite do cartao "${card.nome}". Resta apenas R$ ${disp.toFixed(2)}.`, "/Bancos");
+                }
+            }
+        }
+
+        // 4. Porcentagem de Despesas sobre Receitas (>80%)
+        const totalIncome = incomes.filter(inc => {
+            var ref;
+            return (inc.tipo !== "devedor" || inc.status === "recebido") && (inc.recorrente || inc.tipo === "salario_semanal" || ((ref = inc.mes_referencia) == null ? void 0 : ref.includes(yearMonth)))
+        }).reduce((sum, inc) => sum + (inc.tipo === "salario_semanal" ? (inc.valor || 0) * 4.33 : inc.valor || 0), 0);
+
+        const totalExpense = fixedExpenses.filter(e => e.ativa).reduce((sum, e) => sum + (e.valor || 0), 0) +
+                             debts.reduce((sum, d) => sum + getDebtInstallmentForMonth(d, yearMonth), 0);
+
+        if (totalIncome > 0 && (totalExpense / totalIncome) >= 0.80) {
+            const id = `high_expense_ratio_${yearMonth}`;
             if (!(await isNotificationShown(id))) {
-                showLocalNotification(id, "🏆 Objetivo Concluido!", `Parabens! Voce alcancou sua meta de guardar R$ ${target.toFixed(2)} para "${goal.nome}"!`, "/Objetivos");
+                const pct = ((totalExpense / totalIncome) * 100).toFixed(0);
+                showLocalNotification(id, "🚨 Despesas Altas!", `Suas despesas fixas e dividas ja consomem ${pct}% da sua receita total do mes.`, "/");
             }
         }
-    }
 
-    // 7 & 8. Contas Proximas ao Vencimento ou Vencidas
-    const currentDay = now.getDate();
-    for (const exp of fixedExpenses.filter(e => e.ativa)) {
-        if (exp.status === "pendente") {
-            const dueDay = parseInt(exp.dia_vencimento || 0);
-            if (dueDay > 0) {
-                const daysDiff = dueDay - currentDay;
-                if (daysDiff >= 0 && daysDiff <= 3) {
-                    const id = `exp_due_${exp.id}_${yearMonth}`;
+        // 5. Meta Quase Atingida (>= 90%)
+        for (const goal of goals.filter(g => g.status === "ativo")) {
+            const target = parseFloat(goal.valor_alvo || 0);
+            const saved = parseFloat(goal.valor_economizado || 0);
+            if (target > 0) {
+                const pct = (saved / target) * 100;
+                if (pct >= 90 && pct < 100) {
+                    const id = `goal_almost_${goal.id}_${yearMonth}`;
                     if (!(await isNotificationShown(id))) {
-                        showLocalNotification(id, "📅 Conta Proxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${exp.valor.toFixed(2)}`, "/DespesasFixas");
-                    }
-                } else if (daysDiff < 0) {
-                    const id = `exp_overdue_${exp.id}_${yearMonth}`;
-                    if (!(await isNotificationShown(id))) {
-                        showLocalNotification(id, "🚨 Conta Vencida!", `A conta "${exp.nome}" venceu ha ${Math.abs(daysDiff)} dia(s). Evite juros!`, "/DespesasFixas");
+                        showLocalNotification(id, "🎯 Meta Quase Alcancada!", `Falta muito pouco! Voce esta a ${pct.toFixed(0)}% de concluir o objetivo "${goal.nome}".`, "/Objetivos");
                     }
                 }
             }
         }
-    }
 
-    // 9. Reserva de Emergencia Baixa
-    const totalSavings = savings.reduce((sum, s) => sum + (s.valor_investido || 0), 0);
-    if (totalExpense > 0 && totalSavings < (totalExpense * 3)) {
-        const id = `low_emergency_${yearMonth}`;
-        if (!(await isNotificationShown(id))) {
-            const months = (totalSavings / totalExpense).toFixed(1);
-            showLocalNotification(id, "🛡️ Alerta de Reserva", `Seu saldo guardado cobre apenas ${months} meses de despesas. Ideal seria no minimo 6 meses.`, "/MeusInvestimentos");
+        // 6. Meta Concluida
+        for (const goal of goals.filter(g => g.status === "ativo")) {
+            const target = parseFloat(goal.valor_alvo || 0);
+            const saved = parseFloat(goal.valor_economizado || 0);
+            if (target > 0 && saved >= target) {
+                const id = `goal_completed_${goal.id}`;
+                if (!(await isNotificationShown(id))) {
+                    showLocalNotification(id, "🏆 Objetivo Concluido!", `Parabens! Voce alcancou sua meta de guardar R$ ${target.toFixed(2)} para "${goal.nome}"!`, "/Objetivos");
+                }
+            }
         }
-    }
 
-    // 10. Saldo Livre Negativo
-    if (totalIncome > 0 && totalExpense > totalIncome) {
-        const id = `budget_deficit_${yearMonth}`;
-        if (!(await isNotificationShown(id))) {
-            const diff = totalExpense - totalIncome;
-            showLocalNotification(id, "💸 Orquamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${diff.toFixed(2)} este mes.`, "/");
+        // 7 & 8. Contas Proximas ao Vencimento ou Vencidas
+        const currentDay = now.getDate();
+        for (const exp of fixedExpenses.filter(e => e.ativa)) {
+            if (exp.status === "pendente") {
+                const dueDay = parseInt(exp.dia_vencimento || 0);
+                if (dueDay > 0) {
+                    const daysDiff = dueDay - currentDay;
+                    if (daysDiff >= 0 && daysDiff <= 3) {
+                        const id = `exp_due_${exp.id}_${yearMonth}`;
+                        if (!(await isNotificationShown(id))) {
+                            showLocalNotification(id, "📅 Conta Proxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${exp.valor.toFixed(2)}`, "/DespesasFixas");
+                        }
+                    } else if (daysDiff < 0) {
+                        const id = `exp_overdue_${exp.id}_${yearMonth}`;
+                        if (!(await isNotificationShown(id))) {
+                            showLocalNotification(id, "🚨 Conta Vencida!", `A conta "${exp.nome}" venceu ha ${Math.abs(daysDiff)} dia(s). Evite juros!`, "/DespesasFixas");
+                        }
+                    }
+                }
+            }
         }
-    }
 
-    // 11. Insight da IA
-    const idAI = `ai_insight_${todayStr}`;
-    if (!(await isNotificationShown(idAI))) {
-        showLocalNotification(idAI, "🤖 Luna: Novo Insight Financeiro", "Luna analisou seus gastos recentes e tem uma nova sugestao de economia para voce. Clique para ver!", "/ChatIA?insight=true");
-    }
+        // 9. Reserva de Emergencia Baixa
+        const totalSavings = savings.reduce((sum, s) => sum + (s.valor_investido || 0), 0);
+        if (totalExpense > 0 && totalSavings < (totalExpense * 3)) {
+            const id = `low_emergency_${yearMonth}`;
+            if (!(await isNotificationShown(id))) {
+                const months = (totalSavings / totalExpense).toFixed(1);
+                showLocalNotification(id, "🛡️ Alerta de Reserva", `Seu saldo guardado cobre apenas ${months} meses de despesas. Ideal seria no minimo 6 meses.`, "/MeusInvestimentos");
+            }
+        }
 
-    // 12. Mensagem Motivacional (toda segunda-feira)
-    const currentDayOfWeek = now.getDay();
-    const idMotiv = `motivacional_${yearMonth}_week_${Math.ceil(currentDay / 7)}`;
-    if (currentDayOfWeek === 1 && !(await isNotificationShown(idMotiv))) {
-        const quotes = [
-            "Economizar hoje e garantir a paz e a tranquilidade de amanha. Voce consegue! 💪",
-            "Mantenha o foco nos seus objetivos financeiros. Cada pequeno passo conta! 🎯",
-            "Planejar o orquamento nao e limitar seus gastos, e direcionar sua liberdade! 🌟",
-            "Sua disciplina de hoje constroi a prosperidade de amanha. Continue assim! 🚀"
-        ];
-        const quote = quotes[Math.floor(Math.random() * quotes.length)];
-        showLocalNotification(idMotiv, "✨ Mensagem Motivacional", quote, "/");
-    }
+        // 10. Saldo Livre Negativo
+        if (totalIncome > 0 && totalExpense > totalIncome) {
+            const id = `budget_deficit_${yearMonth}`;
+            if (!(await isNotificationShown(id))) {
+                const diff = totalExpense - totalIncome;
+                showLocalNotification(id, "💸 Orquamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${diff.toFixed(2)} este mes.`, "/");
+            }
+        }
+
+        // 11. Insight da IA
+        const idAI = `ai_insight_${todayStr}`;
+        if (!(await isNotificationShown(idAI))) {
+            showLocalNotification(idAI, "🤖 Luna: Novo Insight Financeiro", "Luna analisou seus gastos recentes e tem uma nova sugestao de economia para voce. Clique para ver!", "/ChatIA?insight=true");
+        }
+
+        // 12. Mensagem Motivacional (toda segunda-feira)
+        const currentDayOfWeek = now.getDay();
+        const idMotiv = `motivacional_${yearMonth}_week_${Math.ceil(currentDay / 7)}`;
+        if (currentDayOfWeek === 1 && !(await isNotificationShown(idMotiv))) {
+            const quotes = [
+                "Economizar hoje e garantir a paz e a tranquilidade de amanha. Voce consegue! 💪",
+                "Mantenha o foco nos seus objetivos financeiros. Cada pequeno passo conta! 🎯",
+                "Planejar o orquamento nao e limitar seus gastos, e direcionar sua liberdade! 🌟",
+                "Sua disciplina de hoje constroi a prosperidade de amanha. Continue assim! 🚀"
+            ];
+            const quote = quotes[Math.floor(Math.random() * quotes.length)];
+            showLocalNotification(idMotiv, "✨ Mensagem Motivacional", quote, "/");
+        }
+    }, 1500);
 }
 
 function bIe() {

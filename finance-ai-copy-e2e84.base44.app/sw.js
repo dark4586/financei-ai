@@ -228,6 +228,22 @@ async function showSWNotification(id, title, body, url) {
 async function checkAndTriggerNotificationsSW(data) {
     if (!data) return;
 
+    let notificationsShownCount = 0;
+    const MAX_NOTIFICATIONS_PER_BATCH = 3;
+    const swTriggeredNotificationIds = new Set();
+
+    const isNotificationShownLocal = async (id) => {
+        if (swTriggeredNotificationIds.has(id)) return true;
+        return await isNotificationShown(id);
+    };
+
+    const triggerSWNotification = async (id, title, body, url) => {
+        if (notificationsShownCount >= MAX_NOTIFICATIONS_PER_BATCH) return;
+        notificationsShownCount++;
+        swTriggeredNotificationIds.add(id);
+        await showSWNotification(id, title, body, url);
+    };
+
     const { fixedExpenses = [], debts = [], incomes = [], savings = [], goals = [], creditCards = [], loans = [], settings = {} } = data;
     const now = new Date();
     const yearMonth = formatYearMonth(now);
@@ -244,8 +260,8 @@ async function checkAndTriggerNotificationsSW(data) {
     });
     if (dailyYield > 0.01) {
         const id = `daily_yield_${todayStr}`;
-        if (!(await isNotificationShown(id))) {
-            await showSWNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${dailyYield.toFixed(2)} hoje!`, "/MeusInvestimentos");
+        if (!(await isNotificationShownLocal(id))) {
+            await triggerSWNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${dailyYield.toFixed(2)} hoje!`, "/MeusInvestimentos");
         }
     }
 
@@ -254,8 +270,8 @@ async function checkAndTriggerNotificationsSW(data) {
         const disp = parseFloat(card.limite_disponivel || 0);
         if (disp < 0) {
             const id = `card_negative_${card.id}_${todayStr}`;
-            if (!(await isNotificationShown(id))) {
-                await showSWNotification(id, "🚨 Limite de Cartão Estourado!", `O limite disponível do cartão "${card.nome}" está negativo (R$ ${disp.toFixed(2)}).`, "/Bancos");
+            if (!(await isNotificationShownLocal(id))) {
+                await triggerSWNotification(id, "🚨 Limite de Cartão Estourado!", `O limite disponível do cartão "${card.nome}" está negativo (R$ ${disp.toFixed(2)}).`, "/Bancos");
             }
         }
     }
@@ -266,8 +282,8 @@ async function checkAndTriggerNotificationsSW(data) {
         const total = parseFloat(card.limite_total || 0);
         if (total > 0 && disp >= 0 && (disp / total) <= 0.10) {
             const id = `card_low_limit_${card.id}_${yearMonth}`;
-            if (!(await isNotificationShown(id))) {
-                await showSWNotification(id, "💳 Limite Crítico no Cartão", `Você utilizou mais de 90% do limite do cartão "${card.nome}". Resta apenas R$ ${disp.toFixed(2)}.`, "/Bancos");
+            if (!(await isNotificationShownLocal(id))) {
+                await triggerSWNotification(id, "💳 Limite Crítico no Cartão", `Você utilizou mais de 90% do limite do cartão "${card.nome}". Resta apenas R$ ${disp.toFixed(2)}.`, "/Bancos");
             }
         }
     }
@@ -283,9 +299,9 @@ async function checkAndTriggerNotificationsSW(data) {
 
     if (totalIncome > 0 && (totalExpense / totalIncome) >= 0.80) {
         const id = `high_expense_ratio_${yearMonth}`;
-        if (!(await isNotificationShown(id))) {
+        if (!(await isNotificationShownLocal(id))) {
             const pct = ((totalExpense / totalIncome) * 100).toFixed(0);
-            await showSWNotification(id, "🚨 Despesas Altas!", `Suas despesas fixas e dívidas já consomem ${pct}% da sua receita total do mês.`, "/");
+            await triggerSWNotification(id, "🚨 Despesas Altas!", `Suas despesas fixas e dívidas já consomem ${pct}% da sua receita total do mês.`, "/");
         }
     }
 
@@ -297,8 +313,8 @@ async function checkAndTriggerNotificationsSW(data) {
             const pct = (saved / target) * 100;
             if (pct >= 90 && pct < 100) {
                 const id = `goal_almost_${goal.id}_${yearMonth}`;
-                if (!(await isNotificationShown(id))) {
-                    await showSWNotification(id, "🎯 Meta Quase Alcançada!", `Falta muito pouco! Você está a ${pct.toFixed(0)}% de concluir o objetivo "${goal.nome}".`, "/Objetivos");
+                if (!(await isNotificationShownLocal(id))) {
+                    await triggerSWNotification(id, "🎯 Meta Quase Alcançada!", `Falta muito pouco! Você está a ${pct.toFixed(0)}% de concluir o objetivo "${goal.nome}".`, "/Objetivos");
                 }
             }
         }
@@ -310,8 +326,8 @@ async function checkAndTriggerNotificationsSW(data) {
         const saved = parseFloat(goal.valor_economizado || 0);
         if (target > 0 && saved >= target) {
             const id = `goal_completed_${goal.id}`;
-            if (!(await isNotificationShown(id))) {
-                await showSWNotification(id, "🏆 Objetivo Concluído!", `Parabéns! Você alcançou sua meta de guardar R$ ${target.toFixed(2)} para "${goal.nome}"!`, "/Objetivos");
+            if (!(await isNotificationShownLocal(id))) {
+                await triggerSWNotification(id, "🏆 Objetivo Concluído!", `Parabéns! Você alcançou sua meta de guardar R$ ${target.toFixed(2)} para "${goal.nome}"!`, "/Objetivos");
             }
         }
     }
@@ -325,13 +341,13 @@ async function checkAndTriggerNotificationsSW(data) {
                 const daysDiff = dueDay - currentDay;
                 if (daysDiff >= 0 && daysDiff <= 3) {
                     const id = `exp_due_${exp.id}_${yearMonth}`;
-                    if (!(await isNotificationShown(id))) {
-                        await showSWNotification(id, "📅 Conta Próxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${exp.valor.toFixed(2)}`, "/DespesasFixas");
+                    if (!(await isNotificationShownLocal(id))) {
+                        await triggerSWNotification(id, "📅 Conta Próxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${exp.valor.toFixed(2)}`, "/DespesasFixas");
                     }
                 } else if (daysDiff < 0) {
                     const id = `exp_overdue_${exp.id}_${yearMonth}`;
-                    if (!(await isNotificationShown(id))) {
-                        await showSWNotification(id, "🚨 Conta Vencida!", `A conta "${exp.nome}" venceu há ${Math.abs(daysDiff)} dia(s). Evite juros!`, "/DespesasFixas");
+                    if (!(await isNotificationShownLocal(id))) {
+                        await triggerSWNotification(id, "🚨 Conta Vencida!", `A conta "${exp.nome}" venceu há ${Math.abs(daysDiff)} dia(s). Evite juros!`, "/DespesasFixas");
                     }
                 }
             }
@@ -342,31 +358,31 @@ async function checkAndTriggerNotificationsSW(data) {
     const totalSavings = savings.reduce((sum, s) => sum + (s.valor_investido || 0), 0);
     if (totalExpense > 0 && totalSavings < (totalExpense * 3)) {
         const id = `low_emergency_${yearMonth}`;
-        if (!(await isNotificationShown(id))) {
+        if (!(await isNotificationShownLocal(id))) {
             const months = (totalSavings / totalExpense).toFixed(1);
-            await showSWNotification(id, "🛡️ Alerta de Reserva", `Seu saldo guardado cobre apenas ${months} meses de despesas. Ideal seria no mínimo 6 meses.`, "/MeusInvestimentos");
+            await triggerSWNotification(id, "🛡️ Alerta de Reserva", `Seu saldo guardado cobre apenas ${months} meses de despesas. Ideal seria no mínimo 6 meses.`, "/MeusInvestimentos");
         }
     }
 
     // 10. Saldo Livre Negativo
     if (totalIncome > 0 && totalExpense > totalIncome) {
         const id = `budget_deficit_${yearMonth}`;
-        if (!(await isNotificationShown(id))) {
+        if (!(await isNotificationShownLocal(id))) {
             const diff = totalExpense - totalIncome;
-            await showSWNotification(id, "💸 Orçamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${diff.toFixed(2)} este mês.`, "/");
+            await triggerSWNotification(id, "💸 Orçamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${diff.toFixed(2)} este mês.`, "/");
         }
     }
 
     // 11. Insight da IA
     const idAI = `ai_insight_${todayStr}`;
-    if (!(await isNotificationShown(idAI))) {
-        await showSWNotification(idAI, "🤖 Luna: Novo Insight Financeiro", "Luna analisou seus gastos recentes e tem uma nova sugestão de economia para você. Clique para ver!", "/ChatIA?insight=true");
+    if (!(await isNotificationShownLocal(idAI))) {
+        await triggerSWNotification(idAI, "🤖 Luna: Novo Insight Financeiro", "Luna analisou seus gastos recentes e tem uma nova sugestão de economia para você. Clique para ver!", "/ChatIA?insight=true");
     }
 
     // 12. Emissao de Mensagem Motivacional (toda segunda-feira)
     const currentDayOfWeek = now.getDay();
     const idMotiv = `motivacional_${yearMonth}_week_${Math.ceil(currentDay / 7)}`;
-    if (currentDayOfWeek === 1 && !(await isNotificationShown(idMotiv))) {
+    if (currentDayOfWeek === 1 && !(await isNotificationShownLocal(idMotiv))) {
         const quotes = [
             "Economizar hoje é garantir a paz e a tranquilidade de amanhã. Você consegue! 💪",
             "Mantenha o foco nos seus objetivos financeiros. Cada pequeno passo conta! 🎯",
@@ -374,15 +390,15 @@ async function checkAndTriggerNotificationsSW(data) {
             "Sua disciplina de hoje constrói a prosperidade de amanhã. Continue assim! 🚀"
         ];
         const quote = quotes[Math.floor(Math.random() * quotes.length)];
-        await showSWNotification(idMotiv, "✨ Mensagem Motivacional", quote, "/");
+        await triggerSWNotification(idMotiv, "✨ Mensagem Motivacional", quote, "/");
     }
 }
 
 let lastCheckTime = 0;
 async function performNotificationCheck() {
     const now = Date.now();
-    // Evita rodar mais do que uma vez a cada 30 segundos
-    if (now - lastCheckTime < 30000) return;
+    // Evita rodar mais do que uma vez a cada 15 minutos
+    if (now - lastCheckTime < 900000) return;
     lastCheckTime = now;
     
     try {
