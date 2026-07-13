@@ -265,26 +265,25 @@ async function checkAndTriggerNotificationsSW(data) {
         }
     }
 
-    // 2. Cartao Negativo
-    for (const card of creditCards) {
-        const disp = parseFloat(card.limite_disponivel || 0);
-        if (disp < 0) {
-            const id = `card_negative_${card.id}_${todayStr}`;
-            if (!(await isNotificationShownLocal(id))) {
-                await triggerSWNotification(id, "🚨 Limite de Cartão Estourado!", `O limite disponível do cartão "${card.nome}" está negativo (R$ ${disp.toFixed(2)}).`, "/Bancos");
-            }
-        }
-    }
-
-    // 3. Limite de Cartao Critico
+    // 2 & 3. Análise de Cartões de Crédito (Notificação Única)
+    const cardIssues = [];
     for (const card of creditCards) {
         const disp = parseFloat(card.limite_disponivel || 0);
         const total = parseFloat(card.limite_total || 0);
-        if (total > 0 && disp >= 0 && (disp / total) <= 0.10) {
-            const id = `card_low_limit_${card.id}_${yearMonth}`;
-            if (!(await isNotificationShownLocal(id))) {
-                await triggerSWNotification(id, "💳 Limite Crítico no Cartão", `Você utilizou mais de 90% do limite do cartão "${card.nome}". Resta apenas R$ ${disp.toFixed(2)}.`, "/Bancos");
-            }
+        if (disp < 0) {
+            cardIssues.push(`"${card.nome}" estourado (R$ ${disp.toFixed(2)})`);
+        } else if (total > 0 && (disp / total) <= 0.10) {
+            cardIssues.push(`"${card.nome}" com limite crítico (resta R$ ${disp.toFixed(2)})`);
+        }
+    }
+    if (cardIssues.length > 0) {
+        const id = `cards_analysis_${todayStr}`;
+        if (!(await isNotificationShownLocal(id))) {
+            const title = cardIssues.length === 1 ? "💳 Alerta de Cartão" : "💳 Alerta de Cartões";
+            const body = cardIssues.length === 1 
+                ? `Atenção: ${cardIssues[0]}.` 
+                : `Atenção com seus cartões: ${cardIssues.join("; ")}.`;
+            await triggerSWNotification(id, title, body, "/Bancos");
         }
     }
 
