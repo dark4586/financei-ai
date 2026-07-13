@@ -69784,10 +69784,10 @@ function cIe() {
         }),
         G = (z && z[0]) || {
             tema: "dark",
-            liquid_glass_color1: "#667eea",
+            liquid_glass_color1: "#7c3aed",
             liquid_glass_color2: "#764ba2",
             liquid_glass_color3: "#f093fb",
-            liquid_glass_gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)",
+            liquid_glass_gradient: "linear-gradient(135deg, #7c3aed 0%, #764ba2 50%, #f093fb 100%)",
             screensaver_enabled: !0,
             screensaver_timeout: 300,
             music_volume: 50,
@@ -80092,7 +80092,7 @@ const Jc = {
         liquid_glass: {
             bg: "rgba(5,5,15,0.55)",
             border: "rgba(255,255,255,0.12)",
-            metaColor: "#0d0d1a"
+            metaColor: "#0b0914"
         },
         material3: {
             bg: "rgba(243,237,247,0.98)",
@@ -81027,7 +81027,7 @@ function z$e({
                     medium: "rgba(255, 255, 255, 0.07)",
                     light: "transparent",
                     text: "#ffffff",
-                    background: (i == null ? void 0 : i.liquid_glass_gradient) || `linear-gradient(135deg, ${(i==null?void 0:i.liquid_glass_color1)||"#667eea"} 0%, ${(i==null?void 0:i.liquid_glass_color2)||"#764ba2"} 50%, ${(i==null?void 0:i.liquid_glass_color3)||"#f093fb"} 100%)`,
+                    background: (i == null ? void 0 : i.liquid_glass_gradient) || `linear-gradient(135deg, ${(i==null?void 0:i.liquid_glass_color1)||"#7c3aed"} 0%, ${(i==null?void 0:i.liquid_glass_color2)||"#764ba2"} 50%, ${(i==null?void 0:i.liquid_glass_color3)||"#f093fb"} 100%)`,
                     isLiquidGlass: !0
                 },
                 material3: {
@@ -81048,7 +81048,7 @@ function z$e({
                 }
             },
             b = v[i.tema] || v.dark;
-        if (document.documentElement.style.setProperty("--theme-strong", b.strong), document.documentElement.style.setProperty("--theme-medium", b.medium), document.documentElement.style.setProperty("--theme-light", b.light), document.documentElement.style.setProperty("--theme-text", b.text), document.documentElement.style.setProperty("--theme-background", b.isLiquidGlass ? "#1a1a2e" : b.background), document.documentElement.style.setProperty("--is-liquid-glass", b.isLiquidGlass ? "1" : "0"), document.documentElement.style.setProperty("--liquid-glass-gradient", b.isLiquidGlass ? b.background : "none"), i != null && i.dark_overlay && !b.isLiquidGlass) {
+        if (document.documentElement.style.setProperty("--theme-strong", b.strong), document.documentElement.style.setProperty("--theme-medium", b.medium), document.documentElement.style.setProperty("--theme-light", b.light), document.documentElement.style.setProperty("--theme-text", b.text), document.documentElement.style.setProperty("--theme-background", b.isLiquidGlass ? "#120e1a" : b.background), document.documentElement.style.setProperty("--is-liquid-glass", b.isLiquidGlass ? "1" : "0"), document.documentElement.style.setProperty("--liquid-glass-gradient", b.isLiquidGlass ? b.background : "none"), i != null && i.dark_overlay && !b.isLiquidGlass) {
             const N = E => {
                     try {
                         const O = parseInt(E.slice(1, 3), 16),
@@ -81065,7 +81065,7 @@ function z$e({
                 S = k.startsWith("#") ? N(k) : k;
             document.documentElement.style.setProperty("--theme-background", S), document.documentElement.style.setProperty("--dark-overlay-card-bg", "rgba(0,0,0,0.18)"), document.documentElement.style.setProperty("--dark-overlay-card2-bg", "rgba(0,0,0,0.12)"), document.body.style.background = S
         } else b.isLiquidGlass || (document.documentElement.style.setProperty("--dark-overlay-card-bg", ""), document.documentElement.style.setProperty("--dark-overlay-card2-bg", ""));
-        b.isLiquidGlass ? (document.body.style.background = "transparent", document.body.style.backgroundColor = "#0d0d1a") : i != null && i.app_background_url && (i == null ? void 0 : i.app_background_enabled) !== !1 ? (document.body.style.background = "transparent", document.body.style.backgroundColor = b.background) : (document.body.style.background = b.background, document.body.style.backgroundAttachment = "initial");
+        b.isLiquidGlass ? (document.body.style.background = "transparent", document.body.style.backgroundColor = "#0b0914") : i != null && i.app_background_url && (i == null ? void 0 : i.app_background_enabled) !== !1 ? (document.body.style.background = "transparent", document.body.style.backgroundColor = b.background) : (document.body.style.background = b.background, document.body.style.backgroundAttachment = "initial");
         const j = !["dark", "liquid_glass", "material3_dark"].includes(i.tema);
         document.documentElement.style.setProperty("--text-primary", j ? b.text : "#ffffff"), document.documentElement.style.setProperty("--text-secondary", j ? "rgba(0,0,0,0.6)" : "#9ca3af"), document.documentElement.style.setProperty("--is-material3", b.isMaterial3 || b.isMaterial3Dark ? "1" : "0"), document.documentElement.style.setProperty("--material3-primary", b.isMaterial3 ? "#6750A4" : b.isMaterial3Dark ? "#D0BCFF" : ""), document.documentElement.style.setProperty("--material3-surface", b.isMaterial3 ? "#FFFBFE" : b.isMaterial3Dark ? "#1C1B1F" : ""), document.documentElement.style.setProperty("--material3-on-surface", b.isMaterial3 ? "#1C1B1F" : b.isMaterial3Dark ? "#E6E1E5" : "")
     }, [i]), Y.useEffect(() => {
@@ -81699,7 +81699,7 @@ function z$e({
                 },
                 settings: i
             }), l.jsx(P$e, {}), l.jsx(O$e, {}), (i == null ? void 0 : i.tema) === "liquid_glass" && l.jsx(T$e, {
-                color1: (i == null ? void 0 : i.liquid_glass_color1) || "#667eea",
+                color1: (i == null ? void 0 : i.liquid_glass_color1) || "#7c3aed",
                 color2: (i == null ? void 0 : i.liquid_glass_color2) || "#764ba2",
                 color3: (i == null ? void 0 : i.liquid_glass_color3) || "#f093fb"
             }), (i == null ? void 0 : i.app_background_url) && (i == null ? void 0 : i.app_background_enabled) !== !1 && l.jsx("div", {
