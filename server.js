@@ -10,6 +10,25 @@ const API_DIR = path.join(BASE_DIR, 'base44.app');
 const MEDIA_DIR = path.join(BASE_DIR, 'media.base44.com');
 const LOG_FILE = path.join(BASE_DIR, 'requests.log');
 
+const DB_FILE = path.join(BASE_DIR, 'db.json');
+let db = {};
+if (fs.existsSync(DB_FILE)) {
+    try {
+        db = JSON.parse(fs.readFileSync(DB_FILE, 'utf8'));
+    } catch (e) {
+        console.error("Erro ao ler db.json, reiniciando banco:", e);
+        db = {};
+    }
+}
+
+function saveDB() {
+    try {
+        fs.writeFileSync(DB_FILE, JSON.stringify(db, null, 2), 'utf8');
+    } catch (e) {
+        console.error("Erro ao salvar db.json:", e);
+    }
+}
+
 // Load .env file if it exists (for local development)
 try {
     const dotenvPath = path.join(__dirname, '.env');
@@ -411,6 +430,199 @@ async function handleSendEmail(req, res) {
     }
 }
 
+async function handleEntityRequest(req, res, appId, entityName, subPath) {
+    try {
+        if (!db[entityName]) {
+            db[entityName] = [];
+        }
+
+        const method = req.method;
+        const bodyText = await getRequestBody(req);
+        let body = {};
+        if (bodyText) {
+            try {
+                body = JSON.parse(bodyText);
+            } catch (e) {}
+        }
+
+        if (method === 'POST' && subPath === 'bulk') {
+            const items = Array.isArray(body) ? body : [body];
+            const now = new Date().toISOString();
+            const createdItems = items.map(item => {
+                const newItem = { ...item };
+                if (!newItem.id) {
+                    newItem.id = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+                }
+                if (!newItem.created_date) newItem.created_date = now;
+                if (!newItem.updated_date) newItem.updated_date = now;
+                return newItem;
+            });
+            db[entityName] = [...db[entityName], ...createdItems];
+            saveDB();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(createdItems));
+            logRequest(method, req.url, 200, `Bulk created ${createdItems.length} items in ${entityName}`);
+            return;
+        }
+
+        if (method === 'PATCH' && subPath === 'update-many') {
+            const { query, data } = body;
+            const now = new Date().toISOString();
+            let count = 0;
+            db[entityName] = db[entityName].map(item => {
+                const matches = Object.entries(query || {}).every(([k, v]) => item[k] === v);
+                if (matches) {
+                    count++;
+                    return { ...item, ...data, updated_date: now };
+                }
+                return item;
+            });
+            if (count > 0) saveDB();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, count }));
+            logRequest(method, req.url, 200, `Updated many ${count} items in ${entityName}`);
+            return;
+        }
+
+        if (method === 'DELETE' && !subPath) {
+            const itemsToDelete = Array.isArray(body) ? body : [];
+            const idsToDelete = new Set(itemsToDelete.map(i => i.id).filter(Boolean));
+            if (idsToDelete.size > 0) {
+                const initialCount = db[entityName].length;
+                db[entityName] = db[entityName].filter(item => !idsToDelete.has(item.id));
+                const deletedCount = initialCount - db[entityName].length;
+                if (deletedCount > 0) saveDB();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, count: deletedCount }));
+                logRequest(method, req.url, 200, `Deleted many ${deletedCount} items in ${entityName}`);
+            } else {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, count: 0 }));
+                logRequest(method, req.url, 200, `Delete many skipped in ${entityName}`);
+            }
+            return;
+        }
+
+        if (subPath) {
+            const itemIndex = db[entityName].findIndex(item => item.id === subPath);
+
+            if (method === 'GET') {
+                if (itemIndex !== -1) {
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(db[entityName][itemIndex]));
+                    logRequest(method, req.url, 200, `Fetched item ${subPath} in ${entityName}`);
+                } else {
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Item not found' }));
+                    logRequest(method, req.url, 404, `Item ${subPath} not found in ${entityName}`);
+                }
+                return;
+            }
+
+            if (method === 'PUT') {
+                if (itemIndex !== -1) {
+                    const now = new Date().toISOString();
+                    db[entityName][itemIndex] = {
+                        ...db[entityName][itemIndex],
+                        ...body,
+                        updated_date: now
+                    };
+                    saveDB();
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(db[entityName][itemIndex]));
+                    logRequest(method, req.url, 200, `Updated item ${subPath} in ${entityName}`);
+                } else {
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Item not found' }));
+                    logRequest(method, req.url, 404, `Item ${subPath} not found in ${entityName} for update`);
+                }
+                return;
+            }
+
+            if (method === 'DELETE') {
+                if (itemIndex !== -1) {
+                    db[entityName].splice(itemIndex, 1);
+                    saveDB();
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true }));
+                    logRequest(method, req.url, 200, `Deleted item ${subPath} in ${entityName}`);
+                } else {
+                    res.writeHead(404, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ error: 'Item not found' }));
+                    logRequest(method, req.url, 404, `Item ${subPath} not found in ${entityName} for delete`);
+                }
+                return;
+            }
+        }
+
+        if (method === 'GET' && !subPath) {
+            const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
+            const qParam = parsedUrl.searchParams.get('q');
+            const sortParam = parsedUrl.searchParams.get('sort');
+            const limitParam = parsedUrl.searchParams.get('limit');
+
+            let results = [...db[entityName]];
+
+            if (qParam) {
+                try {
+                    const queryObj = JSON.parse(qParam);
+                    results = results.filter(item => {
+                        return Object.entries(queryObj).every(([k, v]) => item[k] === v);
+                    });
+                } catch (e) {
+                    console.error("Error parsing q filter:", e);
+                }
+            }
+
+            if (sortParam) {
+                const isDescending = sortParam.startsWith('-');
+                const field = isDescending ? sortParam.slice(1) : sortParam;
+                results.sort((o, s) => {
+                    const c = o[field] ?? o.created_date ?? "";
+                    const d = s[field] ?? s.created_date ?? "";
+                    return isDescending ? (d > c ? 1 : -1) : (c > d ? 1 : -1);
+                });
+            }
+
+            if (limitParam) {
+                const limit = parseInt(limitParam, 10);
+                if (!isNaN(limit)) {
+                    results = results.slice(0, limit);
+                }
+            }
+
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(results));
+            logRequest(method, req.url, 200, `Listed ${results.length} items in ${entityName}`);
+            return;
+        }
+
+        if (method === 'POST' && !subPath) {
+            const now = new Date().toISOString();
+            const newItem = {
+                ...body,
+                id: body.id || `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+                created_date: body.created_date || now,
+                updated_date: body.updated_date || now
+            };
+            db[entityName].push(newItem);
+            saveDB();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(newItem));
+            logRequest(method, req.url, 200, `Created item ${newItem.id} in ${entityName}`);
+            return;
+        }
+
+        res.writeHead(405, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Method Not Allowed' }));
+        logRequest(method, req.url, 405, `Unsupported request for ${entityName}`);
+    } catch (e) {
+        console.error("handleEntityRequest failed:", e);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
+    }
+}
+
 const server = http.createServer((req, res) => {
     // Add CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -445,6 +657,19 @@ const server = http.createServer((req, res) => {
         if (req.method === 'POST' && pathname.endsWith('/integration-endpoints/Core/SendEmail')) {
             handleSendEmail(req, res);
             return;
+        }
+
+        // Intercept Entity database requests
+        const entityMatch = pathname.match(/^\/api\/apps\/([^\/]+)\/entities\/([^\/]+)(?:\/(.+))?$/);
+        if (entityMatch) {
+            const appId = entityMatch[1];
+            const entityName = entityMatch[2];
+            const subPath = entityMatch[3];
+            
+            if (entityName !== 'User') {
+                handleEntityRequest(req, res, appId, entityName, subPath);
+                return;
+            }
         }
 
         // Try to serve mock API files by appending .html

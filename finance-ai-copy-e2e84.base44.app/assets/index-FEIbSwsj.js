@@ -14042,7 +14042,7 @@ function mte(e) {
         }
     }
 }
-const Jv = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Settings", "Loan"];
+const Jv = ["Settings"];
 
 function gte() {
     Jv.forEach(e => localStorage.removeItem($k(e)))
@@ -14083,6 +14083,53 @@ const {
     agents: eu.agents,
     users: eu.users
 }, Zv = C.createContext(null);
+
+setTimeout(async () => {
+    try {
+        const migratedKey = "financeai_data_migrated_to_server";
+        if (localStorage.getItem(migratedKey)) return;
+
+        const testIncomes = await se.entities.Income.list({ limit: 1 });
+        if (testIncomes && testIncomes.length > 0) {
+            localStorage.setItem(migratedKey, "true");
+            return;
+        }
+
+        const entitiesToMigrate = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
+        let hasLocalData = false;
+        for (const ent of entitiesToMigrate) {
+            const localItems = localStorage.getItem("financeai_" + ent);
+            if (localItems) {
+                const parsed = JSON.parse(localItems);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    hasLocalData = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasLocalData) {
+            localStorage.setItem(migratedKey, "true");
+            return;
+        }
+
+        console.log("[Migration] Migrando dados do LocalStorage para o servidor...");
+        for (const ent of entitiesToMigrate) {
+            const localItems = localStorage.getItem("financeai_" + ent);
+            if (localItems) {
+                const parsed = JSON.parse(localItems);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    await se.entities[ent].bulkCreate(parsed);
+                }
+            }
+        }
+        localStorage.setItem(migratedKey, "true");
+        console.log("[Migration] Migração concluída com sucesso!");
+        window.location.reload();
+    } catch (err) {
+        console.error("[Migration] Falha na migração:", err);
+    }
+}, 2000);
 
 function Lk(e) {
     const t = C.useRef(null);
