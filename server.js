@@ -302,6 +302,115 @@ async function handleUploadFile(req, res) {
     }
 }
 
+async function handleSendEmail(req, res) {
+    try {
+        const bodyText = await getRequestBody(req);
+        const body = JSON.parse(bodyText);
+        const { to, subject, body: emailBody } = body;
+
+        console.log(`[SendEmail] Tentando enviar email para: ${to}, assunto: ${subject}`);
+
+        // Salva o relatório HTML localmente para depuração e visualização
+        try {
+            const reportPath = path.join(BASE_DIR, 'last_report.html');
+            fs.writeFileSync(reportPath, emailBody, 'utf8');
+            console.log(`[SendEmail] Cópia local do relatório salva em: ${reportPath}`);
+        } catch (err) {
+            console.error("[SendEmail] Falha ao salvar cópia local do relatório:", err);
+        }
+
+        const resendKey = process.env.RESEND_API_KEY;
+        const brevoKey = process.env.BREVO_API_KEY;
+        const emailFrom = process.env.EMAIL_FROM || 'onboarding@resend.dev';
+        
+        let sent = false;
+        let errorMessage = '';
+
+        if (resendKey) {
+            try {
+                console.log("[SendEmail] Usando serviço Resend...");
+                const response = await fetch('https://api.resend.com/emails', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${resendKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        from: emailFrom,
+                        to: to,
+                        subject: subject,
+                        html: emailBody
+                    })
+                });
+
+                if (response.ok) {
+                    sent = true;
+                    console.log("[SendEmail] Email enviado com sucesso via Resend.");
+                } else {
+                    const errText = await response.text();
+                    errorMessage = `Erro Resend API (status ${response.status}): ${errText}`;
+                    console.error("[SendEmail]", errorMessage);
+                }
+            } catch (err) {
+                errorMessage = `Falha na requisição ao Resend: ${err.message}`;
+                console.error("[SendEmail]", errorMessage);
+            }
+        }
+
+        if (!sent && brevoKey) {
+            try {
+                console.log("[SendEmail] Usando serviço Brevo...");
+                const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+                    method: 'POST',
+                    headers: {
+                        'api-key': brevoKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        sender: { email: emailFrom, name: "FinanceAI" },
+                        to: [{ email: to }],
+                        subject: subject,
+                        htmlContent: emailBody
+                    })
+                });
+
+                if (response.ok) {
+                    sent = true;
+                    console.log("[SendEmail] Email enviado com sucesso via Brevo.");
+                } else {
+                    const errText = await response.text();
+                    errorMessage = `Erro Brevo API (status ${response.status}): ${errText}`;
+                    console.error("[SendEmail]", errorMessage);
+                }
+            } catch (err) {
+                errorMessage = `Falha na requisição ao Brevo: ${err.message}`;
+                console.error("[SendEmail]", errorMessage);
+            }
+        }
+
+        if (!sent) {
+            if (!resendKey && !brevoKey) {
+                console.log("[SendEmail] AVISO: Nenhum serviço de e-mail (Resend/Brevo) configurado. Simulação de envio bem-sucedida.");
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, mock: true }));
+                logRequest(req.method, req.url, 200, 'Served Mock SendEmail (No API Key)');
+            } else {
+                res.writeHead(500, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ error: errorMessage || 'Failed to send email' }));
+                logRequest(req.method, req.url, 500, `SendEmail failed: ${errorMessage}`);
+            }
+        } else {
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true }));
+            logRequest(req.method, req.url, 200, 'Email sent successfully');
+        }
+    } catch (e) {
+        console.error("[SendEmail] Handler crashed:", e);
+        res.writeHead(500, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Internal Server Error' }));
+    }
+}
+
 const server = http.createServer((req, res) => {
     // Add CORS headers
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -329,6 +438,12 @@ const server = http.createServer((req, res) => {
         // Intercept UploadFile POST request
         if (req.method === 'POST' && pathname.endsWith('/integration-endpoints/Core/UploadFile')) {
             handleUploadFile(req, res);
+            return;
+        }
+
+        // Intercept SendEmail POST request
+        if (req.method === 'POST' && pathname.endsWith('/integration-endpoints/Core/SendEmail')) {
+            handleSendEmail(req, res);
             return;
         }
 
