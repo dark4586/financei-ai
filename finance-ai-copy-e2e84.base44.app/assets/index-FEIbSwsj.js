@@ -14087,6 +14087,23 @@ const {
 setTimeout(async () => {
     try {
         const syncKey = "financeai_sync_completed_v3";
+        
+        let isServerEmpty = false;
+        try {
+            const testIncomes = await se.entities.Income.list({ limit: 1 });
+            const testExpenses = await se.entities.FixedExpense.list({ limit: 1 });
+            if ((!testIncomes || testIncomes.length === 0) && (!testExpenses || testExpenses.length === 0)) {
+                isServerEmpty = true;
+            }
+        } catch (e) {
+            console.error("[Sync] Erro ao checar se o servidor está vazio:", e);
+        }
+
+        if (isServerEmpty) {
+            console.log("[Sync] O servidor está vazio. Forçando re-sincronização do backup local...");
+            localStorage.removeItem(syncKey);
+        }
+
         if (localStorage.getItem(syncKey)) return;
 
         console.log("[Sync] Iniciando sincronização e recuperação de dados locais...");
