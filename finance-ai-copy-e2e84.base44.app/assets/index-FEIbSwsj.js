@@ -70915,6 +70915,90 @@ function bP({
     })
 }
 
+function DespesasHistory({
+    expenses: e,
+    onEdit: t,
+    onDelete: n,
+    selectedMonth: r,
+    categoriasMap: a
+}) {
+    const [o, s] = C.useState(!1);
+    return l.jsx(Oe, {
+        className: "bg-transparent border-black",
+        style: {
+            border: "1px solid #000000"
+        },
+        children: l.jsxs("div", {
+            className: "p-6",
+            children: [l.jsxs("button", {
+                onClick: () => s(!o),
+                className: "flex items-center gap-2 text-lg font-semibold text-white w-full text-left",
+                children: [o ? l.jsx(ox, {
+                    className: "w-5 h-5"
+                }) : l.jsx(Ph, {
+                    className: "w-5 h-5"
+                }), "🕘 Histórico (", e.length, ")"]
+            }), o && l.jsxs("div", {
+                className: "space-y-3 mt-4",
+                children: [e.map(i => l.jsxs("div", {
+                    className: "flex flex-col sm:flex-row items-start sm:justify-between gap-3 p-4 bg-[#2a2a2a] rounded-lg",
+                    children: [l.jsxs("div", {
+                        className: "flex-1",
+                        children: [l.jsxs("div", {
+                            className: "flex items-center gap-2 mb-1",
+                            children: [l.jsx("h4", {
+                                className: "font-semibold text-white",
+                                children: i.nome
+                            }), l.jsxs("span", {
+                                className: "text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded flex items-center gap-1",
+                                children: [l.jsx(Pa, {
+                                    className: "w-3 h-3"
+                                }), "Pago"]
+                            }), i.mes_referencia && l.jsx("span", {
+                                className: "text-xs bg-blue-500/20 text-blue-400 px-2 py-1 rounded",
+                                children: "📅 Pontual"
+                            })]
+                        }), l.jsxs("p", {
+                            className: "text-sm text-gray-400",
+                            children: [a[i.categoria] || "Outros", " • Dia do vencimento: ", i.dia_vencimento]
+                        })]
+                    }), l.jsxs("div", {
+                        className: "flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-1 flex-shrink-0 w-full sm:w-auto sm:ml-2",
+                        children: [l.jsxs("span", {
+                            className: "text-base font-bold whitespace-nowrap text-red-400",
+                            children: ["R$ ", i.valor.toLocaleString("pt-BR", {
+                                minimumFractionDigits: 2
+                            })]
+                        }), l.jsxs("div", {
+                            className: "flex items-center gap-1 flex-wrap justify-end",
+                            children: [l.jsx(xe, {
+                                variant: "ghost",
+                                size: "icon",
+                                onClick: () => t(i),
+                                className: "text-gray-400 hover:text-white hover:bg-[#404040] w-8 h-8",
+                                children: l.jsx(Oa, {
+                                    className: "w-4 h-4"
+                                })
+                            }), l.jsx(xe, {
+                                variant: "ghost",
+                                size: "icon",
+                                onClick: () => n(i.id),
+                                className: "text-red-400 hover:text-red-300 hover:bg-red-500/10 w-8 h-8",
+                                children: l.jsx(fr, {
+                                    className: "w-4 h-4"
+                                })
+                            })]
+                        })]
+                    })]
+                }, i.id)), e.length === 0 && l.jsx("div", {
+                    className: "text-center py-12 text-gray-500",
+                    children: "📭 Nenhuma despesa paga neste mês"
+                })]
+            })]
+        })
+    })
+}
+
 function uIe() {
     const [e, t] = C.useState(!1), [n, r] = C.useState(null), [a, i] = C.useState({
         nome: "",
@@ -71198,10 +71282,17 @@ function uIe() {
                         className: "p-6",
                         children: [l.jsx("h3", {
                             className: "text-lg font-semibold text-white mb-4",
-                            children: "📋 Todas as Despesas"
+                            children: "📋 Despesas do Mês"
                         }), l.jsxs("div", {
                             className: "space-y-3",
-                            children: [s.filter(S => isItemCreatedBeforeOrInMonth(S, selectedMonth)).map(S => l.jsxs("div", {
+                            children: [s.filter(S => {
+                                const isPaid = isFixedExpensePaidInMonth(S, selectedMonth);
+                                const isCreated = isItemCreatedBeforeOrInMonth(S, selectedMonth);
+                                if (!isCreated) return false;
+                                if (!S.ativa) return true;
+                                if (!S.mes_referencia) return true;
+                                return !isPaid;
+                            }).map(S => l.jsxs("div", {
                                 className: `p-4 rounded-lg transition-colors ${S.ativa?"bg-[#2a2a2a] hover:bg-[#333333]":"bg-[#1a1a1a] opacity-60"}`,
                                 children: [l.jsxs("div", {
                                     className: "flex items-start justify-between gap-2 mb-2",
@@ -71275,6 +71366,12 @@ function uIe() {
                             })]
                         })]
                     })
+                }), l.jsx(DespesasHistory, {
+                    expenses: s.filter(S => isFixedExpensePaidInMonth(S, selectedMonth) && isItemCreatedBeforeOrInMonth(S, selectedMonth)),
+                    onEdit: w,
+                    onDelete: S => p.mutate(S),
+                    selectedMonth: selectedMonth,
+                    categoriasMap: N
                 }), l.jsx(zr, {
                     open: e,
                     onOpenChange: S => {
