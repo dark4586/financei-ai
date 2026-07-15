@@ -71030,7 +71030,8 @@ function uIe() {
         banco_id: "",
         banco_nome: "",
         auto_pagar: !1,
-        mes_referencia: ""
+        mes_referencia: "",
+        recorrente: !0
     }), o = Ar();
     const [selectedMonth, setSelectedMonth] = C.useState(() => tt(new Date(), "yyyy-MM"));
     const handleMonthSelect = (newMonth) => {
@@ -71110,7 +71111,8 @@ function uIe() {
             banco_id: "",
             banco_nome: "",
             auto_pagar: !1,
-            mes_referencia: ""
+            mes_referencia: "",
+            recorrente: !0
         }), r(null)
     }, g = S => {
         S.preventDefault();
@@ -71119,7 +71121,9 @@ function uIe() {
                 valor: parseFloat(a.valor),
                 dia_vencimento: parseInt(a.dia_vencimento),
                 status: "pendente",
-                banco_nome: (E == null ? void 0 : E.nome) || ""
+                banco_nome: (E == null ? void 0 : E.nome) || "",
+                mes_referencia: a.recorrente ? "" : (a.mes_referencia || `${selectedMonth}-01`),
+                recorrente: a.recorrente
             };
         n ? f.mutate({
             id: n.id,
@@ -71136,7 +71140,8 @@ function uIe() {
             banco_id: S.banco_id || "",
             banco_nome: S.banco_nome || "",
             auto_pagar: S.auto_pagar || !1,
-            mes_referencia: S.mes_referencia || ""
+            mes_referencia: S.mes_referencia || "",
+            recorrente: S.recorrente !== undefined ? S.recorrente : !S.mes_referencia
         }), t(!0)
     }, x = async S => {
         const E = new Date;
@@ -71531,9 +71536,26 @@ function uIe() {
                                     required: !0
                                 })]
                             }), l.jsxs("div", {
+                                className: "flex items-center justify-between p-4 bg-[#2a2a2a] rounded-lg",
+                                children: [l.jsxs("div", {
+                                    children: [l.jsx(he, {
+                                        className: "text-white mb-0.5",
+                                        children: "🔄 Despesa Recorrente"
+                                    }), l.jsx("p", {
+                                        className: "text-xs text-gray-400",
+                                        children: "Se ativo, ela se repete todo mês (Ex: Aluguel). Se inativo, ocorre em um mês específico (Ex: Cabelo)."
+                                    })]
+                                }), l.jsx(on, {
+                                    checked: a.recorrente,
+                                    onCheckedChange: S => i({ ...a,
+                                        recorrente: S,
+                                        mes_referencia: S ? "" : a.mes_referencia
+                                    })
+                                })]
+                            }), !a.recorrente && l.jsxs("div", {
                                 children: [l.jsx(he, {
                                     htmlFor: "mes_referencia",
-                                    children: "📆 Mês de Referência (Opcional)"
+                                    children: "📆 Mês de Referência"
                                 }), l.jsx(Re, {
                                     id: "mes_referencia",
                                     type: "month",
@@ -71541,7 +71563,8 @@ function uIe() {
                                     onChange: S => i({ ...a,
                                         mes_referencia: S.target.value ? S.target.value + "-01" : ""
                                     }),
-                                    className: "bg-[#2a2a2a] border-[#404040] text-white"
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                    required: !a.recorrente
                                 })]
                             }), l.jsxs("div", {
                                 className: "flex items-center justify-between",
