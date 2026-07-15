@@ -67716,10 +67716,11 @@ const isItemCreatedBeforeOrInMonth = (item, targetMonthStr) => {
 function Wv(e, t) {
     if (!isItemCreatedBeforeOrInMonth(e, t)) return 0;
     if (!(e != null && e.valor_parcela)) return 0;
-    if (Array.isArray(e.parcelas_datas) && e.parcelas_datas.length > 0) return e.parcelas_datas.reduce((o, s) => s && s.substring(0, 7) === t ? o + e.valor_parcela : o, 0);
+    const n = e.num_parcelas || 1;
+    const valor_juros_parcela = (e.valor_juros || 0) / n;
+    if (Array.isArray(e.parcelas_datas) && e.parcelas_datas.length > 0) return e.parcelas_datas.reduce((o, s) => s && s.substring(0, 7) === t ? o + valor_juros_parcela : o, 0);
     if (!(e != null && e.data_emprestimo)) return 0;
-    const n = e.num_parcelas || 1,
-        r = new Date(e.data_emprestimo + "T12:00:00"),
+    const r = new Date(e.data_emprestimo + "T12:00:00"),
         a = e.dia_vencimento || r.getDate();
     let i = 0;
     for (let o = 0; o < n; o++) {
@@ -67727,7 +67728,7 @@ function Wv(e, t) {
             c = r.getMonth() + o,
             d = new Date(s, c + 1, 0).getDate(),
             f = new Date(s, c, Math.min(a, d));
-        `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,"0")}` === t && (i += e.valor_parcela)
+        `${f.getFullYear()}-${String(f.getMonth()+1).padStart(2,"0")}` === t && (i += valor_juros_parcela)
     }
     return i
 }
