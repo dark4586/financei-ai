@@ -14073,7 +14073,34 @@ const {
     requiresAuth: !1
 }), _te = new Proxy({}, {
     get(e, t) {
-        return Jv.includes(t) ? mte(t) : eu.entities[t]
+        if (Jv.includes(t)) return mte(t);
+        const originalEntity = eu.entities[t];
+        if (!originalEntity) return undefined;
+        return new Proxy(originalEntity, {
+            get(target, prop) {
+                const value = target[prop];
+                if (typeof value === "function") {
+                    if (["create", "update", "delete", "bulkCreate"].includes(prop)) {
+                        return async function(...args) {
+                            const res = await value.apply(target, args);
+                            (async () => {
+                                try {
+                                    const latestItems = await target.list();
+                                    if (Array.isArray(latestItems)) {
+                                        localStorage.setItem("financeai_" + t, JSON.stringify(latestItems));
+                                        console.log(`[Backup] Automatic local backup updated for ${t} (${latestItems.length} items)`);
+                                    }
+                                } catch (backupErr) {
+                                    console.error(`[Backup] Failed to auto-backup ${t}:`, backupErr);
+                                }
+                            })();
+                            return res;
+                        };
+                    }
+                }
+                return value;
+            }
+        });
     }
 }), se = {
     entities: _te,
@@ -14104,7 +14131,28 @@ setTimeout(async () => {
             localStorage.removeItem(syncKey);
         }
 
-        if (localStorage.getItem(syncKey)) return;
+        if (localStorage.getItem(syncKey)) {
+            console.log("[Backup] Sincronização anterior detectada. Atualizando backup local com dados do servidor...");
+            setTimeout(async () => {
+                try {
+                    const entitiesToSync = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
+                    for (const ent of entitiesToSync) {
+                        try {
+                            const serverItems = await se.entities[ent].list();
+                            if (Array.isArray(serverItems)) {
+                                localStorage.setItem("financeai_" + ent, JSON.stringify(serverItems));
+                            }
+                        } catch (entErr) {
+                            console.error(`[Backup] Erro ao fazer backup de ${ent}:`, entErr);
+                        }
+                    }
+                    console.log("[Backup] Backup local de todas as tabelas atualizado!");
+                } catch (backupErr) {
+                    console.error("[Backup] Erro no backup inicial:", backupErr);
+                }
+            }, 5000);
+            return;
+        }
 
         console.log("[Sync] Iniciando sincronização e recuperação de dados locais...");
         const entitiesToSync = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
