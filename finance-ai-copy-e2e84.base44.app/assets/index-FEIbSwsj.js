@@ -73805,11 +73805,13 @@ function bIe() {
     }), O = new Date().getDate(), P = v.filter(K => {
     var ht;
     const J = (((ht = K.mes_referencia) == null ? void 0 : ht.includes(S)) || K.recorrente || K.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(K, S);
-    return (K.tipo !== "devedor" || K.status === "recebido") && J
+    return J
 }).reduce((K, J) => {
-    const ve = J.valor || 0;
-    return K + ve
-}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.valor || 0), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.filter(K => {
+    if (J.tipo === "devedor") {
+        return K + (J.valor_recebido || 0);
+    }
+    return K + (J.valor || 0)
+}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + ((J.valor || 0) - (J.valor_recebido || 0)), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.filter(K => {
     const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
         ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
     return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
@@ -73870,10 +73872,12 @@ function bIe() {
             }
             const rr = v.filter($e => {
                     var Je;
-                    return ($e.tipo !== "devedor" || $e.status === "recebido") && ((Je = $e.mes_referencia) == null ? void 0 : Je.startsWith(zt))
+                    return (Je = $e.mes_referencia) == null ? void 0 : Je.startsWith(zt)
                 }).reduce(($e, Je) => {
-                    const St = Je.valor || 0;
-                    return $e + St
+                    if (Je.tipo === "devedor") {
+                        return $e + (Je.valor_recebido || 0);
+                    }
+                    return $e + (Je.valor || 0)
                 }, 0),
                 Pr = w.filter($e => $e.ativa && (!$e.mes_referencia || $e.mes_referencia.includes(zt))).reduce(($e, Je) => $e + Je.valor, 0),
                 at = x.reduce(($e, Je) => $e + getDebtInstallmentForMonth(Je, zt), 0),
@@ -77898,7 +77902,12 @@ function $Ie() {
                 status: V <= .01 ? "recebido" : "pendente"
             }
         }), i(!1), d("")
-    }, $ = g.filter(D => D.status === "recebido" && (D.tipo !== "devedor" || D.status === "recebido")).reduce((D, H) => D + (H.valor || 0), 0), I = g.filter(D => D.recorrente && D.status === "recebido").reduce((D, H) => D + H.valor, 0), M = g.filter(D => D.status === "pendente").reduce((D, H) => D + (H.valor - (H.valor_recebido || 0)), 0), R = C.useCallback(async () => {
+    }, $ = g.reduce((D, H) => {
+        if (H.tipo === "devedor") {
+            return D + (H.valor_recebido || 0);
+        }
+        return D + (H.status === "recebido" ? (H.valor || 0) : 0);
+    }, 0), I = g.filter(D => D.recorrente && D.status === "recebido").reduce((D, H) => D + H.valor, 0), M = g.filter(D => D.status === "pendente").reduce((D, H) => D + (H.valor - (H.valor_recebido || 0)), 0), R = C.useCallback(async () => {
         await m.invalidateQueries({
             queryKey: ["incomes"]
         })
@@ -78054,12 +78063,17 @@ function $Ie() {
                                             children: [(D.tipo || "").charAt(0).toUpperCase() + (D.tipo || "").slice(1), " • ", MIe(D.mes_referencia), D.data_prevista && ` • 📅 ${IIe(D.data_prevista)}`]
                                         }), X && V && l.jsxs("div", {
                                             className: "mt-2",
-                                            children: [l.jsxs("p", {
-                                                className: "text-xs text-gray-500",
-                                                children: ["💵 Recebido: R$ ", (D.valor_recebido || 0).toLocaleString("pt-BR", {
-                                                    minimumFractionDigits: 2
-                                                }), " / Falta: R$ ", H.toLocaleString("pt-BR", {
-                                                    minimumFractionDigits: 2
+                                            children: [l.jsxs("div", {
+                                                className: "flex justify-between items-center text-xs text-gray-500",
+                                                children: [l.jsxs("span", {
+                                                    children: ["💵 Recebido: R$ ", (D.valor_recebido || 0).toLocaleString("pt-BR", {
+                                                        minimumFractionDigits: 2
+                                                    }), " / Falta: R$ ", H.toLocaleString("pt-BR", {
+                                                        minimumFractionDigits: 2
+                                                    })]
+                                                }), l.jsxs("span", {
+                                                    className: "font-semibold text-green-400",
+                                                    children: [Math.round(((D.valor_recebido || 0) / D.valor) * 100), "%"]
                                                 })]
                                             }), l.jsx("div", {
                                                 className: "w-full bg-[#1a1a1a] rounded-full h-2 mt-1",
