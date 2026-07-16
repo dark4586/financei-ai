@@ -71813,6 +71813,100 @@ const _P = C.forwardRef(({
 }));
 _P.displayName = EG.displayName;
 
+function HistoricoDividas({
+    debts: e,
+    onEdit: t,
+    onDelete: n
+}) {
+    const [r, a] = C.useState(!1);
+    const N = {
+        cartao_credito: "Cartão de Crédito",
+        emprestimo: "Empréstimo",
+        financiamento: "Financiamento",
+        outros: "Outros"
+    };
+    return l.jsx(Oe, {
+        className: "bg-[#1a1a1a] border-[#2a2a2a]",
+        children: l.jsxs("div", {
+            className: "p-6",
+            children: [l.jsxs("button", {
+                onClick: () => a(!r),
+                className: "flex items-center gap-2 text-lg font-semibold text-white w-full text-left",
+                children: [r ? l.jsx(ox, {
+                    className: "w-5 h-5"
+                }) : l.jsx(Ph, {
+                    className: "w-5 h-5"
+                }), "🕘 Histórico (", e.length, ")"]
+            }), r && l.jsxs("div", {
+                className: "space-y-3 mt-4",
+                children: [e.map(k => {
+                    const S = k.parcelas_total ? k.parcelas_pagas / k.parcelas_total * 100 : 0;
+                    return l.jsxs("div", {
+                        className: "p-4 rounded-lg bg-green-500/10 border border-green-500/20",
+                        children: [l.jsxs("div", {
+                            className: "flex items-start justify-between gap-2 mb-2",
+                            children: [l.jsxs("div", {
+                                className: "flex-1 min-w-0",
+                                children: [l.jsx("h4", {
+                                    className: "font-semibold text-white truncate",
+                                    children: k.nome
+                                }), l.jsxs("div", {
+                                    className: "flex items-center gap-1 flex-wrap mt-1",
+                                    children: [l.jsx("span", {
+                                        className: "text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded",
+                                        children: N[k.categoria]
+                                    }), l.jsx("span", {
+                                        className: "text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded",
+                                        children: "Quitada"
+                                    })]
+                                }), l.jsxs("p", {
+                                    className: "text-xs text-gray-400 mt-1",
+                                    children: [k.parcelas_pagas || 0, "/", k.parcelas_total || 0, " parcelas • R$ ", k.valor_parcela.toLocaleString("pt-BR", {
+                                        minimumFractionDigits: 2
+                                    }), "/mês"]
+                                })]
+                            }), l.jsxs("div", {
+                                className: "flex flex-col items-end gap-1 flex-shrink-0",
+                                children: [l.jsxs("div", {
+                                    className: "flex items-center gap-1 flex-wrap justify-end",
+                                    children: [l.jsx(xe, {
+                                        variant: "ghost",
+                                        size: "icon",
+                                        onClick: () => t(k),
+                                        className: "text-gray-400 hover:text-white hover:bg-[#404040] w-8 h-8",
+                                        children: l.jsx(Oa, {
+                                            className: "w-4 h-4"
+                                        })
+                                    }), l.jsx(xe, {
+                                        variant: "ghost",
+                                        size: "icon",
+                                        onClick: () => n(k.id),
+                                        className: "text-red-400 hover:text-red-300 hover:bg-red-500/10 w-8 h-8",
+                                        children: l.jsx(fr, {
+                                            className: "w-4 h-4"
+                                        })
+                                    })]
+                                }), l.jsxs("span", {
+                                    className: "text-base font-bold text-green-400",
+                                    children: ["R$ ", k.valor_total.toLocaleString("pt-BR", {
+                                        minimumFractionDigits: 2
+                                    })]
+                                })]
+                            })]
+                        }), k.parcelas_total && l.jsx(_P, {
+                            value: S,
+                            className: "h-2"
+                        })]
+                    }, k.id);
+                }), e.length === 0 && l.jsx("div", {
+                    className: "text-center py-6 text-gray-500",
+                    children: "Nenhuma dívida quitada no histórico"
+                })]
+            })]
+        })
+    });
+}
+
 function vIe() {
     const [e, t] = C.useState(!1), [n, r] = C.useState(null), [a, i] = C.useState({
         nome: "",
@@ -72058,7 +72152,7 @@ function vIe() {
                         children: "Todas as Dívidas"
                     }), l.jsxs("div", {
                         className: "space-y-4",
-                        children: [s.filter(k => isItemCreatedBeforeOrInMonth(k, selectedMonth)).map(k => {
+                        children: [s.filter(k => k.status === "ativa" && isItemCreatedBeforeOrInMonth(k, selectedMonth)).map(k => {
                             const S = k.parcelas_total ? k.parcelas_pagas / k.parcelas_total * 100 : 0,
                                 E = k.valor_total - k.valor_pago;
                             return l.jsxs("div", {
@@ -72129,12 +72223,16 @@ function vIe() {
                                     className: "h-2"
                                 })]
                             }, k.id)
-                        }), s.filter(k => isItemCreatedBeforeOrInMonth(k, selectedMonth)).length === 0 && l.jsx("div", {
+                        }), s.filter(k => k.status === "ativa" && isItemCreatedBeforeOrInMonth(k, selectedMonth)).length === 0 && l.jsx("div", {
                             className: "text-center py-12 text-gray-500",
-                            children: "Nenhuma dívida cadastrada"
+                            children: "Nenhuma dívida ativa cadastrada"
                         })]
                     })]
                 })
+            }), l.jsx(HistoricoDividas, {
+                debts: s.filter(k => k.status === "quitada" && isItemCreatedBeforeOrInMonth(k, selectedMonth)),
+                onEdit: w,
+                onDelete: k => p.mutate(k)
             }), l.jsx(zr, {
                 open: e,
                 onOpenChange: k => {
