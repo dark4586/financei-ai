@@ -71915,6 +71915,7 @@ function vIe() {
         taxa_juros: "0",
         parcelas_total: "",
         parcelas_pagas: "0",
+        parcelas_atrasadas: "0",
         categoria: "cartao_credito",
         status: "ativa",
         dia_vencimento: "",
@@ -71984,6 +71985,7 @@ function vIe() {
             taxa_juros: "0",
             parcelas_total: "",
             parcelas_pagas: "0",
+            parcelas_atrasadas: "0",
             categoria: "cartao_credito",
             status: "ativa",
             dia_vencimento: "",
@@ -72001,6 +72003,7 @@ function vIe() {
                 taxa_juros: parseFloat(a.taxa_juros),
                 parcelas_total: parseInt(a.parcelas_total),
                 parcelas_pagas: parseInt(a.parcelas_pagas),
+                parcelas_atrasadas: parseInt(a.parcelas_atrasadas || 0),
                 valor_pago: parseFloat(a.valor_parcela) * parseInt(a.parcelas_pagas),
                 dia_vencimento: a.dia_vencimento ? parseInt(a.dia_vencimento) : null,
                 banco_nome: (S == null ? void 0 : S.nome) || ""
@@ -72010,7 +72013,7 @@ function vIe() {
             data: E
         }) : d.mutate(E)
     }, w = k => {
-        var S, E, O, P;
+        var S, E, O, P, A;
         r(k), i({
             nome: k.nome,
             valor_total: k.valor_total.toString(),
@@ -72018,6 +72021,7 @@ function vIe() {
             taxa_juros: ((S = k.taxa_juros) == null ? void 0 : S.toString()) || "0",
             parcelas_total: ((E = k.parcelas_total) == null ? void 0 : E.toString()) || "",
             parcelas_pagas: ((O = k.parcelas_pagas) == null ? void 0 : O.toString()) || "0",
+            parcelas_atrasadas: ((A = k.parcelas_atrasadas) == null ? void 0 : A.toString()) || "0",
             categoria: k.categoria,
             status: k.status,
             dia_vencimento: ((P = k.dia_vencimento) == null ? void 0 : P.toString()) || "",
@@ -72052,6 +72056,71 @@ function vIe() {
                 pagamentos: pags
             }
         })
+    }, payOverdueDebts = async (debt) => {
+        const max = debt.parcelas_atrasadas || 0;
+        if (max <= 0) return;
+        const input = window.prompt(`Quantas parcelas atrasadas deseja pagar? (Máx: ${max})`, max.toString());
+        if (input === null) return;
+        const count = parseInt(input);
+        if (isNaN(count) || count < 1 || count > max) {
+            window.alert(`Por favor, insira um número válido entre 1 e ${max}.`);
+            return;
+        }
+        const confirmPay = window.confirm(`Confirmar o pagamento de ${count} parcela(s) atrasada(s) de "${debt.nome}" no valor total de R$ ${(count * debt.valor_parcela).toLocaleString("pt-BR", { minimumFractionDigits: 2 })}?`);
+        if (!confirmPay) return;
+        const bank = c.find(b => b.id === debt.banco_id);
+        if (bank) {
+            await se.entities.Bank.update(bank.id, { ...bank,
+                saldo_atual: (bank.saldo_atual || 0) - (count * debt.valor_parcela)
+            });
+            o.invalidateQueries({
+                queryKey: ["banks"]
+            });
+        }
+        const newPaidCount = (debt.parcelas_pagas || 0) + count;
+        const newPaidVal = (debt.valor_pago || 0) + (count * debt.valor_parcela);
+        const newOverdueCount = max - count;
+        const isSettled = debt.parcelas_total && newPaidCount >= debt.parcelas_total;
+        const todayStr = tt(new Date(), "yyyy-MM-dd");
+        const payDate = selectedMonth === tt(new Date(), "yyyy-MM") ? todayStr : `${selectedMonth}-01`;
+        const pags = Array.isArray(debt.pagamentos) ? [...debt.pagamentos] : [];
+        if (!pags.includes(selectedMonth)) {
+            pags.push(selectedMonth);
+        }
+        await f.mutateAsync({
+            id: debt.id,
+            data: { ...debt,
+                parcelas_pagas: newPaidCount,
+                valor_pago: newPaidVal,
+                parcelas_atrasadas: newOverdueCount,
+                status: isSettled ? "quitada" : "ativa",
+                mes_atual_pago: true,
+                ultimo_pagamento: payDate,
+                pagamentos: pags
+            }
+        });
+        try {
+            await se.entities.FixedExpense.create({
+                nome: `Pgto. Atrasado: ${debt.nome} (${count}x)`,
+                valor: count * debt.valor_parcela,
+                categoria: "financiamento",
+                dia_vencimento: new Date().getDate(),
+                ativa: true,
+                status: "pago",
+                ultimo_pagamento: payDate,
+                pagamentos: [selectedMonth],
+                banco_id: debt.banco_id || "",
+                banco_nome: debt.banco_nome || "",
+                auto_pagar: false,
+                mes_referencia: `${selectedMonth}-01`,
+                recorrente: false
+            });
+            o.invalidateQueries({
+                queryKey: ["fixedExpenses"]
+            });
+        } catch (err) {
+            console.error("Erro ao registrar despesa do pagamento atrasado:", err);
+        }
     }, v = s.filter(k => k.status === "ativa" && isItemCreatedBeforeOrInMonth(k, selectedMonth)), b = v.reduce((k, S) => k + (S.valor_total - S.valor_pago), 0), j = s.reduce((k, S) => k + getDebtInstallmentForMonth(S, selectedMonth), 0), N = {
         cartao_credito: "Cartão de Crédito",
         emprestimo: "Empréstimo",
@@ -72175,6 +72244,9 @@ function vIe() {
                                             }), k.status === "ativa" && isDebtPaidInMonth(k, selectedMonth) && l.jsx("span", {
                                                 className: "text-xs bg-blue-500/20 text-blue-400 px-2 py-0.5 rounded",
                                                 children: "✅ Parcela Paga"
+                                            }), k.status === "ativa" && k.categoria === "financiamento" && (k.parcelas_atrasadas || 0) > 0 && l.jsx("span", {
+                                                className: "text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded font-semibold",
+                                                children: `⚠️ ${k.parcelas_atrasadas} atrasada(s)`
                                             })]
                                         }), l.jsxs("p", {
                                             className: "text-xs text-gray-400 mt-1",
@@ -72186,7 +72258,15 @@ function vIe() {
                                         className: "flex flex-col items-end gap-1 flex-shrink-0",
                                         children: [l.jsxs("div", {
                                             className: "flex items-center gap-1 flex-wrap justify-end",
-                                            children: [k.status === "ativa" && !isDebtPaidInMonth(k, selectedMonth) && l.jsxs(xe, {
+                                            children: [k.status === "ativa" && k.categoria === "financiamento" && (k.parcelas_atrasadas || 0) > 0 && l.jsxs(xe, {
+                                                variant: "ghost",
+                                                size: "sm",
+                                                onClick: () => payOverdueDebts(k),
+                                                className: "text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 h-7 px-2 text-xs mr-1",
+                                                children: [l.jsx(Pa, {
+                                                    className: "w-3 h-3 mr-1"
+                                                }), "Pagar Atrasadas"]
+                                            }), k.status === "ativa" && !isDebtPaidInMonth(k, selectedMonth) && l.jsxs(xe, {
                                                 variant: "ghost",
                                                 size: "sm",
                                                 onClick: () => x(k),
@@ -72316,6 +72396,19 @@ function vIe() {
                                     value: a.parcelas_pagas,
                                     onChange: k => i({ ...a,
                                         parcelas_pagas: k.target.value
+                                    }),
+                                    className: "bg-[#2a2a2a] border-[#404040] text-white"
+                                })]
+                            }), a.categoria === "financiamento" && l.jsxs("div", {
+                                children: [l.jsx(he, {
+                                    htmlFor: "parcelas_atrasadas",
+                                    children: "⚠️ Parcelas Atrasadas"
+                                }), l.jsx(Re, {
+                                    id: "parcelas_atrasadas",
+                                    type: "number",
+                                    value: a.parcelas_atrasadas || "0",
+                                    onChange: k => i({ ...a,
+                                        parcelas_atrasadas: k.target.value
                                     }),
                                     className: "bg-[#2a2a2a] border-[#404040] text-white"
                                 })]
