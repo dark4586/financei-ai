@@ -75143,8 +75143,8 @@ function bIe() {
                                     },
                                     children: l.jsx(Fs, {
                                         width: "100%",
-                                        height: 320,
-                                        children: l.jsxs(o7, {
+                                        height: 200,
+                                        children: l.jsxs(o7, { margin: { top: 10, right: 10, left: -20, bottom: 0 },
                                             data: le,
                                             barCategoryGap: "55%",
                                             barSize: 8,
@@ -75272,9 +75272,12 @@ function bIe() {
                                 })
                             })]
                         })
-                    }), l.jsxs("div", {
-                        className: "grid grid-cols-1 lg:grid-cols-2 gap-5",
-                        children: [l.jsx(Be.div, {
+}), l.jsxs("div", {
+    className: "grid grid-cols-2 gap-4 md:gap-5",
+    children: [l.jsxs("div", {
+        className: "space-y-5",
+        children: [
+            l.jsx(Be.div, {
                             custom: 5,
                             variants: qe,
                             initial: "hidden",
@@ -75330,103 +75333,8 @@ function bIe() {
                                     })]
                                 })]
                             })
-                        }), l.jsx(Be.div, {
-                            custom: 6,
-                            variants: qe,
-                            initial: "hidden",
-                            animate: "visible",
-                            children: l.jsxs(Oe, {
-                                className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 md:p-6",
-                                children: [l.jsxs("div", {
-                                    className: "flex items-center gap-2 mb-5",
-                                    children: [l.jsx("div", {
-                                        className: "w-1 h-5 rounded-full bg-gradient-to-b from-blue-400 to-cyan-500"
-                                    }), l.jsx("h3", {
-                                        className: "text-base font-semibold text-white",
-                                        children: "Próximos Vencimentos"
-                                    })]
-                                }), l.jsxs("div", {
-                                    className: "space-y-2",
-                                    children: [Se.map((K, J) => {
-                                        const ve = new Date().getDate();
-                                        let et = K.vencimento - ve;
-                                        et < 0 && (et = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() - ve + K.vencimento);
-                                        const ht = et <= 3;
-                                        return l.jsx(Be.div, {
-                                            initial: {
-                                                opacity: 0,
-                                                x: -12
-                                            },
-                                            animate: {
-                                                opacity: 1,
-                                                x: 0
-                                            },
-                                            transition: {
-                                                delay: J * .07,
-                                                duration: .3
-                                            },
-                                            children: l.jsxs(nu, {
-                                                children: [l.jsx(ru, {
-                                                    asChild: !0,
-                                                    children: l.jsxs("div", {
-                                                        className: `flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl cursor-pointer hover:bg-[#333] transition-colors group ${ht?"ring-1 ring-red-500/30":""}`,
-                                                        children: [l.jsxs("div", {
-                                                            className: "flex items-center gap-3",
-                                                            children: [l.jsx("div", {
-                                                                className: `w-8 h-8 rounded-lg flex items-center justify-center ${ht?"bg-red-500/20":"bg-blue-500/20"}`,
-                                                                children: l.jsx(ii, {
-                                                                    className: `w-4 h-4 ${ht?"text-red-400":"text-blue-400"}`
-                                                                })
-                                                            }), l.jsxs("div", {
-                                                                children: [l.jsx("p", {
-                                                                    className: "text-white text-sm font-medium",
-                                                                    children: K.nome
-                                                                }), l.jsxs("p", {
-                                                                    className: "text-xs text-gray-500",
-                                                                    children: [K.tipo, " · Dia ", K.vencimento]
-                                                                })]
-                                                            })]
-                                                        }), l.jsxs("div", {
-                                                            className: "text-right",
-                                                            children: [l.jsxs("p", {
-                                                                className: `font-semibold text-sm ${ht?"text-red-400":"text-gray-300"}`,
-                                                                children: ["R$ ", K.valor.toLocaleString("pt-BR", {
-                                                                    minimumFractionDigits: 2
-                                                                })]
-                                                            }), l.jsx("p", {
-                                                                className: "text-xs text-gray-600",
-                                                                children: et === 0 ? "Hoje!" : `${et}d`
-                                                            })]
-                                                        })]
-                                                    })
-                                                }), l.jsx(wl, {
-                                                    side: "left",
-                                                    style: Ie,
-                                                    className: "text-white p-3",
-                                                    children: l.jsxs("p", {
-                                                        className: "text-sm",
-                                                        children: ["Vence em ", l.jsx("strong", {
-                                                            children: et
-                                                        }), " dia", et !== 1 ? "s" : ""]
-                                                    })
-                                                })]
-                                            })
-                                        }, K.nome + J)
-                                    }), Se.length === 0 && l.jsxs("div", {
-                                        className: "h-40 flex flex-col items-center justify-center text-gray-600",
-                                        children: [l.jsx(ii, {
-                                            className: "w-10 h-10 mb-2 opacity-30"
-                                        }), l.jsx("p", {
-                                            className: "text-sm",
-                                            children: "Sem vencimentos próximos"
-                                        })]
-                                    })]
-                                })]
-                            })
-                        })]
-                    }), l.jsxs("div", {
-                        className: "grid grid-cols-1 lg:grid-cols-2 gap-5",
-                        children: [l.jsx(Be.div, {
+}),
+            l.jsx(Be.div, {
                             custom: 7,
                             variants: qe,
                             initial: "hidden",
@@ -75539,7 +75447,106 @@ function bIe() {
                                     })]
                                 })]
                             })
-                        }), l.jsx(Be.div, {
+})
+        ]
+    }), l.jsxs("div", {
+        className: "space-y-5",
+        children: [
+            l.jsx(Be.div, {
+                            custom: 6,
+                            variants: qe,
+                            initial: "hidden",
+                            animate: "visible",
+                            children: l.jsxs(Oe, {
+                                className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 md:p-6",
+                                children: [l.jsxs("div", {
+                                    className: "flex items-center gap-2 mb-5",
+                                    children: [l.jsx("div", {
+                                        className: "w-1 h-5 rounded-full bg-gradient-to-b from-blue-400 to-cyan-500"
+                                    }), l.jsx("h3", {
+                                        className: "text-base font-semibold text-white",
+                                        children: "Próximos Vencimentos"
+                                    })]
+                                }), l.jsxs("div", {
+                                    className: "space-y-2",
+                                    children: [Se.map((K, J) => {
+                                        const ve = new Date().getDate();
+                                        let et = K.vencimento - ve;
+                                        et < 0 && (et = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() - ve + K.vencimento);
+                                        const ht = et <= 3;
+                                        return l.jsx(Be.div, {
+                                            initial: {
+                                                opacity: 0,
+                                                x: -12
+                                            },
+                                            animate: {
+                                                opacity: 1,
+                                                x: 0
+                                            },
+                                            transition: {
+                                                delay: J * .07,
+                                                duration: .3
+                                            },
+                                            children: l.jsxs(nu, {
+                                                children: [l.jsx(ru, {
+                                                    asChild: !0,
+                                                    children: l.jsxs("div", {
+                                                        className: `flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl cursor-pointer hover:bg-[#333] transition-colors group ${ht?"ring-1 ring-red-500/30":""}`,
+                                                        children: [l.jsxs("div", {
+                                                            className: "flex items-center gap-3",
+                                                            children: [l.jsx("div", {
+                                                                className: `w-8 h-8 rounded-lg flex items-center justify-center ${ht?"bg-red-500/20":"bg-blue-500/20"}`,
+                                                                children: l.jsx(ii, {
+                                                                    className: `w-4 h-4 ${ht?"text-red-400":"text-blue-400"}`
+                                                                })
+                                                            }), l.jsxs("div", {
+                                                                children: [l.jsx("p", {
+                                                                    className: "text-white text-sm font-medium",
+                                                                    children: K.nome
+                                                                }), l.jsxs("p", {
+                                                                    className: "text-xs text-gray-500",
+                                                                    children: [K.tipo, " · Dia ", K.vencimento]
+                                                                })]
+                                                            })]
+                                                        }), l.jsxs("div", {
+                                                            className: "text-right",
+                                                            children: [l.jsxs("p", {
+                                                                className: `font-semibold text-sm ${ht?"text-red-400":"text-gray-300"}`,
+                                                                children: ["R$ ", K.valor.toLocaleString("pt-BR", {
+                                                                    minimumFractionDigits: 2
+                                                                })]
+                                                            }), l.jsx("p", {
+                                                                className: "text-xs text-gray-600",
+                                                                children: et === 0 ? "Hoje!" : `${et}d`
+                                                            })]
+                                                        })]
+                                                    })
+                                                }), l.jsx(wl, {
+                                                    side: "left",
+                                                    style: Ie,
+                                                    className: "text-white p-3",
+                                                    children: l.jsxs("p", {
+                                                        className: "text-sm",
+                                                        children: ["Vence em ", l.jsx("strong", {
+                                                            children: et
+                                                        }), " dia", et !== 1 ? "s" : ""]
+                                                    })
+                                                })]
+                                            })
+                                        }, K.nome + J)
+                                    }), Se.length === 0 && l.jsxs("div", {
+                                        className: "h-40 flex flex-col items-center justify-center text-gray-600",
+                                        children: [l.jsx(ii, {
+                                            className: "w-10 h-10 mb-2 opacity-30"
+                                        }), l.jsx("p", {
+                                            className: "text-sm",
+                                            children: "Sem vencimentos próximos"
+                                        })]
+                                    })]
+                                })]
+                            })
+}),
+            l.jsx(Be.div, {
                             custom: 8,
                             variants: qe,
                             initial: "hidden",
@@ -75635,8 +75642,10 @@ function bIe() {
                                     }, K.label))
                                 })]
                             })
-                        })]
-                    })]
+                        })
+        ]
+    })]
+})]
                 })
             })
         })
