@@ -70277,6 +70277,35 @@ function cIe() {
                                 children: K.label
                             }, K.value))
                         })]
+                    }), l.jsxs(Oe, {
+                        className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
+                        children: [l.jsx("h2", {
+                            className: "text-xl font-semibold text-white mb-4",
+                            children: "🏠 Layout da Página Inicial"
+                        }), l.jsx("div", {
+                            className: "grid grid-cols-2 md:grid-cols-4 gap-3",
+                            children: [{
+                                value: "default",
+                                label: "🏠 Padrão"
+                            }, {
+                                value: "corporate",
+                                label: "📊 Corporativo"
+                            }, {
+                                value: "executivo",
+                                label: "💼 Executivo"
+                            }, {
+                                value: "atalhos",
+                                label: "⚡ Atalhos Rápidos"
+                            }].map(K => l.jsx("button", {
+                                onClick: () => {
+                                    le({
+                                        home_layout: K.value
+                                    })
+                                },
+                                className: `p-3 rounded-lg text-center transition-all font-medium text-sm ${((G.home_layout || "default") === K.value) ? "bg-white text-black scale-105" : "bg-[#2a2a2a] text-gray-300 hover:bg-[#333333]"}`,
+                                children: K.label
+                            }, K.value))
+                        })]
                     }), G.tema === "liquid_glass" && l.jsxs(Oe, {
                         className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
                         children: [l.jsx("h2", {
@@ -73936,6 +73965,56 @@ function bIe() {
         }),
         activeSettings = (cc && cc[0]) || {},
         currentTheme = activeSettings.tema || "dark",
+        layout = activeSettings.home_layout || "default",
+        renderCircularGauge = (percentage, color, size, strokeWidth, title, displayVal) => {
+            const radius = (size - strokeWidth) / 2;
+            const circumference = radius * 2 * Math.PI;
+            const strokeDashoffset = circumference - (Math.min(Math.max(percentage, 0), 100) / 100) * circumference;
+            return l.jsxs(Oe, {
+                className: "bg-[#1a1a1a] border-[#2a2a2a] p-4 rounded-xl flex flex-col items-center justify-center relative overflow-hidden",
+                children: [
+                    l.jsx("p", { className: "text-xs font-semibold text-gray-400 mb-3 text-center uppercase tracking-wider", children: title }),
+                    l.jsxs("div", {
+                        className: "relative flex items-center justify-center",
+                        style: { width: size, height: size },
+                        children: [
+                            l.jsxs("svg", {
+                                className: "transform -rotate-90",
+                                width: size,
+                                height: size,
+                                children: [
+                                    l.jsx("circle", {
+                                        className: "text-[#262626]",
+                                        strokeWidth: strokeWidth,
+                                        stroke: "currentColor",
+                                        fill: "transparent",
+                                        r: radius,
+                                        cx: size / 2,
+                                        cy: size / 2
+                                    }),
+                                    l.jsx("circle", {
+                                        strokeWidth: strokeWidth,
+                                        strokeDasharray: circumference,
+                                        strokeDashoffset: strokeDashoffset,
+                                        strokeLinecap: "round",
+                                        stroke: color,
+                                        fill: "transparent",
+                                        r: radius,
+                                        cx: size / 2,
+                                        cy: size / 2,
+                                        style: { transition: "stroke-dashoffset 0.5s ease" }
+                                    })
+                                ]
+                            }),
+                            l.jsx("span", {
+                                className: "absolute text-lg font-bold text-white font-mono",
+                                children: displayVal
+                            })
+                        ]
+                    })
+                ]
+            });
+        },
         [n, r] = C.useState(null),
         [a, i] = C.useState(!0),
         [o, s] = C.useState(!1),
@@ -74547,205 +74626,406 @@ function bIe() {
                                 })
                             })
                         })]
-                    }), l.jsx("div", {
-                        className: "grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5",
-                        children: [{
-                            id: "income",
-                            icon: En,
-                            iconColor: "text-green-400",
-                            iconBg: "from-green-500/20 to-emerald-500/10",
-                            label: "Receitas",
-                            badge: tt(new Date, "MMM", {
-                                locale: bn
-                            }).toUpperCase(),
-                            badgeGrad: "from-green-500 to-emerald-500",
-                            value: X,
-                            valueColor: "text-white",
-                            sub: "Clique para detalhes",
-                            tooltip: l.jsxs("div", {
-                                className: "space-y-1.5 text-sm",
-                                children: [l.jsx("p", {
-                                    className: "font-semibold text-white mb-2",
-                                    children: "Composição da Receita"
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["💰 Receita Base: R$ ", P.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["📈 Retirada CDB: R$ ", H.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["💸 Parcelas de Empréstimos: R$ ", I.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-green-400 font-semibold pt-1 border-t border-white/10",
-                                    children: ["Total: R$ ", X.toFixed(2)]
-                                })]
-                            })
-                        }, {
-                            id: "expenses",
-                            icon: SE,
-                            iconColor: "text-red-400",
-                            iconBg: "from-red-500/20 to-orange-500/10",
-                            label: "Despesas Mensais",
-                            value: L,
-                            valueColor: "text-white",
-                            sub: `${X>0?(L/X*100).toFixed(0):0}% da renda`,
-                            tooltip: l.jsxs("div", {
-                                className: "space-y-1.5 text-sm",
-                                children: [l.jsx("p", {
-                                    className: "font-semibold text-white mb-2",
-                                    children: "Distribuição"
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["🏠 Despesas: R$ ", M.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["💳 Dívidas: R$ ", R.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["🎯 Cartões: R$ ", F.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["📊 Objetivos: R$ ", V.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["📈 Aportes: R$ ", W.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-red-400 font-semibold pt-1 border-t border-white/10",
-                                    children: ["Total: R$ ", L.toFixed(2)]
-                                })]
-                            })
-                        }, {
-                            id: "balance",
-                            icon: Vu,
-                            iconColor: z >= 0 ? "text-blue-400" : "text-orange-400",
-                            iconBg: z >= 0 ? "from-blue-500/20 to-cyan-500/10" : "from-orange-500/20 to-red-500/10",
-                            label: "Saldo Livre",
-                            value: Math.abs(z),
-                            valueColor: z >= 0 ? "text-green-400" : "text-red-400",
-                            sub: z >= 0 ? "✨ Sobrando" : "⚠️ Déficit",
-                            tooltip: l.jsxs("div", {
-                                className: "space-y-1.5 text-sm",
-                                children: [l.jsx("p", {
-                                    className: "font-semibold text-white mb-2",
-                                    children: "Cálculo do Saldo"
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["✅ Receita: R$ ", X.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["❌ Despesas: R$ ", L.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: `${z>=0?"text-green-400":"text-red-400"} font-semibold pt-1 border-t border-white/10`,
-                                    children: ["Saldo: R$ ", z.toFixed(2)]
-                                })]
-                            })
-                        }, {
-                            id: "savings",
-                            icon: Oh,
-                            iconColor: "text-purple-400",
-                            iconBg: "from-purple-500/20 to-pink-500/10",
-                            label: "Total Investido",
-                            value: U,
-                            valueColor: "text-white",
-                            sub: `+R$ ${D.toFixed(2)}/mês`,
-                            tooltip: l.jsxs("div", {
-                                className: "space-y-1.5 text-sm",
-                                children: [l.jsx("p", {
-                                    className: "font-semibold text-white mb-2",
-                                    children: "Investimentos"
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["💰 Total: R$ ", U.toFixed(2)]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["📈 Rendimento: R$ ", D.toFixed(2), "/mês"]
-                                }), l.jsxs("p", {
-                                    className: "text-gray-300",
-                                    children: ["📤 Retirada: R$ ", H.toFixed(2), "/mês"]
-                                }), l.jsxs("p", {
-                                    className: "text-purple-400 font-semibold pt-1 border-t border-white/10",
-                                    children: ["Líquido: R$ ", (D - H).toFixed(2), "/mês"]
-                                })]
-                            })
-                        }].map((K, J) => l.jsx(Be.div, {
-                            custom: J,
-                            variants: qe,
-                            initial: "hidden",
-                            animate: "visible",
-                            children: l.jsxs(nu, {
-                                open: m[K.id],
-                                onOpenChange: ve => g({ ...m,
-                                    [K.id]: ve
-                                }),
-                                children: [l.jsx(ru, {
-                                    asChild: !0,
-                                    children: l.jsx(Be.div, {
-                                        whileHover: {
-                                            y: -4,
-                                            scale: 1.02
-                                        },
-                                        whileTap: {
-                                            scale: .97
-                                        },
-                                        transition: {
-                                            type: "spring",
-                                            stiffness: 400,
-                                            damping: 25
-                                        },
-                                        children: l.jsxs(Oe, {
-                                            className: "bg-[#1a1a1a] border-[#2a2a2a] p-4 md:p-6 cursor-pointer overflow-hidden relative",
-                                            children: [l.jsx("div", {
-                                                className: `absolute inset-0 bg-gradient-to-br ${K.iconBg} opacity-60 pointer-events-none`
-                                            }), l.jsxs("div", {
-                                                className: "relative",
-                                                children: [l.jsxs("div", {
-                                                    className: "flex items-center justify-between mb-3",
-                                                    children: [l.jsx("div", {
-                                                        className: `w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br ${K.iconBg}`,
-                                                        children: l.jsx(K.icon, {
-                                                            className: `w-5 h-5 ${K.iconColor}`
-                                                        })
-                                                    }), l.jsxs("div", {
-                                                        className: "flex items-center gap-2",
-                                                        children: [K.badge && l.jsx("span", {
-                                                            className: `text-xs font-bold px-2 py-0.5 rounded-full bg-gradient-to-r ${K.badgeGrad} text-white`,
-                                                            children: K.badge
-                                                        }), l.jsx("button", {
-                                                            onClick: ve => {
-                                                                ve.stopPropagation(), g({ ...m,
-                                                                    [K.id]: !m[K.id]
-                                                                })
-                                                            },
-                                                            children: l.jsx(Qoe, {
-                                                                className: "w-4 h-4 text-gray-500 hover:text-gray-300 transition-colors"
-                                                            })
-                                                        })]
-                                                    })]
-                                                }), l.jsx("p", {
-                                                    className: "text-gray-400 text-xs mb-1",
-                                                    children: K.label
-                                                }), l.jsxs("h3", {
-                                                    className: `text-xl md:text-2xl font-bold ${K.valueColor} mb-1 tabular-nums`,
-                                                    children: ["R$ ", l.jsx(Ej, {
-                                                        value: K.value
-                                                    })]
-                                                }), l.jsx("p", {
-                                                    className: "text-xs text-gray-500",
-                                                    children: K.sub
-                                                })]
-                                            })]
-                                        })
+                    }), (() => {
+                        if (layout === "corporate") {
+                            return l.jsxs("div", {
+                                className: "space-y-6",
+                                children: [
+                                    l.jsx("div", {
+                                        className: "grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5",
+                                        children: [{
+                                            id: "income",
+                                            label: "Incoming (Receitas)",
+                                            value: X,
+                                            color: "text-green-400",
+                                            sub: "Receita Mensal Bruta"
+                                        }, {
+                                            id: "expenses",
+                                            label: "Expenses (Despesas)",
+                                            value: L,
+                                            color: "text-red-400",
+                                            sub: `${X > 0 ? (L / X * 100).toFixed(0) : 0}% da renda`
+                                        }, {
+                                            id: "net_profit",
+                                            label: "Net Profit (Lucro Líquido)",
+                                            value: z,
+                                            color: z >= 0 ? "text-green-400" : "text-red-400",
+                                            sub: "Renda Líquida Residual"
+                                        }, {
+                                            id: "cash_end",
+                                            label: "Cash at Month End",
+                                            value: z,
+                                            color: "text-blue-400",
+                                            sub: "Disponibilidade"
+                                        }].map(K => l.jsx(Be.div, {
+                                            whileHover: { y: -3 },
+                                            children: l.jsxs(Oe, {
+                                                className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 relative overflow-hidden",
+                                                children: [
+                                                    l.jsx("div", {
+                                                        className: "absolute top-0 left-0 w-full h-1 bg-[#3f51b5]"
+                                                    }),
+                                                    l.jsx("p", {
+                                                        className: "text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1",
+                                                        children: K.label
+                                                    }),
+                                                    l.jsxs("h3", {
+                                                        className: `text-xl md:text-2xl font-bold ${K.color} mb-1`,
+                                                        children: ["R$ ", K.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })]
+                                                    }),
+                                                    l.jsx("p", {
+                                                        className: "text-xs text-gray-500",
+                                                        children: K.sub
+                                                    })
+                                                ]
+                                            })
+                                        }))
+                                    }),
+                                    l.jsxs("div", {
+                                        className: "grid grid-cols-1 lg:grid-cols-3 gap-6",
+                                        children: [
+                                            l.jsxs(Oe, {
+                                                className: "bg-[#1a1a1a] border-[#2a2a2a] p-6 lg:col-span-2",
+                                                children: [
+                                                    l.jsx("h4", { className: "text-sm font-semibold text-white uppercase tracking-wider mb-4", children: "Cash Flow Trend (Demonstrativo)" }),
+                                                    l.jsx("div", {
+                                                        className: "h-[240px] flex items-center justify-center text-gray-500",
+                                                        children: "Selecione a aba de Gráficos detalhados acima para análise de fluxo."
+                                                    })
+                                                ]
+                                            }),
+                                            l.jsxs(Oe, {
+                                                className: "bg-[#1a1a1a] border-[#2a2a2a] p-6 flex flex-col justify-between",
+                                                children: [
+                                                    l.jsxs("div", {
+                                                        children: [
+                                                            l.jsx("h4", { className: "text-sm font-semibold text-white uppercase tracking-wider mb-2", children: "Operating Margin" }),
+                                                            l.jsx("p", { className: "text-xs text-gray-400 mb-4", children: "Relação entre lucro operacional e receita bruta." })
+                                                        ]
+                                                    }),
+                                                    l.jsxs("div", {
+                                                        className: "flex flex-col items-center justify-center py-4",
+                                                        children: [
+                                                            l.jsxs("span", { className: "text-4xl font-extrabold text-blue-400 font-mono", children: [X > 0 ? (z / X * 100).toFixed(1) : 0, "%"] }),
+                                                            l.jsx("span", { className: "text-xs text-gray-500 mt-2", children: "Margem operacional líquida" })
+                                                        ]
+                                                    })
+                                                ]
+                                            })
+                                        ]
                                     })
-                                }), l.jsx(wl, {
-                                    side: "bottom",
-                                    style: Ie,
-                                    className: "text-white p-4 max-w-xs",
-                                    children: K.tooltip
-                                })]
-                            })
-                        }, K.id))
-                    }), l.jsx(Hr, {
+                                ]
+                            });
+                        }
+                        if (layout === "executivo") {
+                            const expensePct = X > 0 ? Math.min(Math.round((L / X) * 100), 100) : 0;
+                            const profitPct = X > 0 ? Math.min(Math.round((z / X) * 100), 100) : 0;
+                            const investmentPct = X > 0 ? Math.min(Math.round((U / X) * 100), 100) : 0;
+                            return l.jsxs("div", {
+                                className: "space-y-6",
+                                children: [
+                                    l.jsxs("div", {
+                                        className: "grid grid-cols-1 md:grid-cols-3 gap-6",
+                                        children: [
+                                            renderCircularGauge(expensePct, "#ef4444", 120, 10, "Comprometimento de Renda", `${expensePct}%`),
+                                            renderCircularGauge(profitPct >= 0 ? profitPct : 0, "#10b981", 120, 10, "Eficiência Mensal", `${profitPct}%`),
+                                            renderCircularGauge(investmentPct, "#8b5cf6", 120, 10, "Taxa de Poupança", `${investmentPct}%`)
+                                        ]
+                                    }),
+                                    l.jsx("div", {
+                                        className: "grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5",
+                                        children: [{
+                                            label: "Contas a Receber",
+                                            value: X,
+                                            color: "text-blue-500",
+                                            sub: "Total de Receitas"
+                                        }, {
+                                            label: "Contas a Pagar",
+                                            value: L,
+                                            color: "text-orange-500",
+                                            sub: "Total de Despesas"
+                                        }, {
+                                            label: "Saldo Acumulado",
+                                            value: z,
+                                            color: z >= 0 ? "text-green-500" : "text-red-500",
+                                            sub: "Resultado do Exercício"
+                                        }, {
+                                            label: "Patrimônio Alocado",
+                                            value: U,
+                                            color: "text-purple-500",
+                                            sub: "Total Investido"
+                                        }].map(K => l.jsx(Be.div, {
+                                            whileHover: { y: -3 },
+                                            children: l.jsxs(Oe, {
+                                                className: "bg-[#1a1a1a] border-[#2a2a2a] p-4 relative overflow-hidden",
+                                                children: [
+                                                    l.jsx("p", { className: "text-gray-400 text-xs font-semibold uppercase tracking-wider mb-1", children: K.label }),
+                                                    l.jsxs("h3", {
+                                                        className: `text-lg font-bold ${K.color} mb-1`,
+                                                        children: ["R$ ", K.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })]
+                                                    }),
+                                                    l.jsx("p", { className: "text-xs text-gray-500", children: K.sub })
+                                                ]
+                                            })
+                                        }))
+                                    })
+                                ]
+                            });
+                        }
+                        if (layout === "atalhos") {
+                            return l.jsxs("div", {
+                                className: "space-y-6",
+                                children: [
+                                    l.jsxs("div", {
+                                        className: "grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3",
+                                        children: [
+                                            { label: "➕ Receitas", action: () => e(Qe("Receitas")), color: "bg-green-500/20 text-green-400 border-green-500/30" },
+                                            { label: "➖ Despesas", action: () => e(Qe("GastosFixos")), color: "bg-red-500/20 text-red-400 border-red-500/30" },
+                                            { label: "💳 Cartões", action: () => e(Qe("CartaoCredito")), color: "bg-yellow-500/20 text-yellow-400 border-yellow-500/30" },
+                                            { label: "📈 Investimentos", action: () => e(Qe("MeusInvestimentos")), color: "bg-purple-500/20 text-purple-400 border-purple-500/30" },
+                                            { label: "🎯 Objetivos", action: () => e(Qe("Objetivos")), color: "bg-pink-500/20 text-pink-400 border-pink-500/30" },
+                                            { label: "💬 Chat IA", action: () => e(Qe("ChatIA")), color: "bg-blue-500/20 text-blue-400 border-blue-500/30" }
+                                        ].map(K => l.jsx(Be.button, {
+                                            whileHover: { scale: 1.05, y: -2 },
+                                            whileTap: { scale: 0.95 },
+                                            onClick: K.action,
+                                            className: `p-4 rounded-xl border text-center transition-all font-semibold text-sm ${K.color}`,
+                                            children: K.label
+                                        }))
+                                    }),
+                                    l.jsx("div", {
+                                        className: "grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5",
+                                        children: [{
+                                            label: "Receitas",
+                                            value: X,
+                                            color: "text-white"
+                                        }, {
+                                            label: "Despesas",
+                                            value: L,
+                                            color: "text-white"
+                                        }, {
+                                            label: "Saldo Livre",
+                                            value: z,
+                                            color: z >= 0 ? "text-green-400" : "text-red-400"
+                                        }, {
+                                            label: "Total Investido",
+                                            value: U,
+                                            color: "text-white"
+                                        }].map(K => l.jsxs(Oe, {
+                                            className: "bg-[#1a1a1a] border-[#2a2a2a] p-4",
+                                            children: [
+                                                l.jsx("p", { className: "text-gray-400 text-xs mb-1", children: K.label }),
+                                                l.jsxs("h3", {
+                                                    className: `text-xl font-bold ${K.color}`,
+                                                    children: ["R$ ", K.value.toLocaleString("pt-BR", { minimumFractionDigits: 2 })]
+                                                })
+                                            ]
+                                        }))
+                                    })
+                                ]
+                            });
+                        }
+                        // Default layout
+                        return l.jsx("div", {
+                            className: "grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5",
+                            children: [{
+                                id: "income",
+                                icon: En,
+                                iconColor: "text-green-400",
+                                iconBg: "from-green-500/20 to-emerald-500/10",
+                                label: "Receitas",
+                                badge: tt(new Date, "MMM", {
+                                    locale: bn
+                                }).toUpperCase(),
+                                badgeGrad: "from-green-500 to-emerald-500",
+                                value: X,
+                                valueColor: "text-white",
+                                sub: "Clique para detalhes",
+                                tooltip: l.jsxs("div", {
+                                    className: "space-y-1.5 text-sm",
+                                    children: [l.jsx("p", {
+                                        className: "font-semibold text-white mb-2",
+                                        children: "Composição da Receita"
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["💰 Receita Base: R$ ", P.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["📈 Retirada CDB: R$ ", H.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["💸 Parcelas de Empréstimos: R$ ", I.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-green-400 font-semibold pt-1 border-t border-white/10",
+                                        children: ["Total: R$ ", X.toFixed(2)]
+                                    })]
+                                })
+                            }, {
+                                id: "expenses",
+                                icon: SE,
+                                iconColor: "text-red-400",
+                                iconBg: "from-red-500/20 to-orange-500/10",
+                                label: "Despesas Mensais",
+                                value: L,
+                                valueColor: "text-white",
+                                sub: `${X>0?(L/X*100).toFixed(0):0}% da renda`,
+                                tooltip: l.jsxs("div", {
+                                    className: "space-y-1.5 text-sm",
+                                    children: [l.jsx("p", {
+                                        className: "font-semibold text-white mb-2",
+                                        children: "Distribuição"
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["🏠 Despesas: R$ ", M.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["💳 Dívidas: R$ ", R.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["🎯 Cartões: R$ ", F.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["📊 Objetivos: R$ ", V.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["📈 Aportes: R$ ", W.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-red-400 font-semibold pt-1 border-t border-white/10",
+                                        children: ["Total: R$ ", L.toFixed(2)]
+                                    })]
+                                })
+                            }, {
+                                id: "balance",
+                                icon: Vu,
+                                iconColor: z >= 0 ? "text-blue-400" : "text-orange-400",
+                                iconBg: z >= 0 ? "from-blue-500/20 to-cyan-500/10" : "from-orange-500/20 to-red-500/10",
+                                label: "Saldo Livre",
+                                value: Math.abs(z),
+                                valueColor: z >= 0 ? "text-green-400" : "text-red-400",
+                                sub: z >= 0 ? "✨ Sobrando" : "⚠️ Déficit",
+                                tooltip: l.jsxs("div", {
+                                    className: "space-y-1.5 text-sm",
+                                    children: [l.jsx("p", {
+                                        className: "font-semibold text-white mb-2",
+                                        children: "Cálculo do Saldo"
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["✅ Receita: R$ ", X.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["❌ Despesas: R$ ", L.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: `${z>=0?"text-green-400":"text-red-400"} font-semibold pt-1 border-t border-white/10`,
+                                        children: ["Saldo: R$ ", z.toFixed(2)]
+                                    })]
+                                })
+                            }, {
+                                id: "savings",
+                                icon: Oh,
+                                iconColor: "text-purple-400",
+                                iconBg: "from-purple-500/20 to-pink-500/10",
+                                label: "Total Investido",
+                                value: U,
+                                valueColor: "text-white",
+                                sub: `+R$ ${D.toFixed(2)}/mês`,
+                                tooltip: l.jsxs("div", {
+                                    className: "space-y-1.5 text-sm",
+                                    children: [l.jsx("p", {
+                                        className: "font-semibold text-white mb-2",
+                                        children: "Investimentos"
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["💰 Total: R$ ", U.toFixed(2)]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["📈 Rendimento: R$ ", D.toFixed(2), "/mês"]
+                                    }), l.jsxs("p", {
+                                        className: "text-gray-300",
+                                        children: ["📤 Retirada: R$ ", H.toFixed(2), "/mês"]
+                                    }), l.jsxs("p", {
+                                        className: "text-purple-400 font-semibold pt-1 border-t border-white/10",
+                                        children: ["Líquido: R$ ", (D - H).toFixed(2), "/mês"]
+                                    })]
+                                })
+                            }].map((K, J) => l.jsx(Be.div, {
+                                custom: J,
+                                variants: qe,
+                                initial: "hidden",
+                                animate: "visible",
+                                children: l.jsxs(nu, {
+                                    open: m[K.id],
+                                    onOpenChange: ve => g({ ...m,
+                                        [K.id]: ve
+                                    }),
+                                    children: [l.jsx(ru, {
+                                        asChild: !0,
+                                        children: l.jsx(Be.div, {
+                                            whileHover: {
+                                                y: -4,
+                                                scale: 1.02
+                                            },
+                                            whileTap: {
+                                                scale: .97
+                                            },
+                                            transition: {
+                                                type: "spring",
+                                                stiffness: 400,
+                                                damping: 25
+                                            },
+                                            children: l.jsxs(Oe, {
+                                                className: "bg-[#1a1a1a] border-[#2a2a2a] p-4 md:p-6 cursor-pointer overflow-hidden relative",
+                                                children: [l.jsx("div", {
+                                                    className: `absolute inset-0 bg-gradient-to-br ${K.iconBg} opacity-60 pointer-events-none`
+                                                }), l.jsxs("div", {
+                                                    className: "relative",
+                                                    children: [l.jsxs("div", {
+                                                        className: "flex items-center justify-between mb-3",
+                                                        children: [l.jsx("div", {
+                                                            className: `w-10 h-10 rounded-xl flex items-center justify-center bg-gradient-to-br ${K.iconBg}`,
+                                                            children: l.jsx(K.icon, {
+                                                                className: `w-5 h-5 ${K.iconColor}`
+                                                            })
+                                                        }), l.jsxs("div", {
+                                                            className: "flex items-center gap-2",
+                                                            children: [K.badge && l.jsx("span", {
+                                                                className: `text-xs font-bold px-2 py-0.5 rounded-full bg-gradient-to-r ${K.badgeGrad} text-white`,
+                                                                children: K.badge
+                                                            }), l.jsx("button", {
+                                                                onClick: ve => {
+                                                                    ve.stopPropagation(), g({ ...m,
+                                                                        [K.id]: !m[K.id]
+                                                                    })
+                                                                },
+                                                                children: l.jsx(Qoe, {
+                                                                    className: "w-4 h-4 text-gray-500 hover:text-gray-300 transition-colors"
+                                                                })
+                                                            })]
+                                                        })]
+                                                    }), l.jsx("p", {
+                                                        className: "text-gray-400 text-xs mb-1",
+                                                        children: K.label
+                                                    }), l.jsxs("h3", {
+                                                        className: `text-xl md:text-2xl font-bold ${K.valueColor} mb-1 tabular-nums`,
+                                                        children: ["R$ ", l.jsx(Ej, {
+                                                            value: K.value
+                                                        })]
+                                                    }), l.jsx("p", {
+                                                        className: "text-xs text-gray-500",
+                                                        children: K.sub
+                                                    })]
+                                                })]
+                                            })
+                                        })
+                                    }), l.jsx(wl, {
+                                        side: "bottom",
+                                        style: Ie,
+                                        className: "text-white p-4 max-w-xs",
+                                        children: K.tooltip
+                                    })]
+                                })
+                            }, K.id))
+                        });
+                    })(), l.jsx(Hr, {
                         children: $ > 0 && l.jsx(Be.div, {
                             initial: {
                                 opacity: 0,
