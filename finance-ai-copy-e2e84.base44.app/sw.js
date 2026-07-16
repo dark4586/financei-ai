@@ -261,7 +261,7 @@ async function checkAndTriggerNotificationsSW(data) {
     if (dailyYield > 0.01) {
         const id = `daily_yield_${todayStr}`;
         if (!(await isNotificationShownLocal(id))) {
-            await triggerSWNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${dailyYield.toFixed(2)} hoje!`, "/MeusInvestimentos");
+            await triggerSWNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${(dailyYield || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} hoje!`, "/MeusInvestimentos");
         }
     }
 
@@ -271,9 +271,9 @@ async function checkAndTriggerNotificationsSW(data) {
         const disp = parseFloat(card.limite_disponivel || 0);
         const total = parseFloat(card.limite_total || 0);
         if (disp < 0) {
-            cardIssues.push(`"${card.nome}" estourado (R$ ${disp.toFixed(2)})`);
+            cardIssues.push(`"${card.nome}" estourado (R$ ${(disp || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
         } else if (total > 0 && (disp / total) <= 0.10) {
-            cardIssues.push(`"${card.nome}" com limite crítico (resta R$ ${disp.toFixed(2)})`);
+            cardIssues.push(`"${card.nome}" com limite crítico (resta R$ ${(disp || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })})`);
         }
     }
     if (cardIssues.length > 0) {
@@ -299,7 +299,7 @@ async function checkAndTriggerNotificationsSW(data) {
     if (totalIncome > 0 && (totalExpense / totalIncome) >= 0.80) {
         const id = `high_expense_ratio_${yearMonth}`;
         if (!(await isNotificationShownLocal(id))) {
-            const pct = ((totalExpense / totalIncome) * 100).toFixed(0);
+            const pct = (((totalExpense / totalIncome) * 100) || 0).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
             await triggerSWNotification(id, "🚨 Despesas Altas!", `Suas despesas fixas e dívidas já consomem ${pct}% da sua receita total do mês.`, "/");
         }
     }
@@ -313,7 +313,7 @@ async function checkAndTriggerNotificationsSW(data) {
             if (pct >= 90 && pct < 100) {
                 const id = `goal_almost_${goal.id}_${yearMonth}`;
                 if (!(await isNotificationShownLocal(id))) {
-                    await triggerSWNotification(id, "🎯 Meta Quase Alcançada!", `Falta muito pouco! Você está a ${pct.toFixed(0)}% de concluir o objetivo "${goal.nome}".`, "/Objetivos");
+                    await triggerSWNotification(id, "🎯 Meta Quase Alcançada!", `Falta muito pouco! Você está a ${(pct || 0).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}% de concluir o objetivo "${goal.nome}".`, "/Objetivos");
                 }
             }
         }
@@ -326,7 +326,7 @@ async function checkAndTriggerNotificationsSW(data) {
         if (target > 0 && saved >= target) {
             const id = `goal_completed_${goal.id}`;
             if (!(await isNotificationShownLocal(id))) {
-                await triggerSWNotification(id, "🏆 Objetivo Concluído!", `Parabéns! Você alcançou sua meta de guardar R$ ${target.toFixed(2)} para "${goal.nome}"!`, "/Objetivos");
+                await triggerSWNotification(id, "🏆 Objetivo Concluído!", `Parabéns! Você alcançou sua meta de guardar R$ ${(target || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} para "${goal.nome}"!`, "/Objetivos");
             }
         }
     }
@@ -341,7 +341,7 @@ async function checkAndTriggerNotificationsSW(data) {
                 if (daysDiff >= 0 && daysDiff <= 3) {
                     const id = `exp_due_${exp.id}_${yearMonth}`;
                     if (!(await isNotificationShownLocal(id))) {
-                        await triggerSWNotification(id, "📅 Conta Próxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${exp.valor.toFixed(2)}`, "/DespesasFixas");
+                        await triggerSWNotification(id, "📅 Conta Próxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${(exp.valor || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`, "/DespesasFixas");
                     }
                 } else if (daysDiff < 0) {
                     const id = `exp_overdue_${exp.id}_${yearMonth}`;
@@ -358,7 +358,7 @@ async function checkAndTriggerNotificationsSW(data) {
     if (totalExpense > 0 && totalSavings < (totalExpense * 3)) {
         const id = `low_emergency_${yearMonth}`;
         if (!(await isNotificationShownLocal(id))) {
-            const months = (totalSavings / totalExpense).toFixed(1);
+            const months = ((totalSavings / totalExpense) || 0).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
             await triggerSWNotification(id, "🛡️ Alerta de Reserva", `Seu saldo guardado cobre apenas ${months} meses de despesas. Ideal seria no mínimo 6 meses.`, "/MeusInvestimentos");
         }
     }
@@ -368,7 +368,7 @@ async function checkAndTriggerNotificationsSW(data) {
         const id = `budget_deficit_${yearMonth}`;
         if (!(await isNotificationShownLocal(id))) {
             const diff = totalExpense - totalIncome;
-            await triggerSWNotification(id, "💸 Orçamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${diff.toFixed(2)} este mês.`, "/");
+            await triggerSWNotification(id, "💸 Orçamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${(diff || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} este mês.`, "/");
         }
     }
 

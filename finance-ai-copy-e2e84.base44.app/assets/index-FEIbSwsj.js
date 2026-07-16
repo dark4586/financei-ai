@@ -23415,9 +23415,9 @@ function zle(e) {
     return !e || isNaN(e) || e <= 0 ? [] : e < 500 ? [1, 2] : e < 800 ? [2, 3, 4] : e < 1e3 ? [2, 3, 4] : [4, 5, 6]
 }
 
-function Vle(e, t) {
+function Vle(e, t, interestRate) {
     if (!e || isNaN(e) || e <= 0 || !t) return null;
-    const n = .11,
+    const n = typeof interestRate === "number" ? interestRate : .11,
         r = e * Math.pow(1 + n, t),
         a = r / t,
         i = r - e;
@@ -23437,17 +23437,17 @@ const dl = e => e.toLocaleString("pt-BR", {
 function Ule({
     onSave: e
 }) {
-    const [t, n] = C.useState(""), [r, a] = C.useState(""), [i, o] = C.useState(""), [s, c] = C.useState(null), [d, f] = C.useState(""), [p, m] = C.useState([]), [g, w] = C.useState(null), [x, v] = C.useState(!1), [b, j] = C.useState(!1), N = parseFloat(i.replace(",", ".")), k = zle(N);
+    const [t, n] = C.useState(""), [r, a] = C.useState(""), [i, o] = C.useState(""), [rate, setRate] = C.useState("11"), [s, c] = C.useState(null), [d, f] = C.useState(""), [p, m] = C.useState([]), [g, w] = C.useState(null), [x, v] = C.useState(!1), [b, j] = C.useState(!1), N = parseFloat(i.replace(",", ".")), k = zle(N);
     C.useEffect(() => {
         c(null), w(null)
     }, [i]), C.useEffect(() => {
-        if (w(Vle(N, s)), s) {
+        if (w(Vle(N, s, parseFloat(rate || 0) / 100)), s) {
             const P = new Date().toISOString().split("T")[0];
             m(Array.from({
                 length: s
             }, () => P))
         } else m([])
-    }, [i, s]);
+    }, [i, s, rate]);
     const S = (P, $) => {
             m(I => {
                 const M = [...I];
@@ -23462,7 +23462,7 @@ function Ule({
                 nome: t,
                 whatsapp: r,
                 valor_emprestado: N,
-                taxa_juros: 11,
+                taxa_juros: parseFloat(rate || 0),
                 num_parcelas: g.parcelas,
                 valor_parcela: g.valorParcela,
                 valor_total: g.valorTotal,
@@ -23474,7 +23474,7 @@ function Ule({
                 parcelas_datas: p,
                 observacoes: d
             }), j(!1), v(!0), setTimeout(() => {
-                v(!1), n(""), a(""), o(""), f(""), m([]), w(null)
+                v(!1), n(""), a(""), o(""), setRate("11"), f(""), m([]), w(null)
             }, 2e3)
         },
         O = () => {
@@ -23485,7 +23485,7 @@ function Ule({
 Segue o resumo do seu empréstimo:
 
 💰 *Valor emprestado:* R$ ${dl(N)}
-📈 *Juros:* 11% ao mês
+📈 *Juros:* ${parseFloat(rate || 0)}% ao mês
 💵 *Total a pagar:* R$ ${dl(g.valorTotal)}
 📋 *Parcelas:* ${g.parcelas}x de R$ ${dl(g.valorParcela)}
 
@@ -23523,7 +23523,7 @@ Aguardo o pagamento! 😊`);
                     className: "bg-[#1a1a1a] border-[#333] text-white placeholder:text-gray-600 focus:border-emerald-500 h-11"
                 })]
             }), l.jsxs("div", {
-                className: "space-y-2 md:col-span-2",
+                className: "space-y-2",
                 children: [l.jsxs(he, {
                     className: "text-white flex items-center gap-2",
                     children: [l.jsx(Co, {
@@ -23533,6 +23533,18 @@ Aguardo o pagamento! 😊`);
                     value: i,
                     onChange: P => o(P.target.value),
                     placeholder: "Ex: 800",
+                    type: "number",
+                    className: "bg-[#1a1a1a] border-[#333] text-white placeholder:text-gray-600 focus:border-emerald-500 h-11 text-lg"
+                })]
+            }), l.jsxs("div", {
+                className: "space-y-2",
+                children: [l.jsxs(he, {
+                    className: "text-white flex items-center gap-2",
+                    children: "📈 Taxa de juros (% ao mês)"
+                }), l.jsx(Re, {
+                    value: rate,
+                    onChange: P => setRate(P.target.value),
+                    placeholder: "Ex: 11",
                     type: "number",
                     className: "bg-[#1a1a1a] border-[#333] text-white placeholder:text-gray-600 focus:border-emerald-500 h-11 text-lg"
                 })]
@@ -23622,7 +23634,7 @@ Aguardo o pagamento! 😊`);
                         children: "Simulação automática"
                     }), l.jsx("span", {
                         className: "ml-auto text-xs text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full",
-                        children: "11% a.m."
+                        children: `${parseFloat(rate || 0)}% a.m.`
                     })]
                 }), l.jsx("div", {
                     className: "grid grid-cols-2 md:grid-cols-4 gap-px bg-white/5",
@@ -25760,7 +25772,7 @@ Obrigado! 😊`);
             children: [l.jsxs("span", {
                 children: ["📅 ", e.data_emprestimo ? tt(new Date(e.data_emprestimo + "T12:00:00"), "dd/MM/yyyy") : "—"]
             }), l.jsx("span", {
-                children: "11% a.m."
+                children: `${e.taxa_juros !== undefined ? e.taxa_juros : 11}% a.m.`
             })]
         }), l.jsxs("div", {
             className: "flex flex-wrap gap-2 pt-1",
@@ -25998,7 +26010,7 @@ function Jue() {
                                 children: "Novo Empréstimo"
                             }), l.jsx("p", {
                                 className: "text-xs text-gray-600",
-                                children: "Juros fixos de 11% ao mês · Cálculo automático"
+                                children: "Cálculo automático com juros personalizáveis"
                             })]
                         })]
                     }), l.jsx(Ule, {
@@ -60529,13 +60541,13 @@ function XOe() {
                                             children: "📊 ROI (%)"
                                         }), l.jsxs("p", {
                                             className: `text-3xl font-bold ${S.roiPercentage>=0?"text-green-400":"text-red-400"}`,
-                                            children: [S.roiPercentage.toFixed(2), "%"]
+                                            children: [(S.roiPercentage || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }), "%"]
                                         })]
                                     }), l.jsx("div", {
                                         className: "p-4 bg-[#1a1a1a] rounded-lg",
                                         children: l.jsx("p", {
                                             className: "text-sm text-gray-400",
-                                            children: S.roiPercentage >= 0 ? `✅ Você teve um retorno positivo de ${S.roiPercentage.toFixed(2)}% sobre o investimento.` : `⚠️ Você teve um prejuízo de ${Math.abs(S.roiPercentage).toFixed(2)}% sobre o investimento.`
+                                            children: S.roiPercentage >= 0 ? `✅ Você teve um retorno positivo de ${(S.roiPercentage || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% sobre o investimento.` : `⚠️ Você teve um prejuízo de ${(Math.abs(S.roiPercentage) || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}% sobre o investimento.`
                                         })
                                     })]
                                 })
@@ -73807,6 +73819,7 @@ function checkAndTriggerNotifications(data) {
         const now = new Date();
         const yearMonth = tt(now, "yyyy-MM");
         const todayStr = tt(now, "yyyy-MM-dd");
+        const formatVal = (val) => (val || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
         // 1. Rendimento Diario
         let dailyYield = 0;
@@ -73820,7 +73833,7 @@ function checkAndTriggerNotifications(data) {
         if (dailyYield > 0.01) {
             const id = `daily_yield_${todayStr}`;
             if (!(await isNotificationShown(id))) {
-                showLocalNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${dailyYield.toFixed(2)} hoje!`, "/MeusInvestimentos");
+                showLocalNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${formatVal(dailyYield)} hoje!`, "/MeusInvestimentos");
             }
         }
 
@@ -73830,9 +73843,9 @@ function checkAndTriggerNotifications(data) {
             const disp = parseFloat(card.limite_disponivel || 0);
             const total = parseFloat(card.limite_total || 0);
             if (disp < 0) {
-                cardIssues.push(`"${card.nome}" estourado (R$ ${disp.toFixed(2)})`);
+                cardIssues.push(`"${card.nome}" estourado (R$ ${formatVal(disp)})`);
             } else if (total > 0 && (disp / total) <= 0.10) {
-                cardIssues.push(`"${card.nome}" com limite critico (resta R$ ${disp.toFixed(2)})`);
+                cardIssues.push(`"${card.nome}" com limite critico (resta R$ ${formatVal(disp)})`);
             }
         }
         if (cardIssues.length > 0) {
@@ -73885,7 +73898,7 @@ function checkAndTriggerNotifications(data) {
             if (target > 0 && saved >= target) {
                 const id = `goal_completed_${goal.id}`;
                 if (!(await isNotificationShown(id))) {
-                    showLocalNotification(id, "🏆 Objetivo Concluido!", `Parabens! Voce alcancou sua meta de guardar R$ ${target.toFixed(2)} para "${goal.nome}"!`, "/Objetivos");
+                    showLocalNotification(id, "🏆 Objetivo Concluido!", `Parabens! Voce alcancou sua meta de guardar R$ ${formatVal(target)} para "${goal.nome}"!`, "/Objetivos");
                 }
             }
         }
@@ -73900,7 +73913,7 @@ function checkAndTriggerNotifications(data) {
                     if (daysDiff >= 0 && daysDiff <= 3) {
                         const id = `exp_due_${exp.id}_${yearMonth}`;
                         if (!(await isNotificationShown(id))) {
-                            showLocalNotification(id, "📅 Conta Proxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${exp.valor.toFixed(2)}`, "/DespesasFixas");
+                            showLocalNotification(id, "📅 Conta Proxima ao Vencimento", `A conta "${exp.nome}" vence em ${daysDiff === 0 ? "hoje!" : `${daysDiff} dia(s)`}. Valor: R$ ${formatVal(exp.valor)}`, "/DespesasFixas");
                         }
                     } else if (daysDiff < 0) {
                         const id = `exp_overdue_${exp.id}_${yearMonth}`;
@@ -73927,7 +73940,7 @@ function checkAndTriggerNotifications(data) {
             const id = `budget_deficit_${yearMonth}`;
             if (!(await isNotificationShown(id))) {
                 const diff = totalExpense - totalIncome;
-                showLocalNotification(id, "💸 Orquamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${diff.toFixed(2)} este mes.`, "/");
+                showLocalNotification(id, "💸 Orquamento no Vermelho", `Suas despesas excedem suas receitas em R$ ${formatVal(diff)} este mes.`, "/");
             }
         }
 
@@ -73966,6 +73979,7 @@ function bIe() {
         activeSettings = (cc && cc[0]) || {},
         currentTheme = activeSettings.tema || "dark",
         layout = activeSettings.home_layout || "default",
+        formatBRL = (val) => (val || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
         renderCircularGauge = (percentage, color, size, strokeWidth, title, displayVal) => {
             const radius = (size - strokeWidth) / 2;
             const circumference = radius * 2 * Math.PI;
@@ -74848,16 +74862,16 @@ function bIe() {
                                         children: "Composição da Receita"
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["💰 Receita Base: R$ ", P.toFixed(2)]
+                                        children: ["💰 Receita Base: R$ ", formatBRL(P)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["📈 Retirada CDB: R$ ", H.toFixed(2)]
+                                        children: ["📈 Retirada CDB: R$ ", formatBRL(H)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["💸 Parcelas de Empréstimos: R$ ", I.toFixed(2)]
+                                        children: ["💸 Parcelas de Empréstimos: R$ ", formatBRL(I)]
                                     }), l.jsxs("p", {
                                         className: "text-green-400 font-semibold pt-1 border-t border-white/10",
-                                        children: ["Total: R$ ", X.toFixed(2)]
+                                        children: ["Total: R$ ", formatBRL(X)]
                                     })]
                                 })
                             }, {
@@ -74876,22 +74890,22 @@ function bIe() {
                                         children: "Distribuição"
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["🏠 Despesas: R$ ", M.toFixed(2)]
+                                        children: ["🏠 Despesas: R$ ", formatBRL(M)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["💳 Dívidas: R$ ", R.toFixed(2)]
+                                        children: ["💳 Dívidas: R$ ", formatBRL(R)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["🎯 Cartões: R$ ", F.toFixed(2)]
+                                        children: ["🎯 Cartões: R$ ", formatBRL(F)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["📊 Objetivos: R$ ", V.toFixed(2)]
+                                        children: ["📊 Objetivos: R$ ", formatBRL(V)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["📈 Aportes: R$ ", W.toFixed(2)]
+                                        children: ["📈 Aportes: R$ ", formatBRL(W)]
                                     }), l.jsxs("p", {
                                         className: "text-red-400 font-semibold pt-1 border-t border-white/10",
-                                        children: ["Total: R$ ", L.toFixed(2)]
+                                        children: ["Total: R$ ", formatBRL(L)]
                                     })]
                                 })
                             }, {
@@ -74910,13 +74924,13 @@ function bIe() {
                                         children: "Cálculo do Saldo"
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["✅ Receita: R$ ", X.toFixed(2)]
+                                        children: ["✅ Receita: R$ ", formatBRL(X)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["❌ Despesas: R$ ", L.toFixed(2)]
+                                        children: ["❌ Despesas: R$ ", formatBRL(L)]
                                     }), l.jsxs("p", {
                                         className: `${z>=0?"text-green-400":"text-red-400"} font-semibold pt-1 border-t border-white/10`,
-                                        children: ["Saldo: R$ ", z.toFixed(2)]
+                                        children: ["Saldo: R$ ", formatBRL(z)]
                                     })]
                                 })
                             }, {
@@ -74927,7 +74941,7 @@ function bIe() {
                                 label: "Total Investido",
                                 value: U,
                                 valueColor: "text-white",
-                                sub: `+R$ ${D.toFixed(2)}/mês`,
+                                sub: `+R$ ${formatBRL(D)}/mês`,
                                 tooltip: l.jsxs("div", {
                                     className: "space-y-1.5 text-sm",
                                     children: [l.jsx("p", {
@@ -74935,16 +74949,16 @@ function bIe() {
                                         children: "Investimentos"
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["💰 Total: R$ ", U.toFixed(2)]
+                                        children: ["💰 Total: R$ ", formatBRL(U)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["📈 Rendimento: R$ ", D.toFixed(2), "/mês"]
+                                        children: ["📈 Rendimento: R$ ", formatBRL(D), "/mês"]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["📤 Retirada: R$ ", H.toFixed(2), "/mês"]
-                                    }), l.jsxs("p", {
+                                        children: ["📤 Retirada: R$ ", formatBRL(H), "/mês"]
+                                     }), l.jsxs("p", {
                                         className: "text-purple-400 font-semibold pt-1 border-t border-white/10",
-                                        children: ["Líquido: R$ ", (D - H).toFixed(2), "/mês"]
+                                        children: ["Líquido: R$ ", formatBRL(D - H), "/mês"]
                                     })]
                                 })
                             }].map((K, J) => l.jsx(Be.div, {
@@ -75488,7 +75502,7 @@ function bIe() {
                                                             })
                                                         }), l.jsxs("p", {
                                                             className: "text-xs text-gray-500 mt-1.5",
-                                                            children: ["R$ ", (K.valor_economizado || 0).toFixed(2), " / R$ ", (K.valor_alvo || 0).toFixed(2)]
+                                                            children: ["R$ ", formatBRL(K.valor_economizado || 0), " / R$ ", formatBRL(K.valor_alvo || 0)]
                                                         })]
                                                     })
                                                 }), l.jsx(wl, {
@@ -75499,13 +75513,13 @@ function bIe() {
                                                         className: "space-y-1 text-sm",
                                                         children: [l.jsxs("p", {
                                                             className: "text-gray-300",
-                                                            children: ["🎯 Meta: R$ ", (K.valor_alvo || 0).toFixed(2)]
+                                                            children: ["🎯 Meta: R$ ", formatBRL(K.valor_alvo || 0)]
                                                         }), l.jsxs("p", {
                                                             className: "text-gray-300",
-                                                            children: ["💰 Economizado: R$ ", (K.valor_economizado || 0).toFixed(2)]
+                                                            children: ["💰 Economizado: R$ ", formatBRL(K.valor_economizado || 0)]
                                                         }), l.jsxs("p", {
                                                             className: "text-gray-300",
-                                                            children: ["📅 Mensal: R$ ", (K.economia_mensal || 0).toFixed(2)]
+                                                            children: ["📅 Mensal: R$ ", formatBRL(K.economia_mensal || 0)]
                                                         }), l.jsxs("p", {
                                                             className: "text-gray-300",
                                                             children: ["📆 Prazo: ", tt(new Date(K.data_alvo), "dd/MM/yyyy")]
@@ -76347,7 +76361,7 @@ function SIe() {
                         const N = `Vencimento: ${b.nome}`;
                         v.includes(N) || await s.mutateAsync({
                             titulo: N,
-                            mensagem: `Sua despesa "${b.nome}" vence em ${j} dia(s) - R$ ${b.valor.toFixed(2)}`,
+                            mensagem: `Sua despesa "${b.nome}" vence em ${j} dia(s) - R$ ${(b.valor || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
                             tipo: "vencimento",
                             data_criacao: new Date().toISOString(),
                             lida: !1,
@@ -76362,7 +76376,7 @@ function SIe() {
                         const N = `Quase lá: ${b.nome}`;
                         v.includes(N) || await s.mutateAsync({
                             titulo: N,
-                            mensagem: `Você está a ${(100-j).toFixed(1)}% de atingir seu objetivo "${b.nome}"! Continue assim! 🎯`,
+                            mensagem: `Você está a ${(100 - j).toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 1 })}% de atingir seu objetivo "${b.nome}"! Continue assim! 🎯`,
                             tipo: "meta_atingida",
                             data_criacao: new Date().toISOString(),
                             lida: !1,
@@ -76926,7 +76940,13 @@ function _Ie() {
                                 })]
                             }), M && S.valor_economizado > 0 && l.jsxs("div", {
                                 className: "text-xs text-gray-500 pt-2 border-t border-[#2a2a2a]",
-                                children: ["💡 Valor manual economizado: R$ ", S.valor_economizado.toFixed(2), " + Investimento: R$ ", M.valor_investido.toFixed(2), " = Total: R$ ", E.toFixed(2)]
+                                children: ["💡 Valor manual economizado: R$ ", S.valor_economizado.toLocaleString("pt-BR", {
+                                    minimumFractionDigits: 2
+                                }), " + Investimento: R$ ", M.valor_investido.toLocaleString("pt-BR", {
+                                    minimumFractionDigits: 2
+                                }), " = Total: R$ ", E.toLocaleString("pt-BR", {
+                                    minimumFractionDigits: 2
+                                })]
                             })]
                         })]
                     }, S.id)
