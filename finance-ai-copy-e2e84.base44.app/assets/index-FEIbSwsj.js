@@ -80018,18 +80018,15 @@ function A$e({
         enabled: !0,
         retry: 1,
         staleTime: 3e4
-    }), x = tt(new Date, "yyyy-MM"), v = c.filter(L => {
-        var B;
-        const z = ((B = L.mes_referencia) == null ? void 0 : B.includes(x)) || L.recorrente || L.tipo === "salario_semanal";
-        return (L.tipo !== "devedor" || L.status === "recebido") && z
-    }).reduce((L, z) => {
-        const G = z.valor || 0;
-        return L + G
-    }, 0), b = p.reduce((L, z) => L + (z.retirada_mensal || 0), 0), j = w.reduce((L, z) => L + Wv(z, x), 0), N = v + b + j, k = d.filter(L => L.ativa).reduce((L, z) => L + (z.valor || 0), 0), S = f.reduce((L, z) => L + getDebtInstallmentForMonth(z, x), 0), E = p.reduce((L, z) => L + (z.valor_investido || 0), 0), O = m.filter(L => {
-        const z = L.data_vencimento ? new Date(L.data_vencimento) : null,
-            G = z && z.getMonth() === new Date().getMonth() && z.getFullYear() === new Date().getFullYear();
-        return (L.status === "aberta" || G) && (L.valor_fatura_atual || 0) > 0
-    }).reduce((L, z) => L + (z.valor_fatura_atual || 0), 0), P = g.filter(L => L.status === "ativo"), $ = P.reduce((L, z) => L + (z.economia_mensal || 0), 0), I = p.filter(L => new Date(L.data_inicio) <= new Date).reduce((L, z) => L + (z.aporte_mensal || 0), 0), M = N - (k + S + O + $ + I), R = p.reduce((L, z) => L + z.valor_investido * z.taxa_rendimento / 100, 0), F = f.filter(L => L.status === "ativa"), U = N === 0 ? M >= 0 ? {
+    }), x = tt(new Date(), "yyyy-MM"), [selectedYear, selectedMonth] = x.split("-").map(Number), v = c.filter(K => {
+        var ht;
+        const J = (((ht = K.mes_referencia) == null ? void 0 : ht.includes(x)) || K.recorrente || K.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(K, x);
+        return J
+    }).reduce((K, J) => J.tipo === "devedor" ? K + (J.valor_recebido || 0) : K + (J.valor || 0), 0), b = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), j = w.reduce((K, J) => K + Wv(J, x), 0), N = v + b + j, M_val = d.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(x)) && isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + J.valor, 0), S = f.reduce((K, J) => K + getDebtInstallmentForMonth(J, x), 0), E = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0), 0), O = m.filter(K => {
+        const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
+            ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
+        return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, x)
+    }).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), P = g.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, x)), $ = P.reduce((K, J) => K + (J.economia_mensal || 0), 0), I = p.filter(K => isItemCreatedBeforeOrInMonth(K, x) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= x)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), k = M_val + S + O + $ + I, M = N - k, R = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), F = f.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, x)), U = N === 0 ? M >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/20 text-yellow-400",
         emoji: "😊"
