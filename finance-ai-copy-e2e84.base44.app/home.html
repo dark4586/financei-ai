@@ -31,6 +31,27 @@
             left: 50% !important;
             transform: translate(-50%, -50%) !important;
         }
+        @media (max-width: 767px) {
+            .dashboard-grid {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+            }
+            .dashboard-col-1, .dashboard-col-2 {
+                display: contents !important;
+            }
+            .dashboard-col-1 > :nth-child(1) {
+                order: 1 !important;
+            }
+            .dashboard-col-2 > :nth-child(1) {
+                order: 2 !important;
+            }
+            .dashboard-col-2 > :nth-child(2) {
+                order: 3 !important;
+            }
+            .dashboard-col-1 > :nth-child(2) {
+                order: 4 !important;
+            }
+        }
     </style>
     <meta content="https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png/v1/fill/w_1200,h_630/06ccad4d7_IMG_2980.png" property="og:image" />
     <meta content="https://finance-ai-copy-e2e84.base44.app" property="og:url" />

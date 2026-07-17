@@ -75273,9 +75273,9 @@ function bIe() {
                             })]
                         })
 }), l.jsxs("div", {
-    className: "grid grid-cols-2 gap-4 md:gap-5",
+    className: "dashboard-grid grid grid-cols-2 gap-4 md:gap-5",
     children: [l.jsxs("div", {
-        className: "space-y-5",
+        className: "dashboard-col-1 space-y-5",
         children: [
             l.jsx(Be.div, {
                             custom: 5,
@@ -75450,7 +75450,7 @@ function bIe() {
 })
         ]
     }), l.jsxs("div", {
-        className: "space-y-5",
+        className: "dashboard-col-2 space-y-5",
         children: [
             l.jsx(Be.div, {
                             custom: 6,
