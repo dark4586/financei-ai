@@ -74722,7 +74722,7 @@ function bIe() {
                                                                             contentStyle: Ie,
                                                                             formatter: (K) => [`${K}%`, "Proporção"]
                                                                         })
-                                                                    ])
+                                                                    ] })
                                                             }),
                                                             l.jsxs("div", {
                                                                 className: "absolute inset-0 flex flex-col items-center justify-center pointer-events-none",
