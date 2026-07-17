@@ -70795,11 +70795,24 @@ function cIe() {
                                             alt: "Background",
                                             className: "w-full h-32 object-cover rounded"
                                         })
-                                    }), l.jsx(xe, {
-                                        onClick: () => document.getElementById("background-upload").click(),
-                                        disabled: r,
-                                        className: "w-full bg-white text-black",
-                                        children: r ? "⏳ Enviando..." : "📸 Enviar Foto/Vídeo"
+                                    }), l.jsxs("div", {
+                                        className: "flex flex-col sm:flex-row gap-2",
+                                        children: [
+                                            l.jsx(xe, {
+                                                onClick: () => document.getElementById("background-upload").click(),
+                                                disabled: r,
+                                                className: "flex-1 bg-white text-black",
+                                                children: r ? "⏳ Enviando..." : "📸 Enviar Foto/Vídeo"
+                                            }),
+                                            G.screensaver_background_url && l.jsx(xe, {
+                                                onClick: () => le({
+                                                    screensaver_background_url: "",
+                                                    screensaver_background_type: ""
+                                                }),
+                                                className: "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-all",
+                                                children: "🗑️ Remover Fundo"
+                                            })
+                                        ]
                                     }), l.jsx("input", {
                                         id: "background-upload",
                                         type: "file",
@@ -70815,11 +70828,23 @@ function cIe() {
                                         controls: !0,
                                         src: G.screensaver_music_url,
                                         className: "w-full mb-3"
-                                    }), l.jsx(xe, {
-                                        onClick: () => document.getElementById("music-upload").click(),
-                                        disabled: i,
-                                        className: "w-full bg-white text-black",
-                                        children: i ? "⏳ Enviando..." : "🎵 Enviar Música"
+                                    }), l.jsxs("div", {
+                                        className: "flex flex-col sm:flex-row gap-2",
+                                        children: [
+                                            l.jsx(xe, {
+                                                onClick: () => document.getElementById("music-upload").click(),
+                                                disabled: i,
+                                                className: "flex-1 bg-white text-black",
+                                                children: i ? "⏳ Enviando..." : "🎵 Enviar Música"
+                                            }),
+                                            G.screensaver_music_url && l.jsx(xe, {
+                                                onClick: () => le({
+                                                    screensaver_music_url: ""
+                                                }),
+                                                className: "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-all",
+                                                children: "🗑️ Remover Música"
+                                            })
+                                        ]
                                     }), l.jsx("input", {
                                         id: "music-upload",
                                         type: "file",
@@ -80311,7 +80336,9 @@ function A$e({
     Y.useEffect(() => {
         if (t != null && t.screensaver_music_url) {
             const L = new Audio(t.screensaver_music_url);
-            return L.loop = !0, L.volume = (t.music_volume || 50) / 100, (async () => {
+            L.loop = !0;
+            L.volume = (t.music_volume ?? 50) / 100;
+            (async () => {
                 try {
                     await L.play(), console.log("Música tocando")
                 } catch (G) {
@@ -80323,11 +80350,20 @@ function A$e({
                         once: !0
                     })
                 }
-            })(), s(L), () => {
-                L.pause(), L.src = ""
+            })();
+            s(L);
+            return () => {
+                L.pause();
+                L.src = "";
             }
         }
-    }, [t == null ? void 0 : t.screensaver_music_url, t == null ? void 0 : t.music_volume]);
+    }, [t == null ? void 0 : t.screensaver_music_url]);
+
+    Y.useEffect(() => {
+        if (o) {
+            o.volume = (t.music_volume ?? 50) / 100;
+        }
+    }, [o, t == null ? void 0 : t.music_volume]);
     const D = [{
         icon: En,
         title: "💰 Receita Mensal",
