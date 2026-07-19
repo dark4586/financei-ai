@@ -70100,6 +70100,32 @@ function cIe() {
     }, [G]);
     const [musicUrlSrc, setMusicUrlSrc] = C.useState("");
     const [bgUrlSrc, setBgUrlSrc] = C.useState("");
+    const [appBgUrlSrc, setAppBgUrlSrc] = C.useState("");
+    C.useEffect(() => {
+        let active = true;
+        let objectUrl = "";
+        if (G && G.app_background_url) {
+            if (G.app_background_url === "indexeddb_saved") {
+                loadMediaFromIndexedDB("app_background").then(blob => {
+                    if (active && blob) {
+                        const url = URL.createObjectURL(blob);
+                        objectUrl = url;
+                        setAppBgUrlSrc(url);
+                    }
+                });
+            } else {
+                setAppBgUrlSrc(G.app_background_url);
+            }
+        } else {
+            setAppBgUrlSrc("");
+        }
+        return () => {
+            active = false;
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [G == null ? void 0 : G.app_background_url]);
     C.useEffect(() => {
         let active = true;
         let objectUrl = "";
@@ -70242,19 +70268,15 @@ function cIe() {
             if (J) {
                 f(true);
                 try {
-                    const reader = new FileReader();
-                    reader.onloadend = async () => {
-                        const base64Url = reader.result;
-                        await le({
-                            app_background_url: base64Url
-                        });
-                        f(false);
-                    };
-                    reader.onerror = () => {
-                        console.error("Erro ao ler o arquivo");
-                        f(false);
-                    };
-                    reader.readAsDataURL(J);
+                    await saveMediaToIndexedDB("app_background", J);
+                    if (appBgUrlSrc && appBgUrlSrc.startsWith("blob:")) {
+                        URL.revokeObjectURL(appBgUrlSrc);
+                    }
+                    setAppBgUrlSrc(URL.createObjectURL(J));
+                    await le({
+                        app_background_url: "indexeddb_saved"
+                    });
+                    f(false);
                 } catch (ve) {
                     console.error("Erro no upload/leitura:", ve);
                     f(false);
@@ -70473,16 +70495,23 @@ function cIe() {
                             children: [l.jsx("p", {
                                 className: "text-gray-400 text-sm",
                                 children: "Aparece como fundo em todas as telas do app."
-                            }), G.app_background_url && l.jsxs("div", {
+                            }), appBgUrlSrc && l.jsxs("div", {
                                 className: "relative mb-3",
                                 children: [l.jsx("img", {
-                                    src: G.app_background_url,
+                                    src: appBgUrlSrc,
                                     alt: "Fundo do App",
                                     className: "w-full h-32 object-cover rounded-lg"
                                 }), l.jsx("button", {
-                                    onClick: () => le({
-                                        app_background_url: null
-                                    }),
+                                    onClick: () => {
+                                        saveMediaToIndexedDB("app_background", null);
+                                        if (appBgUrlSrc && appBgUrlSrc.startsWith("blob:")) {
+                                            URL.revokeObjectURL(appBgUrlSrc);
+                                        }
+                                        setAppBgUrlSrc("");
+                                        le({
+                                            app_background_url: ""
+                                        });
+                                    },
                                     className: "absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded",
                                     children: "✕ Remover"
                                 })]
@@ -70500,7 +70529,7 @@ function cIe() {
                                 accept: "image/*",
                                 onChange: ce,
                                 className: "hidden"
-                            }), G.app_background_url && l.jsxs("div", {
+                            }), appBgUrlSrc && l.jsxs("div", {
                                 children: [l.jsxs(he, {
                                     className: "text-white mb-2 block",
                                     children: ["🔍 Opacidade do Fundo: ", p ?? 10, "%"]
@@ -82332,6 +82361,32 @@ function z$e({
             var v;
             return ((v = window.matchMedia) == null ? void 0 : v.call(window, "(prefers-color-scheme: dark)").matches) ?? !0
         });
+    const [appBgUrl, setAppBgUrl] = Y.useState("");
+    Y.useEffect(() => {
+        let active = true;
+        let objectUrl = "";
+        if (i && i.app_background_url) {
+            if (i.app_background_url === "indexeddb_saved") {
+                loadMediaFromIndexedDB("app_background").then(blob => {
+                    if (active && blob) {
+                        const url = URL.createObjectURL(blob);
+                        objectUrl = url;
+                        setAppBgUrl(url);
+                    }
+                });
+            } else {
+                setAppBgUrl(i.app_background_url);
+            }
+        } else {
+            setAppBgUrl("");
+        }
+        return () => {
+            active = false;
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [i == null ? void 0 : i.app_background_url]);
     Y.useEffect(() => {
         var j;
         const v = (j = window.matchMedia) == null ? void 0 : j.call(window, "(prefers-color-scheme: dark)");
@@ -82509,10 +82564,10 @@ function z$e({
                 S = k.startsWith("#") ? N(k) : k;
             document.documentElement.style.setProperty("--theme-background", S), document.documentElement.style.setProperty("--dark-overlay-card-bg", "rgba(0,0,0,0.18)"), document.documentElement.style.setProperty("--dark-overlay-card2-bg", "rgba(0,0,0,0.12)"), document.body.style.background = S
         } else b.isLiquidGlass || (document.documentElement.style.setProperty("--dark-overlay-card-bg", ""), document.documentElement.style.setProperty("--dark-overlay-card2-bg", ""));
-        b.isLiquidGlass ? (document.body.style.background = "transparent", document.body.style.backgroundColor = "#0b0914") : i != null && i.app_background_url && (i == null ? void 0 : i.app_background_enabled) !== !1 ? (document.body.style.background = "transparent", document.body.style.backgroundColor = b.background) : (document.body.style.background = b.background, document.body.style.backgroundAttachment = "initial");
+        b.isLiquidGlass ? (document.body.style.background = "transparent", document.body.style.backgroundColor = "#0b0914") : i != null && appBgUrl && (i == null ? void 0 : i.app_background_enabled) !== !1 ? (document.body.style.background = "transparent", document.body.style.backgroundColor = b.background) : (document.body.style.background = b.background, document.body.style.backgroundAttachment = "initial");
         const j = !["dark", "liquid_glass", "material3_dark"].includes(i.tema);
         document.documentElement.style.setProperty("--text-primary", j ? b.text : "#ffffff"), document.documentElement.style.setProperty("--text-secondary", j ? "rgba(0,0,0,0.6)" : "#9ca3af"), document.documentElement.style.setProperty("--is-material3", b.isMaterial3 || b.isMaterial3Dark ? "1" : "0"), document.documentElement.style.setProperty("--material3-primary", b.isMaterial3 ? "#6750A4" : b.isMaterial3Dark ? "#D0BCFF" : ""), document.documentElement.style.setProperty("--material3-surface", b.isMaterial3 ? "#FFFBFE" : b.isMaterial3Dark ? "#1C1B1F" : ""), document.documentElement.style.setProperty("--material3-on-surface", b.isMaterial3 ? "#1C1B1F" : b.isMaterial3Dark ? "#E6E1E5" : "")
-    }, [i]), Y.useEffect(() => {
+    }, [i, appBgUrl]), Y.useEffect(() => {
         if (!(i != null && i.display_mode)) return;
         const b = {
             normal: 1,
@@ -83146,10 +83201,10 @@ function z$e({
                 color1: (i == null ? void 0 : i.liquid_glass_color1) || "#7c3aed",
                 color2: (i == null ? void 0 : i.liquid_glass_color2) || "#764ba2",
                 color3: (i == null ? void 0 : i.liquid_glass_color3) || "#f093fb"
-            }), (i == null ? void 0 : i.app_background_url) && (i == null ? void 0 : i.app_background_enabled) !== !1 && l.jsx("div", {
+            }), appBgUrl && (i == null ? void 0 : i.app_background_enabled) !== !1 && l.jsx("div", {
                 className: "fixed inset-0 pointer-events-none",
                 style: {
-                    backgroundImage: `url(${i.app_background_url})`,
+                    backgroundImage: `url(${appBgUrl})`,
                     backgroundSize: "cover",
                     backgroundPosition: "center",
                     backgroundAttachment: "fixed",
@@ -83165,7 +83220,7 @@ function z$e({
                 } : {
                     position: "relative",
                     zIndex: 1,
-                    backgroundColor: i != null && i.app_background_url && (i == null ? void 0 : i.app_background_enabled) !== !1 ? "transparent" : void 0
+                    backgroundColor: i != null && appBgUrl && (i == null ? void 0 : i.app_background_enabled) !== !1 ? "transparent" : void 0
                 },
                 children: [l.jsx(q$e, {
                     settings: i,
