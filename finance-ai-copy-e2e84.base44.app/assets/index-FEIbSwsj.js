@@ -68188,10 +68188,20 @@ function N4e() {
     } = Ve({
         queryKey: ["loans"],
         queryFn: () => se.entities.Loan.list()
+    }), {
+        data: scheduledList = []
+    } = Ve({
+        queryKey: ["scheduledDeposits"],
+        queryFn: () => se.entities.ScheduledDeposit.list()
     }), U = (R && R[0]) || null,
     [selectedMonth, setSelectedMonth] = C.useState(() => new Date().toISOString().substring(0, 7)),
     D = C.useCallback(() => {
         const B = selectedMonth;
+        const getInvestedValueAsOfMonth = (c, monthStr) => {
+            const val = c.valor_investido || 0;
+            const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr);
+            return val + extras.reduce((sum, sd) => sum + sd.valor, 0);
+        };
         const calculateBalanceForMonth = (monthKey) => {
             const [tYear, tMonth] = monthKey.split("-").map(Number);
             const incVal = E.filter(J => {
@@ -68214,7 +68224,8 @@ function N4e() {
             }).reduce((J, ve) => J + (ve.valor_fatura_atual || 0), 0);
 
             const totalExp = expVal + debtVal + goalVal + investVal + cardVal;
-            return { totalInc, totalExp, balance: totalInc - totalExp };
+            const extraAportes = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === monthKey).reduce((sum, sd) => sum + sd.valor, 0);
+            return { totalInc, totalExp, balance: totalInc - totalExp - extraAportes };
         };
 
         const currentMonthData = calculateBalanceForMonth(B);
@@ -68238,11 +68249,11 @@ function N4e() {
             despesasMensais: currentMonthData.totalExp,
             saldoMensal: currentMonthData.balance,
             proximosMeses: K,
-            totalInvestido: I.filter(J => isItemCreatedBeforeOrInMonth(J, B)).reduce((J, ve) => J + (ve.valor_investido || 0), 0),
+            totalInvestido: I.filter(J => isItemCreatedBeforeOrInMonth(J, B)).reduce((J, ve) => J + getInvestedValueAsOfMonth(ve, B), 0),
             metasAtivas: $.filter(J => J.status === "ativo" && isItemCreatedBeforeOrInMonth(J, B)).length,
             dividasAtivas: P.filter(J => J.status === "ativa" && isItemCreatedBeforeOrInMonth(J, B)).length
         };
-    }, [E, O, P, $, I, F, W, selectedMonth]);
+    }, [E, O, P, $, I, F, W, selectedMonth, scheduledList]);
     C.useEffect(() => {
         const handleMonthChange = () => {
             setSelectedMonth(new Date().toISOString().substring(0, 7));
@@ -74240,6 +74251,12 @@ function bIe() {
         queryKey: ["banks"],
         queryFn: () => se.entities.Bank.list(),
         staleTime: 3e4
+    }), {
+        data: scheduledList = []
+    } = Ve({
+        queryKey: ["scheduledDeposits"],
+        queryFn: () => se.entities.ScheduledDeposit.list(),
+        staleTime: 3e4
     }), O = new Date().getDate(), P = v.filter(K => {
     var ht;
     const J = (((ht = K.mes_referencia) == null ? void 0 : ht.includes(S)) || K.recorrente || K.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(K, S);
@@ -74253,7 +74270,7 @@ function bIe() {
     const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
         ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
     return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
-}).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.valor_investido || 0), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V + W, z = X - L, activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), ie = X === 0 ? z >= 0 ? {
+}).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V + W, z = X - L, activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), ie = X === 0 ? z >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/20 text-yellow-400",
         emoji: "😊"
@@ -74897,7 +74914,7 @@ function bIe() {
                                         children: [
                                             { title: "Receita Bruta", val: X, sub: "Entradas Totais", color: "text-green-400" },
                                             { title: "Despesa Total", val: L, sub: `${X > 0 ? (L / X * 100).toFixed(0) : 0}% da Receita`, color: "text-red-400" },
-                                            { title: "Saldo Livre", val: z, sub: z >= 0 ? "Resultado Positivo" : "Orçamento em Déficit", color: z >= 0 ? "text-blue-400" : "text-orange-400" },
+                                            { title: "Saldo Livre", val: z - scheduledAportesVal, sub: scheduledAportesVal > 0 ? `Total: R$ ${formatBRL(z)} (-R$ ${formatBRL(scheduledAportesVal)} de aporte extra)` : (z >= 0 ? "Resultado Positivo" : "Orçamento em Déficit"), color: (z - scheduledAportesVal) >= 0 ? "text-blue-400" : "text-orange-400" },
                                             { title: "Total Investido", val: U, sub: `Aporte: R$ ${D.toFixed(0)}/mês`, color: "text-purple-400" },
                                             { title: "Contas a Receber", val: $, sub: "Valores Pendentes", color: "text-yellow-400" },
                                             { title: "Despesas Fixas", val: M, sub: "Comprometimento Fixo", color: "text-gray-300" },
@@ -75097,7 +75114,7 @@ function bIe() {
                                         children: [
                                             { label: "Receitas", val: X, color: "text-green-400", desc: "Faturamento deste mês" },
                                             { label: "Despesas", val: L, color: "text-red-400", desc: "Total comprometido" },
-                                            { label: "Saldo Livre", val: z, color: z >= 0 ? "text-blue-400" : "text-orange-400", desc: "Saldo residual" },
+                                            { label: "Saldo Livre", val: z - scheduledAportesVal, color: (z - scheduledAportesVal) >= 0 ? "text-blue-400" : "text-orange-400", desc: scheduledAportesVal > 0 ? `Total: R$ ${formatBRL(z)} (-R$ ${formatBRL(scheduledAportesVal)} de Aporte)` : "Saldo residual" },
                                             { label: "Total Investido", val: U, color: "text-purple-400", desc: "Patrimônio acumulado" }
                                         ].map((K, J) => l.jsxs(Oe, {
                                             className: "bg-[#1a1a1a] border-[#2a2a2a] p-4 flex flex-col justify-between h-28 relative overflow-hidden",
@@ -77928,7 +77945,12 @@ function CIe() {
     } = Ve({
         queryKey: ["settings"],
         queryFn: () => se.entities.Settings.list()
-    }), activeSettings = (cc && cc[0]) || {}, currentTheme = activeSettings.tema || "dark", isDark = !["light", "material3_light"].includes(currentTheme), t = e.reduce((p, m) => p + m.valor_investido, 0), n = e.reduce((p, m) => p + m.valor_investido * m.taxa_rendimento / 100, 0), r = e.reduce((p, m) => p + (m.retirada_mensal || 0), 0), a = e.reduce((p, m) => p + (m.aporte_mensal || 0), 0), i = n - r + a, s = ((p = 48) => {
+    }), {
+        data: scheduledList = []
+    } = Ve({
+        queryKey: ["scheduledDeposits"],
+        queryFn: () => se.entities.ScheduledDeposit.list()
+    }), activeSettings = (cc && cc[0]) || {}, currentTheme = activeSettings.tema || "dark", isDark = !["light", "material3_light"].includes(currentTheme), todayStrForPlan = new Date().toISOString().split("T")[0], getInvestedValueAsOfPlan = (c, dateStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia <= dateStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, t = e.reduce((p, m) => p + getInvestedValueAsOfPlan(m, todayStrForPlan), 0), n = e.reduce((p, m) => p + getInvestedValueAsOfPlan(m, todayStrForPlan) * m.taxa_rendimento / 100, 0), r = e.reduce((p, m) => p + (m.retirada_mensal || 0), 0), a = e.reduce((p, m) => p + (m.aporte_mensal || 0), 0), i = n - r + a, s = ((p = 48) => {
         const m = [],
             g = new Date(2025, 11, 1),
             w = new Date < g ? g : new Date;
@@ -80422,11 +80444,19 @@ function A$e({
         enabled: !0,
         retry: 1,
         staleTime: 3e4
+    }), {
+        data: scheduledList = []
+    } = Ve({
+        queryKey: ["scheduledDeposits"],
+        queryFn: () => se.entities.ScheduledDeposit.list(),
+        enabled: !0,
+        retry: 1,
+        staleTime: 3e4
     }), x = tt(new Date(), "yyyy-MM"), [selectedYear, selectedMonth] = x.split("-").map(Number), v = c.filter(K => {
         var ht;
         const J = (((ht = K.mes_referencia) == null ? void 0 : ht.includes(x)) || K.recorrente || K.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(K, x);
         return J
-    }).reduce((K, J) => J.tipo === "devedor" ? K + (J.valor_recebido || 0) : K + (J.valor || 0), 0), b = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), j = w.reduce((K, J) => K + Wv(J, x), 0), N = v + b + j, M_val = d.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(x)) && isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + J.valor, 0), S = f.reduce((K, J) => K + getDebtInstallmentForMonth(J, x), 0), E = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0), 0), O = m.filter(K => {
+    }).reduce((K, J) => J.tipo === "devedor" ? K + (J.valor_recebido || 0) : K + (J.valor || 0), 0), b = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), j = w.reduce((K, J) => K + Wv(J, x), 0), N = v + b + j, M_val = d.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(x)) && isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + J.valor, 0), S = f.reduce((K, J) => K + getDebtInstallmentForMonth(J, x), 0), getInvestedValueAsOfMonth = (cObj, monthStr) => { const val = cObj.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === cObj.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === x).reduce((sum, sd) => sum + sd.valor, 0), E = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, x), 0), O = m.filter(K => {
         const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
             ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
         return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, x)
@@ -80513,8 +80543,8 @@ function A$e({
     }, {
         icon: Co,
         title: "💵 Saldo Livre",
-        value: `R$ ${Math.abs(M).toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
-        color: M >= 0 ? "text-green-400" : "text-red-400"
+        value: `R$ ${Math.abs(M - scheduledAportesVal).toLocaleString("pt-BR",{minimumFractionDigits:2})}${scheduledAportesVal > 0 ? " (-" + scheduledAportesVal.toLocaleString("pt-BR") + " ap.)" : ""}`,
+        color: (M - scheduledAportesVal) >= 0 ? "text-green-400" : "text-red-400"
     }, {
         icon: da,
         title: "🎯 Objetivos Ativos",
