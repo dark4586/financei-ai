@@ -5252,28 +5252,9 @@ html, body, button, input, select, textarea, div, span, p, h1, h2, h3, h4, h5, h
     font-smooth: always !important;
 }
 
-/* Fix blurry text/borders inside cards during scale/translation and backdrop blur */
-.backdrop-blur-lg, 
-.backdrop-blur-sm, 
-.backdrop-blur-xl, 
-.backdrop-filter,
-.bg-card,
-.border-\[\#2a2a2a\],
-.bg-\[\#1a1a1a\],
-[class*="bg-card"],
-[class*="border-"],
-[class*="backdrop-blur-"] {
-    -webkit-backface-visibility: hidden !important;
-    backface-visibility: hidden !important;
-    -webkit-transform-style: preserve-3d !important;
-    transform-style: preserve-3d !important;
-    background-clip: padding-box !important;
-    /* Force GPU rasterization boundary alignment */
-    will-change: transform;
-}
-
-/* Enhance border rendering in Chrome to prevent half-pixel blurring */
+/* Prevent blurry borders inside cards */
 .border-\[\#2a2a2a\], .border, [class*="border-"] {
+    background-clip: padding-box !important;
     outline: 1px solid transparent !important;
 }
 

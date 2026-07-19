@@ -74422,31 +74422,31 @@ function bIe() {
     return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
 }).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), initialInvestmentsVal = b.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === S && isItemCreatedBeforeOrInMonth(K, S)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), totalAportadoNoMes = W + scheduledAportesVal + initialInvestmentsVal, U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V, z = X - L - W, _dbg = console.log("FINANCEAI DEBUG:", {X, L, W, scheduledAportesVal, initialInvestmentsVal, z, totalAportadoNoMes, U, S, b, scheduledList}), activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), ie = X === 0 ? z >= 0 ? {
         text: "Estável",
-        color: "bg-yellow-500/20 text-yellow-400",
+        color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
     } : {
         text: "Crítico",
-        color: "bg-red-500/20 text-red-400",
+        color: "bg-red-500/35 text-red-300",
         emoji: "🚨"
     } : z > X * .3 ? {
         text: "Excelente",
-        color: "bg-green-500/20 text-green-400",
+        color: "bg-green-500/35 text-green-300",
         emoji: "🎉"
     } : z > X * .15 ? {
         text: "Bom",
-        color: "bg-blue-500/20 text-blue-400",
+        color: "bg-blue-500/35 text-blue-300",
         emoji: "👍"
     } : z > 0 ? {
         text: "Estável",
-        color: "bg-yellow-500/20 text-yellow-400",
+        color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
     } : z > -X * .1 ? {
         text: "Atenção",
-        color: "bg-orange-500/20 text-orange-400",
+        color: "bg-orange-500/35 text-orange-300",
         emoji: "⚠️"
     } : {
         text: "Crítico",
-        color: "bg-red-500/20 text-red-400",
+        color: "bg-red-500/35 text-red-300",
         emoji: "🚨"
     }, be = () => {
         document.fullscreenElement ? (document.exitFullscreen().catch(() => {}), s(!1)) : (document.documentElement.requestFullscreen().catch(() => {}), s(!0))
@@ -75301,8 +75301,17 @@ function bIe() {
                                                             Se.slice(0, 3).map((K, J) => {
                                                                 const associatedBank = K.isCardBill && K.card && Array.isArray(banksList) ? banksList.find(bankObj => bankObj.id === K.card.banco_id) : null;
                                                                 return l.jsxs("div", {
-                                                                    className: associatedBank ? `flex items-center justify-between p-3 rounded-xl hover:opacity-90 transition-all group` : "flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl",
-                                                                    style: associatedBank ? { backgroundColor: associatedBank.cor_principal || "#3b82f6" } : {},
+                                                                    className: associatedBank ? `flex items-center justify-between p-3 rounded-xl hover:opacity-90 transition-all group backdrop-blur-md` : "flex items-center justify-between p-3 bg-[#2a2a2a]/40 backdrop-blur-md border border-[#2a2a2a]/20 rounded-xl",
+                                                                    style: associatedBank ? { backgroundColor: ((c) => {
+                                                                        if (!c) return "rgba(59, 130, 246, 0.25)";
+                                                                        if (c.startsWith("rgba") || c.startsWith("rgb")) return c.replace(")", ", 0.25)").replace("rgb(", "rgba(");
+                                                                        let hex = c.replace(/^#/, '');
+                                                                        if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+                                                                        const r = parseInt(hex.substring(0, 2), 16);
+                                                                        const g = parseInt(hex.substring(2, 4), 16);
+                                                                        const b = parseInt(hex.substring(4, 6), 16);
+                                                                        return isNaN(r) ? "rgba(59, 130, 246, 0.25)" : `rgba(${r}, ${g}, ${b}, 0.25)`;
+                                                                    })(associatedBank.cor_principal || "#3b82f6"), border: `1px solid rgba(255, 255, 255, 0.08)` } : {},
                                                                     children: [
                                                                         l.jsxs("div", {
                                                                             className: "flex items-center gap-3",
@@ -76065,8 +76074,17 @@ function bIe() {
                                                 children: [l.jsx(ru, {
                                                     asChild: !0,
                                                     children: l.jsxs("div", {
-                                                        className: associatedBank ? `flex items-center justify-between p-3 rounded-xl cursor-pointer hover:opacity-90 transition-all group ${ht?"ring-1 ring-white/40":""}` : `flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl cursor-pointer hover:bg-[#333] transition-colors group ${ht?"ring-1 ring-red-500/30":""}`,
-                                                        style: associatedBank ? { backgroundColor: associatedBank.cor_principal || "#3b82f6" } : {},
+                                                        className: associatedBank ? `flex items-center justify-between p-3 rounded-xl cursor-pointer hover:opacity-90 transition-all group backdrop-blur-md ${ht?"ring-1 ring-white/40":""}` : `flex items-center justify-between p-3 bg-[#2a2a2a]/40 backdrop-blur-md border border-[#2a2a2a]/20 rounded-xl cursor-pointer hover:bg-[#333]/40 transition-colors group ${ht?"ring-1 ring-red-500/30":""}`,
+                                                        style: associatedBank ? { backgroundColor: ((c) => {
+                                                            if (!c) return "rgba(59, 130, 246, 0.25)";
+                                                            if (c.startsWith("rgba") || c.startsWith("rgb")) return c.replace(")", ", 0.25)").replace("rgb(", "rgba(");
+                                                            let hex = c.replace(/^#/, '');
+                                                            if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+                                                            const r = parseInt(hex.substring(0, 2), 16);
+                                                            const g = parseInt(hex.substring(2, 4), 16);
+                                                            const b = parseInt(hex.substring(4, 6), 16);
+                                                            return isNaN(r) ? "rgba(59, 130, 246, 0.25)" : `rgba(${r}, ${g}, ${b}, 0.25)`;
+                                                        })(associatedBank.cor_principal || "#3b82f6"), border: `1px solid rgba(255, 255, 255, 0.08)` } : {},
                                                         children: [l.jsxs("div", {
                                                             className: "flex items-center gap-3",
                                                             children: [l.jsx("div", {
@@ -80703,31 +80721,31 @@ function A$e({
         return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, x)
     }).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), P = g.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, x)), $ = P.reduce((K, J) => K + (J.economia_mensal || 0), 0), I = p.filter(K => isItemCreatedBeforeOrInMonth(K, x) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= x)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), k = M_val + S + O + $ + I, M = N - k, R = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), F = f.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, x)), U = N === 0 ? M >= 0 ? {
         text: "Estável",
-        color: "bg-yellow-500/20 text-yellow-400",
+        color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
     } : {
         text: "Crítico",
-        color: "bg-red-500/20 text-red-400",
+        color: "bg-red-500/35 text-red-300",
         emoji: "🚨"
     } : M > N * .3 ? {
         text: "Excelente",
-        color: "bg-green-500/20 text-green-400",
+        color: "bg-green-500/35 text-green-300",
         emoji: "🎉"
     } : M > N * .15 ? {
         text: "Bom",
-        color: "bg-blue-500/20 text-blue-400",
+        color: "bg-blue-500/35 text-blue-300",
         emoji: "👍"
     } : M > 0 ? {
         text: "Estável",
-        color: "bg-yellow-500/20 text-yellow-400",
+        color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
     } : M > -N * .1 ? {
         text: "Atenção",
-        color: "bg-orange-500/20 text-orange-400",
+        color: "bg-orange-500/35 text-orange-300",
         emoji: "⚠️"
     } : {
         text: "Crítico",
-        color: "bg-red-500/20 text-red-400",
+        color: "bg-red-500/35 text-red-300",
         emoji: "🚨"
     };
     Y.useEffect(() => {
