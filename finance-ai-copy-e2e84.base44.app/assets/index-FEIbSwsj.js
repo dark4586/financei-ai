@@ -74792,6 +74792,7 @@ function bIe() {
         }
     }, [w, x, v, b, j, N, k, activeSettings]);
 
+    const realSaldoLivre = z - scheduledAportesVal - initialInvestmentsVal;
     return l.jsx(g0, {
         children: l.jsx(bP, {
             onRefresh: ce,
@@ -74862,8 +74863,8 @@ function bIe() {
                                             scale: .95
                                         },
                                         onClick: () => e(Qe("Receitas")),
-                                        className: `text-xs px-3 py-1 rounded-full font-semibold hover:opacity-80 transition-opacity ${z>=0?"bg-green-500/20 text-green-400":"bg-red-500/20 text-red-400"}`,
-                                        children: ["💰 R$ ", Math.abs(z).toLocaleString("pt-BR", {
+                                        className: `text-xs px-3 py-1 rounded-full font-semibold hover:opacity-80 transition-opacity ${realSaldoLivre>=0?"bg-green-500/20 text-green-400":"bg-red-500/20 text-red-400"}`,
+                                        children: [realSaldoLivre < 0 ? "💰 -R$ " : "💰 R$ ", Math.abs(realSaldoLivre).toLocaleString("pt-BR", {
                                             minimumFractionDigits: 2
                                         })]
                                     }), l.jsxs(Be.button, {
@@ -80719,7 +80720,7 @@ function A$e({
         const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
             ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
         return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, x)
-    }).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), P = g.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, x)), $ = P.reduce((K, J) => K + (J.economia_mensal || 0), 0), I = p.filter(K => isItemCreatedBeforeOrInMonth(K, x) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= x)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), k = M_val + S + O + $ + I, M = N - k, R = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), F = f.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, x)), U = N === 0 ? M >= 0 ? {
+    }).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), P = g.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, x)), $ = P.reduce((K, J) => K + (J.economia_mensal || 0), 0), I = p.filter(K => isItemCreatedBeforeOrInMonth(K, x) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= x)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), k = M_val + S + O + $ + I, M = N - k, initialInvestmentsVal = p.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === x && isItemCreatedBeforeOrInMonth(K, x)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), screensaverRealSaldoLivre = M - scheduledAportesVal - initialInvestmentsVal, R = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), F = f.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, x)), U = N === 0 ? M >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
@@ -80806,8 +80807,8 @@ function A$e({
     }, {
         icon: Co,
         title: "💵 Saldo Livre",
-        value: `R$ ${Math.abs(M - scheduledAportesVal).toLocaleString("pt-BR",{minimumFractionDigits:2})}${scheduledAportesVal > 0 ? " (-" + scheduledAportesVal.toLocaleString("pt-BR") + " ap.)" : ""}`,
-        color: (M - scheduledAportesVal) >= 0 ? "text-green-400" : "text-red-400"
+        value: screensaverRealSaldoLivre < 0 ? `-R$ ${Math.abs(screensaverRealSaldoLivre).toLocaleString("pt-BR", {minimumFractionDigits: 2})}` : `R$ ${screensaverRealSaldoLivre.toLocaleString("pt-BR", {minimumFractionDigits: 2})}`,
+        color: screensaverRealSaldoLivre >= 0 ? "text-green-400" : "text-red-400"
     }, {
         icon: da,
         title: "🎯 Objetivos Ativos",
@@ -80926,8 +80927,8 @@ function A$e({
                     className: `text-xs px-3 py-1 rounded-full ${U.color} font-semibold`,
                     children: [U.emoji, " ", U.text]
                 }), l.jsxs("span", {
-                    className: `text-xs px-3 py-1 rounded-full font-semibold ${M>=0?"bg-green-500/20 text-green-400":"bg-red-500/20 text-red-400"}`,
-                    children: ["💰 R$ ", Math.abs(M).toLocaleString("pt-BR", {
+                    className: `text-xs px-3 py-1 rounded-full font-semibold ${screensaverRealSaldoLivre>=0?"bg-green-500/20 text-green-400":"bg-red-500/20 text-red-400"}`,
+                    children: [screensaverRealSaldoLivre < 0 ? "💰 -R$ " : "💰 R$ ", Math.abs(screensaverRealSaldoLivre).toLocaleString("pt-BR", {
                         minimumFractionDigits: 2
                     })]
                 }), l.jsxs("span", {
