@@ -74350,7 +74350,10 @@ function bIe() {
             const It = new Date(J);
             It.setMonth(J.getMonth() + ht);
             const zt = tt(It, "yyyy-MM");
-            const meInvestimento = b.filter($e => new Date($e.data_inicio) <= It).reduce(($e, Je) => $e + (Je.aporte_mensal || 0), 0);
+            const monthlyAporte = b.filter($e => isItemCreatedBeforeOrInMonth($e, zt) && (!$e.data_inicio || $e.data_inicio.substring(0, 7) <= zt)).reduce(($e, Je) => $e + (Je.aporte_mensal || 0), 0);
+            const scheduledAportes = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === zt).reduce((sum, sd) => sum + sd.valor, 0);
+            const initialInvestments = b.filter($e => $e.data_inicio && $e.data_inicio.substring(0, 7) === zt && isItemCreatedBeforeOrInMonth($e, zt)).reduce((sum, Je) => sum + (Je.valor_investido || 0), 0);
+            const meInvestimento = monthlyAporte + scheduledAportes + initialInvestments;
             if (!v.some($e => {
                     var Je;
                     return ($e.tipo !== "devedor" || $e.status === "recebido") && ((Je = $e.mes_referencia) == null ? void 0 : Je.startsWith(zt))
