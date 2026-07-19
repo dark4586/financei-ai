@@ -58783,6 +58783,10 @@ function YOe() {
         }) : ht.mutate(Nt)
     }, pi = Z => {
         Z.preventDefault();
+        if (!R.investimento_id) {
+            alert("Por favor, selecione um investimento!");
+            return;
+        }
         const Pe = B.find(fn => fn.id === R.investimento_id),
             Nt = { ...R,
                 investimento_nome: (Pe == null ? void 0 : Pe.nome) || "",
@@ -59181,7 +59185,44 @@ function YOe() {
                                             })]
                                         })
                                     }, Z.id)
-                                }), B.length === 0 && l.jsx("div", {
+                                }), (() => {
+                                    const orphaned = me.filter(Zt => !Zt.efetivado && (!Zt.investimento_id || !B.some(inv => inv.id === Zt.investimento_id)));
+                                    if (orphaned.length === 0) return null;
+                                    return l.jsxs("div", {
+                                        className: "mt-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg space-y-3",
+                                        children: [
+                                            l.jsxs("div", {
+                                                className: "flex items-center gap-2 text-yellow-400 font-semibold",
+                                                children: [
+                                                    l.jsx("span", { children: "⚠️ Aportes Órfãos (Sem investimento associado)" }),
+                                                    l.jsx("span", { className: "text-xs text-gray-400 font-normal", children: "(Ocorrem quando criados sem selecionar um investimento)" })
+                                                ]
+                                            }),
+                                            l.jsx("div", {
+                                                className: "grid grid-cols-1 gap-2",
+                                                children: orphaned.map(Zt => l.jsxs("div", {
+                                                    className: "flex items-center justify-between bg-[#2a2a2a] p-3 rounded-md",
+                                                    children: [
+                                                        l.jsxs("div", {
+                                                            className: "text-sm",
+                                                            children: [
+                                                                l.jsxs("span", { className: "text-white font-semibold", children: ["Valor: R$ ", Zt.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })] }),
+                                                                l.jsxs("span", { className: "text-gray-400 ml-4", children: ["Data: ", new Date(Zt.mes_referencia + "T12:00:00").toLocaleDateString("pt-BR")] })
+                                                            ]
+                                                        }),
+                                                        l.jsx(xe, {
+                                                            variant: "ghost",
+                                                            size: "icon",
+                                                            className: "text-red-400 hover:text-red-300 w-8 h-8 hover:bg-red-500/10 p-0 flex items-center justify-center",
+                                                            onClick: () => rr.mutate(Zt.id),
+                                                            children: l.jsx(fr, { className: "w-4 h-4" })
+                                                        })
+                                                    ]
+                                                }, Zt.id))
+                                            })
+                                        ]
+                                    });
+                                })(), B.length === 0 && l.jsx("div", {
                                     className: "text-center py-12 text-gray-500",
                                     children: "📈 Nenhum investimento cadastrado"
                                 })]
