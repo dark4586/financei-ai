@@ -70094,6 +70094,58 @@ function cIe() {
     C.useEffect(() => {
         G && (m(G.app_background_opacity ?? 10), w(G.card_opacity ?? 100), v(G.card_border_radius ?? 12), j(G.line_height ?? 1.5), k(G.letter_spacing ?? 0), E(G.notification_duration ?? 5), P(G.bill_reminder_days ?? 3), I(G.low_balance_alert ?? 100), R(G.high_expense_alert ?? 1000), W(G.refresh_interval ?? 60), D(G.screensaver_timeout ?? 300), V(G.music_volume ?? 50), L(G.screensaver_brightness ?? 100))
     }, [G]);
+    const [musicUrlSrc, setMusicUrlSrc] = C.useState("");
+    const [bgUrlSrc, setBgUrlSrc] = C.useState("");
+    C.useEffect(() => {
+        let active = true;
+        let objectUrl = "";
+        if (G && G.screensaver_music_url) {
+            if (G.screensaver_music_url === "indexeddb_saved") {
+                loadMediaFromIndexedDB("screensaver_music").then(base64 => {
+                    if (active && base64) {
+                        const url = base64ToBlobUrl(base64);
+                        objectUrl = url;
+                        setMusicUrlSrc(url);
+                    }
+                });
+            } else {
+                setMusicUrlSrc(G.screensaver_music_url);
+            }
+        } else {
+            setMusicUrlSrc("");
+        }
+        return () => {
+            active = false;
+            if (objectUrl && objectUrl.startsWith("blob:")) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [G == null ? void 0 : G.screensaver_music_url]);
+    C.useEffect(() => {
+        let active = true;
+        let objectUrl = "";
+        if (G && G.screensaver_background_url) {
+            if (G.screensaver_background_url === "indexeddb_saved") {
+                loadMediaFromIndexedDB("screensaver_background").then(base64 => {
+                    if (active && base64) {
+                        const url = base64ToBlobUrl(base64);
+                        objectUrl = url;
+                        setBgUrlSrc(url);
+                    }
+                });
+            } else {
+                setBgUrlSrc(G.screensaver_background_url);
+            }
+        } else {
+            setBgUrlSrc("");
+        }
+        return () => {
+            active = false;
+            if (objectUrl && objectUrl.startsWith("blob:")) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [G == null ? void 0 : G.screensaver_background_url]);
     const B = st({
             mutationFn: K => se.entities.Settings.create(K),
             onSuccess: () => {
@@ -70144,16 +70196,26 @@ function cIe() {
             if (J) {
                 a(!0);
                 try {
-                    const ve = await be.mutateAsync(J),
-                        et = J.type.startsWith("video/");
-                    await le({
-                        screensaver_background_url: ve.file_url,
-                        screensaver_background_type: et ? "video" : "image"
-                    })
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                        const base64Url = reader.result;
+                        const et = J.type.startsWith("video/");
+                        await saveMediaToIndexedDB("screensaver_background", base64Url);
+                        await le({
+                            screensaver_background_url: "indexeddb_saved",
+                            screensaver_background_type: et ? "video" : "image"
+                        });
+                        a(!1);
+                    };
+                    reader.onerror = () => {
+                        console.error("Erro ao ler o arquivo");
+                        a(!1);
+                    };
+                    reader.readAsDataURL(J);
                 } catch (ve) {
-                    console.error("Erro ao fazer upload:", ve)
+                    console.error("Erro no upload/leitura:", ve);
+                    a(!1);
                 }
-                a(!1)
             }
         },
         Se = async K => {
@@ -70161,14 +70223,24 @@ function cIe() {
             if (J) {
                 o(!0);
                 try {
-                    const ve = await be.mutateAsync(J);
-                    await le({
-                        screensaver_music_url: ve.file_url
-                    })
+                    const reader = new FileReader();
+                    reader.onloadend = async () => {
+                        const base64Url = reader.result;
+                        await saveMediaToIndexedDB("screensaver_music", base64Url);
+                        await le({
+                            screensaver_music_url: "indexeddb_saved"
+                        });
+                        o(!1);
+                    };
+                    reader.onerror = () => {
+                        console.error("Erro ao ler o arquivo de música");
+                        o(!1);
+                    };
+                    reader.readAsDataURL(J);
                 } catch (ve) {
-                    console.error("Erro ao fazer upload:", ve)
+                    console.error("Erro ao processar música:", ve);
+                    o(!1);
                 }
-                o(!1)
             }
         },
         ce = async K => {
@@ -70805,7 +70877,7 @@ function cIe() {
                                     }), l.jsx(oo, {
                                         value: [H ?? 50],
                                         onValueChange: K => {
-                                            V(K[0]), pe({
+                                                V(K[0]), pe({
                                                 music_volume: K[0]
                                             })
                                         },
@@ -70834,16 +70906,16 @@ function cIe() {
                                     children: [l.jsx(he, {
                                         className: "text-white mb-3 block",
                                         children: "🖼️ Fundo"
-                                    }), G.screensaver_background_url && l.jsx("div", {
+                                    }), bgUrlSrc && l.jsx("div", {
                                         className: "mb-3",
                                         children: G.screensaver_background_type === "video" ? l.jsx("video", {
-                                            src: G.screensaver_background_url,
+                                            src: bgUrlSrc,
                                             className: "w-full h-32 object-cover rounded",
                                             muted: !0,
                                             loop: !0,
                                             autoPlay: !0
                                         }) : l.jsx("img", {
-                                            src: G.screensaver_background_url,
+                                            src: bgUrlSrc,
                                             alt: "Background",
                                             className: "w-full h-32 object-cover rounded"
                                         })
@@ -70856,11 +70928,14 @@ function cIe() {
                                                 className: "flex-1 bg-white text-black",
                                                 children: r ? "⏳ Enviando..." : "📸 Enviar Foto/Vídeo"
                                             }),
-                                            G.screensaver_background_url && l.jsx(xe, {
-                                                onClick: () => le({
-                                                    screensaver_background_url: "",
-                                                    screensaver_background_type: ""
-                                                }),
+                                            bgUrlSrc && l.jsx(xe, {
+                                                onClick: () => {
+                                                    saveMediaToIndexedDB("screensaver_background", null);
+                                                    le({
+                                                        screensaver_background_url: "",
+                                                        screensaver_background_type: ""
+                                                    });
+                                                },
                                                 className: "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-all",
                                                 children: "🗑️ Remover Fundo"
                                             })
@@ -70876,9 +70951,9 @@ function cIe() {
                                     children: [l.jsx(he, {
                                         className: "text-white mb-3 block",
                                         children: "🎵 Música"
-                                    }), G.screensaver_music_url && l.jsx("audio", {
+                                    }), musicUrlSrc && l.jsx("audio", {
                                         controls: !0,
-                                        src: G.screensaver_music_url,
+                                        src: musicUrlSrc,
                                         className: "w-full mb-3"
                                     }), l.jsxs("div", {
                                         className: "flex flex-col sm:flex-row gap-2",
@@ -70889,10 +70964,13 @@ function cIe() {
                                                 className: "flex-1 bg-white text-black",
                                                 children: i ? "⏳ Enviando..." : "🎵 Enviar Música"
                                             }),
-                                            G.screensaver_music_url && l.jsx(xe, {
-                                                onClick: () => le({
-                                                    screensaver_music_url: ""
-                                                }),
+                                            musicUrlSrc && l.jsx(xe, {
+                                                onClick: () => {
+                                                    saveMediaToIndexedDB("screensaver_music", null);
+                                                    le({
+                                                        screensaver_music_url: ""
+                                                    });
+                                                },
                                                 className: "bg-red-500/20 text-red-400 border border-red-500/30 hover:bg-red-500/30 transition-all",
                                                 children: "🗑️ Remover Música"
                                             })
@@ -77696,6 +77774,38 @@ const loadAvatarFromIndexedDB = async () => {
     }
 };
 
+const saveMediaToIndexedDB = async (key, base64Data) => {
+    try {
+        const db = await initIndexedDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction("profile", "readwrite");
+            const store = transaction.objectStore("profile");
+            const putReq = store.put(base64Data, key);
+            putReq.onsuccess = () => resolve(true);
+            putReq.onerror = e => reject(e.target.error);
+        });
+    } catch (err) {
+        console.error("Failed to save media to IndexedDB:", err);
+        return false;
+    }
+};
+
+const loadMediaFromIndexedDB = async (key) => {
+    try {
+        const db = await initIndexedDB();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction("profile", "readonly");
+            const store = transaction.objectStore("profile");
+            const getReq = store.get(key);
+            getReq.onsuccess = () => resolve(getReq.result || null);
+            getReq.onerror = e => reject(e.target.error);
+        });
+    } catch (err) {
+        console.error("Failed to load media from IndexedDB:", err);
+        return null;
+    }
+};
+
 try {
     loadAvatarFromIndexedDB().then(avatar => {
         if (avatar) {
@@ -80434,6 +80544,56 @@ function A$e({
     settings: t
 }) {
     const [n, r] = C.useState(0), [a, i] = C.useState(() => f6()), [o, s] = C.useState(null);
+    const [bgUrlSrc, setBgUrlSrc] = C.useState("");
+    const [musicUrlSrc, setMusicUrlSrc] = C.useState("");
+    C.useEffect(() => {
+        let active = true;
+        let objectUrl = "";
+        if (t && t.screensaver_background_url) {
+            if (t.screensaver_background_url === "indexeddb_saved") {
+                getMediaFromIndexedDB("screensaver_background").then(blob => {
+                    if (active && blob) {
+                        objectUrl = URL.createObjectURL(blob);
+                        setBgUrlSrc(objectUrl);
+                    }
+                });
+            } else {
+                setBgUrlSrc(t.screensaver_background_url);
+            }
+        } else {
+            setBgUrlSrc("");
+        }
+        return () => {
+            active = false;
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [t == null ? void 0 : t.screensaver_background_url]);
+    C.useEffect(() => {
+        let active = true;
+        let objectUrl = "";
+        if (t && t.screensaver_music_url) {
+            if (t.screensaver_music_url === "indexeddb_saved") {
+                getMediaFromIndexedDB("screensaver_music").then(blob => {
+                    if (active && blob) {
+                        objectUrl = URL.createObjectURL(blob);
+                        setMusicUrlSrc(objectUrl);
+                    }
+                });
+            } else {
+                setMusicUrlSrc(t.screensaver_music_url);
+            }
+        } else {
+            setMusicUrlSrc("");
+        }
+        return () => {
+            active = false;
+            if (objectUrl) {
+                URL.revokeObjectURL(objectUrl);
+            }
+        };
+    }, [t == null ? void 0 : t.screensaver_music_url]);
     C.useEffect(() => {
         const L = () => i(f6());
         return window.addEventListener("financeai_profile_changed", L), () => window.removeEventListener("financeai_profile_changed", L)
@@ -80540,8 +80700,8 @@ function A$e({
         emoji: "🚨"
     };
     Y.useEffect(() => {
-        if (t != null && t.screensaver_music_url) {
-            const L = new Audio(t.screensaver_music_url);
+        if (musicUrlSrc) {
+            const L = new Audio(musicUrlSrc);
             L.loop = !0;
             L.volume = (t.music_volume ?? 50) / 100;
             (async () => {
@@ -80563,7 +80723,7 @@ function A$e({
                 L.src = "";
             }
         }
-    }, [t == null ? void 0 : t.screensaver_music_url]);
+    }, [musicUrlSrc]);
 
     Y.useEffect(() => {
         if (o) {
@@ -80623,24 +80783,24 @@ function A$e({
         X = (t == null ? void 0 : t.screensaver_brightness) || 100;
     return l.jsxs("div", {
         className: "fixed inset-0 z-[9999] bg-black flex items-center justify-center cursor-pointer overflow-hidden",
-        children: [(t == null ? void 0 : t.screensaver_background_url) && l.jsx(l.Fragment, {
+        children: [bgUrlSrc && l.jsx(l.Fragment, {
             children: t.screensaver_background_type === "video" ? l.jsx("video", {
                 autoPlay: !0,
                 loop: !0,
                 muted: !0,
                 playsInline: !0,
                 className: "absolute inset-0 w-full h-full object-cover",
-                src: t.screensaver_background_url,
+                src: bgUrlSrc,
                 onError: L => console.error("Erro ao carregar vídeo:", L),
                 style: {
                     filter: `brightness(${X/100})`
                 },
                 children: l.jsx("source", {
-                    src: t.screensaver_background_url,
+                    src: bgUrlSrc,
                     type: "video/mp4"
                 })
             }) : l.jsx("img", {
-                src: t.screensaver_background_url,
+                src: bgUrlSrc,
                 alt: "Background",
                 className: "absolute inset-0 w-full h-full object-cover",
                 style: {
