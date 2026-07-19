@@ -71313,25 +71313,25 @@ function uIe() {
             }
         })
     };
-    const unpaidCardBills = creditCardsList.filter(card => {
+    const unpaidCardBills = (Array.isArray(creditCardsList) ? creditCardsList : []).filter(card => {
         const isCreated = isItemCreatedBeforeOrInMonth(card, selectedMonth);
-        return isCreated && (card.valor_fatura_atual || 0) > 0;
+        return isCreated && (Number(card.valor_fatura_atual || 0)) > 0;
     }).map(card => ({
         ...card,
         isCardBill: true,
         nome: `Fatura Cartão: ${card.nome}`,
         categoria: "cartao_credito",
-        valor: card.valor_fatura_atual,
+        valor: Number(card.valor_fatura_atual || 0),
         dia_vencimento: card.dia_vencimento
     }));
-    const paidCardBills = creditCardsList.filter(card => {
+    const paidCardBills = (Array.isArray(creditCardsList) ? creditCardsList : []).filter(card => {
         return card.ultimo_pagamento && card.ultimo_pagamento.substring(0, 7) === selectedMonth;
     }).map(card => ({
         ...card,
         isCardBill: true,
         nome: `Fatura Cartão: ${card.nome}`,
         categoria: "cartao_credito",
-        valor: card.valor_ultimo_pagamento || 0,
+        valor: Number(card.valor_ultimo_pagamento || 0),
         dia_vencimento: card.dia_vencimento
     }));
     const xCard = async card => {
@@ -74492,28 +74492,32 @@ function bIe() {
             }
         }).sort((a, b) => b.value - a.value),
         ge = ["#ef4444", "#f97316", "#f59e0b", "#84cc16", "#10b981", "#14b8a6", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e"],
-        Se = [...w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && !isFixedExpensePaidInMonth(K, S) && isItemCreatedBeforeOrInMonth(K, S)).map(K => ({
-            nome: K.nome,
-            valor: K.valor,
-            vencimento: K.dia_vencimento,
-            tipo: "Despesa"
-        })), ...x.filter(K => getDebtInstallmentForMonth(K, S) > 0 && !isDebtPaidInMonth(K, S) && isItemCreatedBeforeOrInMonth(K, S)).map(K => ({
-            nome: K.nome,
-            valor: K.valor_parcela,
-            vencimento: K.dia_vencimento || 5,
-            tipo: "Dívida"
-        })), ...N.filter(K => {
-            const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
-                ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
-            return K.ativo && (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
-        }).map(K => ({
-            nome: `Fatura ${K.nome}`,
-            valor: K.valor_fatura_atual,
-            vencimento: K.dia_vencimento || 10,
-            tipo: "Cartão",
-            isCardBill: true,
-            card: K
-        }))].sort((K, J) => K.vencimento - J.vencimento).slice(0, 5),
+        Se = [
+            ...(Array.isArray(w) ? w : []).filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && !isFixedExpensePaidInMonth(K, S) && isItemCreatedBeforeOrInMonth(K, S)).map(K => ({
+                nome: K.nome,
+                valor: Number(K.valor || 0),
+                vencimento: K.dia_vencimento,
+                tipo: "Despesa"
+            })),
+            ...(Array.isArray(x) ? x : []).filter(K => getDebtInstallmentForMonth(K, S) > 0 && !isDebtPaidInMonth(K, S) && isItemCreatedBeforeOrInMonth(K, S)).map(K => ({
+                nome: K.nome,
+                valor: Number(K.valor_parcela || 0),
+                vencimento: K.dia_vencimento || 5,
+                tipo: "Dívida"
+            })),
+            ...(Array.isArray(N) ? N : []).filter(K => {
+                const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
+                    ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
+                return K.ativo && (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
+            }).map(K => ({
+                nome: `Fatura ${K.nome}`,
+                valor: Number(K.valor_fatura_atual || 0),
+                vencimento: K.dia_vencimento || 10,
+                tipo: "Cartão",
+                isCardBill: true,
+                card: K
+            }))
+        ].sort((K, J) => K.vencimento - J.vencimento).slice(0, 5),
         ce = async () => {
             await Promise.all([t.invalidateQueries({
                 queryKey: ["fixedExpenses"]
@@ -75125,7 +75129,7 @@ function bIe() {
                                                         className: "space-y-2",
                                                         children: [
                                                             Se.slice(0, 3).map((K, J) => {
-                                                                const associatedBank = K.isCardBill && K.card ? banksList.find(b => b.id === K.card.banco_id) : null;
+                                                                const associatedBank = K.isCardBill && K.card && Array.isArray(banksList) ? banksList.find(bankObj => bankObj.id === K.card.banco_id) : null;
                                                                 return l.jsxs("div", {
                                                                     className: associatedBank ? `flex items-center justify-between p-3 rounded-xl hover:opacity-90 transition-all group` : "flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl",
                                                                     style: associatedBank ? { backgroundColor: associatedBank.cor_principal || "#3b82f6" } : {},
