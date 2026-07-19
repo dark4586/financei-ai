@@ -75871,6 +75871,7 @@ function bIe() {
                                         let et = K.vencimento - ve;
                                         et < 0 && (et = new Date(new Date().getFullYear(), new Date().getMonth() + 1, 0).getDate() - ve + K.vencimento);
                                         const ht = et <= 3;
+                                        const associatedBank = K.isCardBill && K.card && Array.isArray(banksList) ? banksList.find(bankObj => bankObj.id === K.card.banco_id) : null;
                                         return l.jsx(Be.div, {
                                             initial: {
                                                 opacity: 0,
