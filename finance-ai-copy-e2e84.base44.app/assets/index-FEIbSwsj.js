@@ -71120,7 +71120,7 @@ function DespesasHistory({
                             children: ["R$ ", i.valor.toLocaleString("pt-BR", {
                                 minimumFractionDigits: 2
                             })]
-                        }), l.jsxs("div", {
+                        }), !i.isCardBill && l.jsxs("div", {
                             className: "flex items-center gap-1 flex-wrap justify-end",
                             children: [l.jsx(xe, {
                                 variant: "ghost",
@@ -71499,89 +71499,106 @@ function uIe() {
                             children: "📋 Despesas do Mês"
                         }), l.jsxs("div", {
                             className: "space-y-3",
-                            children: [s.filter(S => {
-                                const isPaid = isFixedExpensePaidInMonth(S, selectedMonth);
-                                const isCreated = isItemCreatedBeforeOrInMonth(S, selectedMonth);
-                                if (!isCreated) return false;
-                                if (!S.ativa) return true;
-                                if (!S.mes_referencia) return true;
-                                return !isPaid;
-                            }).map(S => l.jsxs("div", {
-                                className: `p-4 rounded-lg transition-colors ${S.ativa?"bg-[#2a2a2a] hover:bg-[#333333]":"bg-[#1a1a1a] opacity-60"}`,
-                                children: [l.jsxs("div", {
-                                    className: "flex items-start justify-between gap-2 mb-2",
-                                    children: [l.jsxs("div", {
-                                        className: "flex-1 min-w-0",
-                                        children: [l.jsx("h4", {
-                                            className: "font-semibold text-white truncate",
-                                            children: S.nome
-                                        }), l.jsxs("p", {
-                                            className: "text-sm text-gray-400",
-                                            children: ["📅 Dia ", S.dia_vencimento]
-                                        })]
-                                    }), l.jsxs("div", {
-                                        className: "flex items-center gap-1 flex-shrink-0",
-                                        children: [l.jsx(xe, {
-                                            variant: "ghost",
-                                            size: "icon",
-                                            onClick: () => w(S),
-                                            className: "text-gray-400 hover:text-white hover:bg-[#404040] w-8 h-8",
-                                            children: l.jsx(Oa, {
-                                                className: "w-4 h-4"
-                                            })
-                                        }), l.jsx(xe, {
-                                            variant: "ghost",
-                                            size: "icon",
-                                            onClick: () => p.mutate(S.id),
-                                            className: "text-red-400 hover:text-red-300 hover:bg-red-500/10 w-8 h-8",
-                                            children: l.jsx(fr, {
-                                                className: "w-4 h-4"
-                                            })
-                                        })]
-                                    })]
-                                }), l.jsxs("div", {
-                                    className: "flex items-center justify-between gap-2 flex-wrap",
-                                    children: [l.jsxs("div", {
-                                        className: "flex items-center gap-1 flex-wrap",
-                                        children: [l.jsx("span", {
-                                            className: "text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded",
-                                            children: N[S.categoria] || "Categoria"
-                                        }), isFixedExpensePaidInMonth(S, selectedMonth) && l.jsx("span", {
-                                            className: "text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded",
-                                            children: "✅ Pago"
-                                        }), !isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa && l.jsx("span", {
-                                            className: "text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded",
-                                            children: "⏳ Pendente"
-                                        }), !S.ativa && l.jsx("span", {
-                                            className: "text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded",
-                                            children: "❌ Inativa"
-                                        })]
-                                    }), l.jsxs("div", {
-                                        className: "flex items-center gap-2",
-                                        children: [l.jsxs("span", {
-                                            className: "text-base font-bold text-red-400",
-                                            children: ["R$ ", S.valor.toLocaleString("pt-BR", {
-                                                minimumFractionDigits: 2
+                            children: [(() => {
+                                const displayUnpaid = [
+                                    ...s.filter(S => {
+                                        const isPaid = isFixedExpensePaidInMonth(S, selectedMonth);
+                                        const isCreated = isItemCreatedBeforeOrInMonth(S, selectedMonth);
+                                        if (!isCreated) return false;
+                                        if (!S.ativa) return true;
+                                        if (!S.mes_referencia) return true;
+                                        return !isPaid;
+                                    }),
+                                    ...unpaidCardBills
+                                ];
+                                return l.jsxs(l.Fragment, {
+                                    children: [
+                                        displayUnpaid.map(S => l.jsxs("div", {
+                                            className: `p-4 rounded-lg transition-colors ${S.isCardBill || S.ativa?"bg-[#2a2a2a] hover:bg-[#333333]":"bg-[#1a1a1a] opacity-60"}`,
+                                            children: [l.jsxs("div", {
+                                                className: "flex items-start justify-between gap-2 mb-2",
+                                                children: [l.jsxs("div", {
+                                                    className: "flex-1 min-w-0",
+                                                    children: [l.jsx("h4", {
+                                                        className: "font-semibold text-white truncate",
+                                                        children: S.nome
+                                                    }), l.jsxs("p", {
+                                                        className: "text-sm text-gray-400",
+                                                        children: ["📅 Dia ", S.dia_vencimento]
+                                                    })]
+                                                }), !S.isCardBill && l.jsxs("div", {
+                                                    className: "flex items-center gap-1 flex-shrink-0",
+                                                    children: [l.jsx(xe, {
+                                                        variant: "ghost",
+                                                        size: "icon",
+                                                        onClick: () => w(S),
+                                                        className: "text-gray-400 hover:text-white hover:bg-[#404040] w-8 h-8",
+                                                        children: l.jsx(Oa, {
+                                                            className: "w-4 h-4"
+                                                        })
+                                                    }), l.jsx(xe, {
+                                                        variant: "ghost",
+                                                        size: "icon",
+                                                        onClick: () => p.mutate(S.id),
+                                                        className: "text-red-400 hover:text-red-300 hover:bg-red-500/10 w-8 h-8",
+                                                        children: l.jsx(fr, {
+                                                            className: "w-4 h-4"
+                                                        })
+                                                    })]
+                                                })]
+                                            }), l.jsxs("div", {
+                                                className: "flex items-center justify-between gap-2 flex-wrap",
+                                                children: [l.jsxs("div", {
+                                                    className: "flex items-center gap-1 flex-wrap",
+                                                    children: [l.jsx("span", {
+                                                        className: "text-xs bg-gray-500/20 text-gray-400 px-2 py-0.5 rounded",
+                                                        children: N[S.categoria] || "Categoria"
+                                                    }), (S.isCardBill ? false : isFixedExpensePaidInMonth(S, selectedMonth)) && l.jsx("span", {
+                                                        className: "text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded",
+                                                        children: "✅ Pago"
+                                                    }), (!S.isCardBill && !isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa) && l.jsx("span", {
+                                                        className: "text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded",
+                                                        children: "⏳ Pendente"
+                                                    }), S.isCardBill && l.jsx("span", {
+                                                        className: "text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded",
+                                                        children: "⏳ Pendente"
+                                                    }), (!S.isCardBill && !S.ativa) && l.jsx("span", {
+                                                        className: "text-xs bg-red-500/20 text-red-400 px-2 py-0.5 rounded",
+                                                        children: "❌ Inativa"
+                                                    })]
+                                                }), l.jsxs("div", {
+                                                    className: "flex items-center gap-2",
+                                                    children: [l.jsxs("span", {
+                                                        className: "text-base font-bold text-red-400",
+                                                        children: ["R$ ", S.valor.toLocaleString("pt-BR", {
+                                                            minimumFractionDigits: 2
+                                                        })]
+                                                    }), (S.isCardBill ? true : (!isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa)) && l.jsxs(xe, {
+                                                        variant: "ghost",
+                                                        size: "sm",
+                                                        onClick: () => S.isCardBill ? xCard(S) : x(S),
+                                                        className: "text-green-400 hover:text-green-300 hover:bg-green-500/10 h-7 px-2 text-xs",
+                                                        children: [l.jsx(Pa, {
+                                                            className: "w-3 h-3 mr-1"
+                                                        }), "Pagar"]
+                                                    })]
+                                                })]
                                             })]
-                                        }), !isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa && l.jsxs(xe, {
-                                            variant: "ghost",
-                                            size: "sm",
-                                            onClick: () => x(S),
-                                            className: "text-green-400 hover:text-green-300 hover:bg-green-500/10 h-7 px-2 text-xs",
-                                            children: [l.jsx(Pa, {
-                                                className: "w-3 h-3 mr-1"
-                                            }), "Pagar"]
-                                        })]
-                                    })]
-                                })]
-                            }, S.id)), s.length === 0 && l.jsx("div", {
-                                className: "text-center py-12 text-gray-500",
-                                children: "📭 Nenhuma despesa cadastrada ainda"
-                            })]
+                                        }, S.id)),
+                                        displayUnpaid.length === 0 && l.jsx("div", {
+                                            className: "text-center py-12 text-gray-500",
+                                            children: "📭 Nenhuma despesa cadastrada ainda"
+                                        })
+                                    ]
+                                });
+                            })()]
                         })]
                     })
                 }), l.jsx(DespesasHistory, {
-                    expenses: s.filter(S => isFixedExpensePaidInMonth(S, selectedMonth) && isItemCreatedBeforeOrInMonth(S, selectedMonth)),
+                    expenses: [
+                        ...s.filter(S => isFixedExpensePaidInMonth(S, selectedMonth) && isItemCreatedBeforeOrInMonth(S, selectedMonth)),
+                        ...paidCardBills
+                    ],
                     onEdit: w,
                     onDelete: S => p.mutate(S),
                     selectedMonth: selectedMonth,
@@ -74217,6 +74234,12 @@ function bIe() {
         queryKey: ["loans"],
         queryFn: () => se.entities.Loan.list(),
         staleTime: 3e4
+    }), {
+        data: banksList = []
+    } = Ve({
+        queryKey: ["banks"],
+        queryFn: () => se.entities.Bank.list(),
+        staleTime: 3e4
     }), O = new Date().getDate(), P = v.filter(K => {
     var ht;
     const J = (((ht = K.mes_referencia) == null ? void 0 : ht.includes(S)) || K.recorrente || K.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(K, S);
@@ -74415,7 +74438,7 @@ function bIe() {
             }
         };
         w.length > 0 || x.length > 0 || v.length > 0 || b.length > 0 || j.length > 0 || N.length > 0 ? K() : i(!1)
-    }, [w, x, v, b, j, N, z, D, H, F, X, M, $, G, U, f, O, S]);
+    }, [w, x, v, b, j, N, z, D, H, F, X, M, $, G, U, f, O, S, banksList]);
     const pe = w.reduce((K, J) => {
         if (!J.ativa) return K;
         const ve = J.categoria || "outros";
@@ -74479,6 +74502,17 @@ function bIe() {
             valor: K.valor_parcela,
             vencimento: K.dia_vencimento || 5,
             tipo: "Dívida"
+        })), ...N.filter(K => {
+            const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
+                ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
+            return K.ativo && (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
+        }).map(K => ({
+            nome: `Fatura ${K.nome}`,
+            valor: K.valor_fatura_atual,
+            vencimento: K.dia_vencimento || 10,
+            tipo: "Cartão",
+            isCardBill: true,
+            card: K
         }))].sort((K, J) => K.vencimento - J.vencimento).slice(0, 5),
         ce = async () => {
             await Promise.all([t.invalidateQueries({
@@ -75090,18 +75124,38 @@ function bIe() {
                                                     l.jsxs("div", {
                                                         className: "space-y-2",
                                                         children: [
-                                                            Se.slice(0, 3).map((K, J) => l.jsxs("div", {
-                                                                className: "flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl",
-                                                                children: [
-                                                                    l.jsxs("div", {
-                                                                        children: [
-                                                                            l.jsx("p", { className: "text-white text-sm font-medium", children: K.nome }),
-                                                                            l.jsxs("p", { className: "text-xs text-gray-500", children: [`Vence dia ${K.vencimento} · ${K.tipo}`] })
-                                                                        ]
-                                                                    }),
-                                                                    l.jsxs("p", { className: "text-white text-sm font-semibold", children: ["R$ ", K.valor.toLocaleString("pt-BR")] })
-                                                                ]
-                                                            }, J)),
+                                                            Se.slice(0, 3).map((K, J) => {
+                                                                const associatedBank = K.isCardBill && K.card ? banksList.find(b => b.id === K.card.banco_id) : null;
+                                                                return l.jsxs("div", {
+                                                                    className: associatedBank ? `flex items-center justify-between p-3 rounded-xl hover:opacity-90 transition-all group` : "flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl",
+                                                                    style: associatedBank ? { backgroundColor: associatedBank.cor_principal || "#3b82f6" } : {},
+                                                                    children: [
+                                                                        l.jsxs("div", {
+                                                                            className: "flex items-center gap-3",
+                                                                            children: [
+                                                                                associatedBank && l.jsx("div", {
+                                                                                    className: "w-8 h-8 rounded-lg flex items-center justify-center",
+                                                                                    style: { backgroundColor: "rgba(255,255,255,0.15)" },
+                                                                                    children: associatedBank.logo_url ? l.jsx("img", {
+                                                                                        src: associatedBank.logo_url,
+                                                                                        alt: associatedBank.nome,
+                                                                                        className: "w-8 h-8 rounded-lg object-contain p-1"
+                                                                                    }) : l.jsx(ii, {
+                                                                                        className: "w-4 h-4 text-white"
+                                                                                    })
+                                                                                }),
+                                                                                l.jsxs("div", {
+                                                                                    children: [
+                                                                                        l.jsx("p", { className: "text-white text-sm font-medium", children: K.nome }),
+                                                                                        l.jsxs("p", { className: associatedBank ? "text-white/70 text-xs" : "text-xs text-gray-500", children: [`Vence dia ${K.vencimento} · ${K.tipo}`] })
+                                                                                    ]
+                                                                                })
+                                                                            ]
+                                                                        }),
+                                                                        l.jsxs("p", { className: "text-white text-sm font-semibold", children: ["R$ ", K.valor.toLocaleString("pt-BR", { minimumFractionDigits: 2 })] })
+                                                                    ]
+                                                                }, J);
+                                                            }),
                                                             Se.length === 0 && l.jsx("p", { className: "text-xs text-gray-500 py-4 text-center", children: "Nenhuma conta pendente para este mês" })
                                                         ]
                                                     })
@@ -75830,32 +75884,37 @@ function bIe() {
                                                 children: [l.jsx(ru, {
                                                     asChild: !0,
                                                     children: l.jsxs("div", {
-                                                        className: `flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl cursor-pointer hover:bg-[#333] transition-colors group ${ht?"ring-1 ring-red-500/30":""}`,
+                                                        className: associatedBank ? `flex items-center justify-between p-3 rounded-xl cursor-pointer hover:opacity-90 transition-all group ${ht?"ring-1 ring-white/40":""}` : `flex items-center justify-between p-3 bg-[#2a2a2a] rounded-xl cursor-pointer hover:bg-[#333] transition-colors group ${ht?"ring-1 ring-red-500/30":""}`,
+                                                        style: associatedBank ? { backgroundColor: associatedBank.cor_principal || "#3b82f6" } : {},
                                                         children: [l.jsxs("div", {
                                                             className: "flex items-center gap-3",
                                                             children: [l.jsx("div", {
-                                                                className: `w-8 h-8 rounded-lg flex items-center justify-center ${ht?"bg-red-500/20":"bg-blue-500/20"}`,
-                                                                children: l.jsx(ii, {
-                                                                    className: `w-4 h-4 ${ht?"text-red-400":"text-blue-400"}`
+                                                                className: associatedBank ? "w-8 h-8 rounded-lg flex items-center justify-center bg-white/20" : `w-8 h-8 rounded-lg flex items-center justify-center ${ht?"bg-red-500/20":"bg-blue-500/20"}`,
+                                                                children: associatedBank && associatedBank.logo_url ? l.jsx("img", {
+                                                                    src: associatedBank.logo_url,
+                                                                    alt: associatedBank.nome,
+                                                                    className: "w-8 h-8 rounded-lg object-contain p-1"
+                                                                }) : l.jsx(ii, {
+                                                                    className: `w-4 h-4 ${associatedBank ? "text-white" : (ht?"text-red-400":"text-blue-400")}`
                                                                 })
                                                             }), l.jsxs("div", {
                                                                 children: [l.jsx("p", {
                                                                     className: "text-white text-sm font-medium",
                                                                     children: K.nome
                                                                 }), l.jsxs("p", {
-                                                                    className: "text-xs text-gray-500",
+                                                                    className: associatedBank ? "text-white/70 text-xs" : "text-xs text-gray-500",
                                                                     children: [K.tipo, " · Dia ", K.vencimento]
                                                                 })]
                                                             })]
                                                         }), l.jsxs("div", {
                                                             className: "text-right",
                                                             children: [l.jsxs("p", {
-                                                                className: `font-semibold text-sm ${ht?"text-red-400":"text-gray-300"}`,
+                                                                className: associatedBank ? "font-semibold text-sm text-white" : `font-semibold text-sm ${ht?"text-red-400":"text-gray-300"}`,
                                                                 children: ["R$ ", K.valor.toLocaleString("pt-BR", {
                                                                     minimumFractionDigits: 2
                                                                 })]
                                                             }), l.jsx("p", {
-                                                                className: "text-xs text-gray-600",
+                                                                className: associatedBank ? "text-xs text-white/80" : "text-xs text-gray-600",
                                                                 children: et === 0 ? "Hoje!" : `${et}d`
                                                             })]
                                                         })]
