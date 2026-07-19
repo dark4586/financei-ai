@@ -71193,6 +71193,17 @@ function uIe() {
     } = Ve({
         queryKey: ["banks"],
         queryFn: () => se.entities.Bank.list()
+    }), {
+        data: creditCardsList = []
+    } = Ve({
+        queryKey: ["creditCards"],
+        queryFn: () => se.entities.CreditCard.list()
+    }), updateCardMutation = st({
+        mutationFn: ({ id: S, data: E }) => se.entities.CreditCard.update(S, E),
+        onSuccess: () => {
+            o.invalidateQueries({ queryKey: ["creditCards"] });
+            o.invalidateQueries({ queryKey: ["banks"] });
+        }
     }), d = st({
         mutationFn: S => se.entities.FixedExpense.create(S),
         onMutate: async S => {
@@ -71301,34 +71312,81 @@ function uIe() {
                 pagamentos: pags
             }
         })
-    }, v = s.filter(S => S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).reduce((S, E) => S + (E.valor || 0), 0);
-    s.filter(S => S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length;
-    const b = s.filter(S => isFixedExpensePaidInMonth(S, selectedMonth) && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length,
-        j = s.filter(S => !isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length,
-        N = {
-            aluguel: "Aluguel",
-            condominio: "Condomínio",
-            iptu: "IPTU",
-            energia: "Energia Elétrica",
-            agua: "Água",
-            gas: "Gás",
-            internet: "Internet",
-            telefone: "Telefone",
-            tv_streaming: "TV/Streaming",
-            plano_saude: "Plano de Saúde",
-            seguro_carro: "Seguro Carro",
-            seguro_residencial: "Seguro Residencial",
-            academia: "Academia",
-            escola: "Escola",
-            faculdade: "Faculdade",
-            transporte_publico: "Transporte Público",
-            combustivel: "Combustível",
-            estacionamento: "Estacionamento",
-            empregada: "Empregada",
-            supermercado: "Supermercado",
-            outros: "Outros"
-        },
-        k = C.useCallback(async () => {
+    };
+    const unpaidCardBills = creditCardsList.filter(card => {
+        const isCreated = isItemCreatedBeforeOrInMonth(card, selectedMonth);
+        return isCreated && (card.valor_fatura_atual || 0) > 0;
+    }).map(card => ({
+        ...card,
+        isCardBill: true,
+        nome: `Fatura Cartão: ${card.nome}`,
+        categoria: "cartao_credito",
+        valor: card.valor_fatura_atual,
+        dia_vencimento: card.dia_vencimento
+    }));
+    const paidCardBills = creditCardsList.filter(card => {
+        return card.ultimo_pagamento && card.ultimo_pagamento.substring(0, 7) === selectedMonth;
+    }).map(card => ({
+        ...card,
+        isCardBill: true,
+        nome: `Fatura Cartão: ${card.nome}`,
+        categoria: "cartao_credito",
+        valor: card.valor_ultimo_pagamento || 0,
+        dia_vencimento: card.dia_vencimento
+    }));
+    const xCard = async card => {
+        const todayStr = tt(new Date(), "yyyy-MM-dd");
+        const amount = card.valor_fatura_atual || 0;
+        if (card.banco_debito_id) {
+            const bank = c.find(b => b.id === card.banco_debito_id);
+            if (bank) {
+                await se.entities.Bank.update(bank.id, {
+                    ...bank,
+                    saldo_atual: (bank.saldo_atual || 0) - amount
+                });
+                o.invalidateQueries({ queryKey: ["banks"] });
+            }
+        }
+        await updateCardMutation.mutateAsync({
+            id: card.id,
+            data: {
+                ...card,
+                valor_ultimo_pagamento: amount,
+                ultimo_pagamento: todayStr,
+                valor_fatura_atual: 0,
+                limite_disponivel: card.limite_total,
+                status: "paga"
+            }
+        });
+    };
+    const v = s.filter(S => S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).reduce((S, E) => S + (E.valor || 0), 0) + [...unpaidCardBills, ...paidCardBills].reduce((sum, item) => sum + (item.valor || 0), 0);
+    const b = s.filter(S => isFixedExpensePaidInMonth(S, selectedMonth) && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length + paidCardBills.length;
+    const j = s.filter(S => !isFixedExpensePaidInMonth(S, selectedMonth) && S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length + unpaidCardBills.length;
+    const N = {
+        aluguel: "Aluguel",
+        condominio: "Condomínio",
+        iptu: "IPTU",
+        energia: "Energia Elétrica",
+        agua: "Água",
+        gas: "Gás",
+        internet: "Internet",
+        telefone: "Telefone",
+        tv_streaming: "TV/Streaming",
+        plano_saude: "Plano de Saúde",
+        seguro_carro: "Seguro Carro",
+        seguro_residencial: "Seguro Residencial",
+        academia: "Academia",
+        escola: "Escola",
+        faculdade: "Faculdade",
+        transporte_publico: "Transporte Público",
+        combustivel: "Combustível",
+        estacionamento: "Estacionamento",
+        empregada: "Empregada",
+        supermercado: "Supermercado",
+        cartao_credito: "💳 Cartão de Crédito",
+        outros: "Outros"
+    };
+    const k = C.useCallback(async () => {
             await o.invalidateQueries({
                 queryKey: ["fixedExpenses"]
             })
@@ -75551,11 +75609,12 @@ function bIe() {
                             })]
                         })
 }), l.jsxs("div", {
-    className: "dashboard-grid grid grid-cols-2 gap-4 md:gap-5",
+    className: "dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5",
     children: [l.jsxs("div", {
-        className: "dashboard-col-1 space-y-5",
+        className: "dashboard-col-1 contents md:block md:space-y-5",
         children: [
             l.jsx(Be.div, {
+                            className: "order-1 md:order-none",
                             custom: 5,
                             variants: qe,
                             initial: "hidden",
@@ -75613,6 +75672,7 @@ function bIe() {
                             })
 }),
             l.jsx(Be.div, {
+                            className: "order-4 md:order-none",
                             custom: 7,
                             variants: qe,
                             initial: "hidden",
@@ -75728,9 +75788,10 @@ function bIe() {
 })
         ]
     }), l.jsxs("div", {
-        className: "dashboard-col-2 space-y-5",
+        className: "dashboard-col-2 contents md:block md:space-y-5",
         children: [
             l.jsx(Be.div, {
+                            className: "order-2 md:order-none",
                             custom: 6,
                             variants: qe,
                             initial: "hidden",
@@ -75825,6 +75886,7 @@ function bIe() {
                             })
 }),
             l.jsx(Be.div, {
+                            className: "order-3 md:order-none",
                             custom: 8,
                             variants: qe,
                             initial: "hidden",
