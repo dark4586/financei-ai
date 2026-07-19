@@ -70105,9 +70105,9 @@ function cIe() {
         let objectUrl = "";
         if (G && G.screensaver_music_url) {
             if (G.screensaver_music_url === "indexeddb_saved") {
-                loadMediaFromIndexedDB("screensaver_music").then(base64 => {
-                    if (active && base64) {
-                        const url = base64ToBlobUrl(base64);
+                loadMediaFromIndexedDB("screensaver_music").then(blob => {
+                    if (active && blob) {
+                        const url = URL.createObjectURL(blob);
                         objectUrl = url;
                         setMusicUrlSrc(url);
                     }
@@ -70120,7 +70120,7 @@ function cIe() {
         }
         return () => {
             active = false;
-            if (objectUrl && objectUrl.startsWith("blob:")) {
+            if (objectUrl) {
                 URL.revokeObjectURL(objectUrl);
             }
         };
@@ -70130,9 +70130,9 @@ function cIe() {
         let objectUrl = "";
         if (G && G.screensaver_background_url) {
             if (G.screensaver_background_url === "indexeddb_saved") {
-                loadMediaFromIndexedDB("screensaver_background").then(base64 => {
-                    if (active && base64) {
-                        const url = base64ToBlobUrl(base64);
+                loadMediaFromIndexedDB("screensaver_background").then(blob => {
+                    if (active && blob) {
+                        const url = URL.createObjectURL(blob);
                         objectUrl = url;
                         setBgUrlSrc(url);
                     }
@@ -70145,7 +70145,7 @@ function cIe() {
         }
         return () => {
             active = false;
-            if (objectUrl && objectUrl.startsWith("blob:")) {
+            if (objectUrl) {
                 URL.revokeObjectURL(objectUrl);
             }
         };
@@ -70200,24 +70200,19 @@ function cIe() {
             if (J) {
                 a(!0);
                 try {
-                    const reader = new FileReader();
-                    reader.onloadend = async () => {
-                        const base64Url = reader.result;
-                        const et = J.type.startsWith("video/");
-                        await saveMediaToIndexedDB("screensaver_background", base64Url);
-                        await le({
-                            screensaver_background_url: "indexeddb_saved",
-                            screensaver_background_type: et ? "video" : "image"
-                        });
-                        a(!1);
-                    };
-                    reader.onerror = () => {
-                        console.error("Erro ao ler o arquivo");
-                        a(!1);
-                    };
-                    reader.readAsDataURL(J);
+                    const et = J.type.startsWith("video/");
+                    await saveMediaToIndexedDB("screensaver_background", J);
+                    if (bgUrlSrc && bgUrlSrc.startsWith("blob:")) {
+                        URL.revokeObjectURL(bgUrlSrc);
+                    }
+                    setBgUrlSrc(URL.createObjectURL(J));
+                    await le({
+                        screensaver_background_url: "indexeddb_saved",
+                        screensaver_background_type: et ? "video" : "image"
+                    });
+                    a(!1);
                 } catch (ve) {
-                    console.error("Erro no upload/leitura:", ve);
+                    console.error("Erro no upload do plano de fundo:", ve);
                     a(!1);
                 }
             }
@@ -70227,20 +70222,15 @@ function cIe() {
             if (J) {
                 o(!0);
                 try {
-                    const reader = new FileReader();
-                    reader.onloadend = async () => {
-                        const base64Url = reader.result;
-                        await saveMediaToIndexedDB("screensaver_music", base64Url);
-                        await le({
-                            screensaver_music_url: "indexeddb_saved"
-                        });
-                        o(!1);
-                    };
-                    reader.onerror = () => {
-                        console.error("Erro ao ler o arquivo de música");
-                        o(!1);
-                    };
-                    reader.readAsDataURL(J);
+                    await saveMediaToIndexedDB("screensaver_music", J);
+                    if (musicUrlSrc && musicUrlSrc.startsWith("blob:")) {
+                        URL.revokeObjectURL(musicUrlSrc);
+                    }
+                    setMusicUrlSrc(URL.createObjectURL(J));
+                    await le({
+                        screensaver_music_url: "indexeddb_saved"
+                    });
+                    o(!1);
                 } catch (ve) {
                     console.error("Erro ao processar música:", ve);
                     o(!1);
@@ -70935,6 +70925,10 @@ function cIe() {
                                             bgUrlSrc && l.jsx(xe, {
                                                 onClick: () => {
                                                     saveMediaToIndexedDB("screensaver_background", null);
+                                                    if (bgUrlSrc && bgUrlSrc.startsWith("blob:")) {
+                                                        URL.revokeObjectURL(bgUrlSrc);
+                                                    }
+                                                    setBgUrlSrc("");
                                                     le({
                                                         screensaver_background_url: "",
                                                         screensaver_background_type: ""
@@ -70971,6 +70965,10 @@ function cIe() {
                                             musicUrlSrc && l.jsx(xe, {
                                                 onClick: () => {
                                                     saveMediaToIndexedDB("screensaver_music", null);
+                                                    if (musicUrlSrc && musicUrlSrc.startsWith("blob:")) {
+                                                        URL.revokeObjectURL(musicUrlSrc);
+                                                    }
+                                                    setMusicUrlSrc("");
                                                     le({
                                                         screensaver_music_url: ""
                                                     });
@@ -77778,13 +77776,13 @@ const loadAvatarFromIndexedDB = async () => {
     }
 };
 
-const saveMediaToIndexedDB = async (key, base64Data) => {
+const saveMediaToIndexedDB = async (key, blobOrFile) => {
     try {
         const db = await initIndexedDB();
         return new Promise((resolve, reject) => {
             const transaction = db.transaction("profile", "readwrite");
             const store = transaction.objectStore("profile");
-            const putReq = store.put(base64Data, key);
+            const putReq = store.put(blobOrFile, key);
             putReq.onsuccess = () => resolve(true);
             putReq.onerror = e => reject(e.target.error);
         });
@@ -80555,7 +80553,7 @@ function A$e({
         let objectUrl = "";
         if (t && t.screensaver_background_url) {
             if (t.screensaver_background_url === "indexeddb_saved") {
-                getMediaFromIndexedDB("screensaver_background").then(blob => {
+                loadMediaFromIndexedDB("screensaver_background").then(blob => {
                     if (active && blob) {
                         objectUrl = URL.createObjectURL(blob);
                         setBgUrlSrc(objectUrl);
@@ -80579,7 +80577,7 @@ function A$e({
         let objectUrl = "";
         if (t && t.screensaver_music_url) {
             if (t.screensaver_music_url === "indexeddb_saved") {
-                getMediaFromIndexedDB("screensaver_music").then(blob => {
+                loadMediaFromIndexedDB("screensaver_music").then(blob => {
                     if (active && blob) {
                         objectUrl = URL.createObjectURL(blob);
                         setMusicUrlSrc(objectUrl);
@@ -80708,23 +80706,27 @@ function A$e({
             const L = new Audio(musicUrlSrc);
             L.loop = !0;
             L.volume = (t.music_volume ?? 50) / 100;
+            let clickHandler = null;
             (async () => {
                 try {
                     await L.play(), console.log("Música tocando")
                 } catch (G) {
                     console.log("Autoplay bloqueado, aguardando interação:", G);
-                    const B = () => {
-                        L.play().catch(ie => console.log("Erro ao tocar:", ie)), document.removeEventListener("click", B)
+                    clickHandler = () => {
+                        L.play().catch(ie => console.log("Erro ao tocar:", ie));
                     };
-                    document.addEventListener("click", B, {
+                    document.addEventListener("click", clickHandler, {
                         once: !0
-                    })
+                    });
                 }
             })();
             s(L);
             return () => {
                 L.pause();
                 L.src = "";
+                if (clickHandler) {
+                    document.removeEventListener("click", clickHandler);
+                }
             }
         }
     }, [musicUrlSrc]);
