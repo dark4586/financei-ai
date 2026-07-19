@@ -75456,19 +75456,19 @@ function bIe() {
                                         children: "Cálculo do Saldo"
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["✅ Receitas (X): R$ ", formatBRL(X)]
+                                        children: ["✅ Receitas: R$ ", formatBRL(X)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["❌ Despesas (L): R$ ", formatBRL(L)]
+                                        children: ["❌ Despesas: R$ ", formatBRL(L)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["📈 Aporte Recorrente (W): R$ ", formatBRL(W)]
+                                        children: ["📈 Aporte Recorrente: R$ ", formatBRL(W)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["📅 Aporte Agendado (sched): R$ ", formatBRL(scheduledAportesVal)]
+                                        children: ["📅 Aporte Agendado: R$ ", formatBRL(scheduledAportesVal)]
                                     }), l.jsxs("p", {
                                         className: "text-gray-300",
-                                        children: ["🚀 Investimento Inicial (init): R$ ", formatBRL(initialInvestmentsVal)]
+                                        children: ["🚀 Investimento Inicial: R$ ", formatBRL(initialInvestmentsVal)]
                                     }), l.jsxs("p", {
                                         className: `${(z - scheduledAportesVal - initialInvestmentsVal)>=0?"text-green-400":"text-red-400"} font-semibold pt-1 border-t border-white/10`,
                                         children: ["Saldo Livre: R$ ", formatBRL(z - scheduledAportesVal - initialInvestmentsVal)]
