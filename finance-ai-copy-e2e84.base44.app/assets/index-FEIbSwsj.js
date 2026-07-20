@@ -14088,35 +14088,12 @@ const {
         if (!serverEntity) return mte(t);
         return {
             async list(sort, limit) {
-                try {
-                    const serverItems = await serverEntity.list(sort, limit);
-                    if (Array.isArray(serverItems)) {
-                        localStorage.setItem("financeai_" + t, JSON.stringify(serverItems));
-                        return serverItems;
-                    }
-                } catch (err) {
-                    console.error(`[Proxy list] Failed to fetch list from server for ${t}, falling back to local:`, err);
-                }
                 return mte(t).list(sort, limit);
             },
             async filter(query, sort, limit) {
-                try {
-                    const serverItems = await serverEntity.list(sort, limit);
-                    if (Array.isArray(serverItems)) {
-                        localStorage.setItem("financeai_" + t, JSON.stringify(serverItems));
-                    }
-                } catch (err) {
-                    console.error(`[Proxy filter] Failed to sync list on filter for ${t}:`, err);
-                }
                 return mte(t).filter(query, sort, limit);
             },
             async get(id) {
-                try {
-                    const serverItem = await serverEntity.get(id);
-                    if (serverItem) return serverItem;
-                } catch (err) {
-                    console.error(`[Proxy get] Failed to get item from server for ${t}, falling back to local:`, err);
-                }
                 return mte(t).get(id);
             },
             async create(item) {
