@@ -58757,16 +58757,20 @@ function YOe() {
         Z.preventDefault();
         const Pe = z.find(Zt => Zt.id === D.banco_id),
             Nt = z.find(Zt => Zt.id === D.banco_debito_id);
-        new Date().getFullYear(), parseInt(D.mes_vencimento) - 1, parseInt(D.dia_vencimento);
+        const cardYear = new Date().getFullYear();
+        const cardMonth = parseInt(D.mes_vencimento) || (new Date().getMonth() + 1);
+        const cardDay = parseInt(D.dia_vencimento) || 10;
+        const computedDataVencimento = `${cardYear}-${String(cardMonth).padStart(2, "0")}-${String(cardDay).padStart(2, "0")}`;
         const fn = { ...D,
             banco_nome: (Pe == null ? void 0 : Pe.nome) || "",
             banco_debito_nome: (Nt == null ? void 0 : Nt.nome) || "",
             limite_total: parseFloat(D.limite_total),
             limite_disponivel: parseFloat(D.limite_disponivel),
             valor_fatura_atual: parseFloat(D.valor_fatura_atual),
-            dia_vencimento: parseInt(D.dia_vencimento),
-            mes_vencimento: parseInt(D.mes_vencimento),
+            dia_vencimento: cardDay,
+            mes_vencimento: cardMonth,
             dia_fechamento: parseInt(D.dia_fechamento),
+            data_vencimento: computedDataVencimento,
             status: D.status || "aberta",
             ativo: D.ativo
         };
@@ -68263,7 +68267,7 @@ function N4e() {
             const goalVal = $.filter(J => J.status === "ativo" && isItemCreatedBeforeOrInMonth(J, monthKey)).reduce((J, ve) => J + (ve.economia_mensal || 0), 0);
             const investVal = I.filter(J => isItemCreatedBeforeOrInMonth(J, monthKey) && (!J.data_inicio || J.data_inicio.substring(0, 7) <= monthKey)).reduce((J, ve) => J + (ve.aporte_mensal || 0), 0);
             const cardVal = F.filter(J => {
-                const ve = J.data_vencimento ? new Date(J.data_vencimento) : null,
+                const ve = J.data_vencimento ? new Date(J.data_vencimento + "T12:00:00") : null,
                     et = ve && (ve.getMonth() + 1) === tMonth && ve.getFullYear() === tYear;
                 return (J.status === "aberta" || et) && (J.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(J, monthKey);
             }).reduce((J, ve) => J + (ve.valor_fatura_atual || 0), 0);
@@ -69797,6 +69801,7 @@ async function iIe() {
         valor_fatura_atual: 1500,
         dia_vencimento: 10,
         dia_fechamento: 3,
+        data_vencimento: `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}-10`,
         status: "aberta"
     }]), await se.entities.DebitCard.bulkCreate([{
         banco_id: r == null ? void 0 : r.id,
@@ -72966,7 +72971,7 @@ function xIe() {
                 L = d.filter(ae => ae.ativa && (!ae.mes_referencia || ae.mes_referencia.includes(V)) && isItemCreatedBeforeOrInMonth(ae, V)).reduce((ae, ge) => ae + ge.valor, 0),
                 z = f.reduce((ae, ge) => ae + getDebtInstallmentForMonth(ge, V), 0),
                 G = p.filter(ae => {
-                    const ge = ae.data_vencimento ? new Date(ae.data_vencimento) : null;
+                    const ge = ae.data_vencimento ? new Date(ae.data_vencimento + "T12:00:00") : null;
                     return ge ? tt(ge, "yyyy-MM") === V && (ae.valor_fatura_atual || 0) > 0 : !1
                 }).reduce((ae, ge) => ae + (ge.valor_fatura_atual || 0), 0),
                 B = m.filter(ae => ae.status === "ativo").reduce((ae, ge) => ae + (ge.economia_mensal || 0), 0),
@@ -73225,7 +73230,7 @@ function xIe() {
             const periodExpenses = d.filter(fe => fe.ativa && (!fe.mes_referencia || fe.mes_referencia.includes(V)) && isItemCreatedBeforeOrInMonth(fe, V));
             const periodDebts = f.filter(debt => getDebtInstallmentForMonth(debt, V) > 0);
             const periodCards = p.filter(card => {
-                const cardDate = card.data_vencimento ? new Date(card.data_vencimento) : null;
+                const cardDate = card.data_vencimento ? new Date(card.data_vencimento + "T12:00:00") : null;
                 return cardDate ? tt(cardDate, "yyyy-MM") === V && (card.valor_fatura_atual || 0) > 0 : !1;
             });
             return { incomes: periodIncomes, fixedExpenses: periodExpenses, debts: periodDebts, creditCards: periodCards };
@@ -74417,7 +74422,7 @@ function bIe() {
     }
     return K + (J.valor || 0)
 }, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + ((J.valor || 0) - (J.valor_recebido || 0)), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.filter(K => {
-    const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
+    const J = K.data_vencimento ? new Date(K.data_vencimento + "T12:00:00") : null,
         ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
     return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
 }).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), initialInvestmentsVal = b.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === S && isItemCreatedBeforeOrInMonth(K, S)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), totalAportadoNoMes = W + scheduledAportesVal + initialInvestmentsVal, U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V, z = X - L - W, _dbg = console.log("FINANCEAI DEBUG:", {X, L, W, scheduledAportesVal, initialInvestmentsVal, z, totalAportadoNoMes, U, S, b, scheduledList}), activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), ie = X === 0 ? z >= 0 ? {
@@ -74621,7 +74626,7 @@ function bIe() {
             pe[J] = (pe[J] || 0) + val;
         }
     }), N.filter(K => {
-        const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
+        const J = K.data_vencimento ? new Date(K.data_vencimento + "T12:00:00") : null,
             ve = J && J.getMonth() === new Date().getMonth() && J.getFullYear() === new Date().getFullYear();
         return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0
     }).forEach(K => {
@@ -74676,7 +74681,7 @@ function bIe() {
                 tipo: "Dívida"
             })),
             ...(Array.isArray(N) ? N : []).filter(K => {
-                const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
+                const J = K.data_vencimento ? new Date(K.data_vencimento + "T12:00:00") : null,
                     ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
                 return K.ativo && (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, S)
             }).map(K => ({
@@ -77415,8 +77420,19 @@ function _Ie() {
                     const E = x(S),
                         O = E / S.valor_alvo * 100,
                         P = S.valor_alvo - E,
-                        $ = $8(new Date(S.data_alvo), new Date),
-                        I = $ > 0 ? `${$} ${$===1?"mês":"meses"}` : "Vencido",
+                        $ = (() => {
+                            const targetDate = new Date(S.data_alvo + "T12:00:00");
+                            const today = new Date();
+                            today.setHours(0, 0, 0, 0);
+                            const tYear = targetDate.getFullYear();
+                            const tMonth = targetDate.getMonth();
+                            const curYear = today.getFullYear();
+                            const curMonth = today.getMonth();
+                            const diff = (tYear - curYear) * 12 + (tMonth - curMonth);
+                            if (targetDate.getTime() < today.getTime() && diff <= 0) return -1;
+                            return diff;
+                        })(),
+                        I = $ > 0 ? `${$} ${$===1?"mês":"meses"}` : $ === 0 ? "Este mês" : "Vencido",
                         M = c.find(R => R.id === S.investimento_vinculado_id);
                     return l.jsxs(Oe, {
                         className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
@@ -80717,7 +80733,7 @@ function A$e({
         const J = (((ht = K.mes_referencia) == null ? void 0 : ht.includes(x)) || K.recorrente || K.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(K, x);
         return J
     }).reduce((K, J) => J.tipo === "devedor" ? K + (J.valor_recebido || 0) : K + (J.valor || 0), 0), b = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), j = w.reduce((K, J) => K + Wv(J, x), 0), N = v + b + j, M_val = d.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(x)) && isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + J.valor, 0), S = f.reduce((K, J) => K + getDebtInstallmentForMonth(J, x), 0), getInvestedValueAsOfMonth = (cObj, monthStr) => { const val = cObj.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === cObj.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === x).reduce((sum, sd) => sum + sd.valor, 0), E = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, x), 0), O = m.filter(K => {
-        const J = K.data_vencimento ? new Date(K.data_vencimento) : null,
+        const J = K.data_vencimento ? new Date(K.data_vencimento + "T12:00:00") : null,
             ve = J && (J.getMonth() + 1) === selectedMonth && J.getFullYear() === selectedYear;
         return (K.status === "aberta" || ve) && (K.valor_fatura_atual || 0) > 0 && isItemCreatedBeforeOrInMonth(K, x)
     }).reduce((K, J) => K + (J.valor_fatura_atual || 0), 0), P = g.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, x)), $ = P.reduce((K, J) => K + (J.economia_mensal || 0), 0), I = p.filter(K => isItemCreatedBeforeOrInMonth(K, x) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= x)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), k = M_val + S + O + $ + I, M = N - k, initialInvestmentsVal = p.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === x && isItemCreatedBeforeOrInMonth(K, x)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), screensaverRealSaldoLivre = M - scheduledAportesVal - initialInvestmentsVal, R = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), F = f.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, x)), U = N === 0 ? M >= 0 ? {
