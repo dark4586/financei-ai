@@ -14078,34 +14078,110 @@ const {
     requiresAuth: !1
 }), _te = new Proxy({}, {
     get(e, t) {
-        if (Jv.includes(t)) return mte(t);
-        const originalEntity = eu.entities[t];
-        if (!originalEntity) return undefined;
-        return new Proxy(originalEntity, {
-            get(target, prop) {
-                const value = target[prop];
-                if (typeof value === "function") {
-                    if (["create", "update", "delete", "bulkCreate"].includes(prop)) {
-                        return async function(...args) {
-                            const res = await value.apply(target, args);
-                            (async () => {
-                                try {
-                                    const latestItems = await target.list();
-                                    if (Array.isArray(latestItems)) {
-                                        localStorage.setItem("financeai_" + t, JSON.stringify(latestItems));
-                                        console.log(`[Backup] Automatic local backup updated for ${t} (${latestItems.length} items)`);
-                                    }
-                                } catch (backupErr) {
-                                    console.error(`[Backup] Failed to auto-backup ${t}:`, backupErr);
-                                }
-                            })();
-                            return res;
-                        };
+        if (t === "Settings") {
+            return mte(t);
+        }
+        if (!Jv.includes(t)) {
+            return eu.entities[t];
+        }
+        const serverEntity = eu.entities[t];
+        if (!serverEntity) return mte(t);
+        return {
+            async list(sort, limit) {
+                try {
+                    const serverItems = await serverEntity.list(sort, limit);
+                    if (Array.isArray(serverItems)) {
+                        localStorage.setItem("financeai_" + t, JSON.stringify(serverItems));
+                        return serverItems;
                     }
+                } catch (err) {
+                    console.error(`[Proxy list] Failed to fetch list from server for ${t}, falling back to local:`, err);
                 }
-                return value;
+                return mte(t).list(sort, limit);
+            },
+            async filter(query, sort, limit) {
+                try {
+                    const serverItems = await serverEntity.list(sort, limit);
+                    if (Array.isArray(serverItems)) {
+                        localStorage.setItem("financeai_" + t, JSON.stringify(serverItems));
+                    }
+                } catch (err) {
+                    console.error(`[Proxy filter] Failed to sync list on filter for ${t}:`, err);
+                }
+                return mte(t).filter(query, sort, limit);
+            },
+            async get(id) {
+                try {
+                    const serverItem = await serverEntity.get(id);
+                    if (serverItem) return serverItem;
+                } catch (err) {
+                    console.error(`[Proxy get] Failed to get item from server for ${t}, falling back to local:`, err);
+                }
+                return mte(t).get(id);
+            },
+            async create(item) {
+                let serverRes = null;
+                try {
+                    serverRes = await serverEntity.create(item);
+                } catch (err) {
+                    console.error(`[Proxy create] Failed to create item on server for ${t}:`, err);
+                }
+                const localItem = { ...item };
+                if (serverRes && serverRes.id) {
+                    localItem.id = serverRes.id;
+                    localItem.created_date = serverRes.created_date || localItem.created_date;
+                    localItem.updated_date = serverRes.updated_date || localItem.updated_date;
+                }
+                const res = await mte(t).create(localItem);
+                return serverRes || res;
+            },
+            async bulkCreate(items) {
+                let serverRes = null;
+                try {
+                    serverRes = await serverEntity.bulkCreate(items);
+                } catch (err) {
+                    console.error(`[Proxy bulkCreate] Failed to bulkCreate on server for ${t}:`, err);
+                }
+                const res = await mte(t).bulkCreate(serverRes || items);
+                return serverRes || res;
+            },
+            async update(id, updates) {
+                let serverRes = null;
+                try {
+                    serverRes = await serverEntity.update(id, updates);
+                } catch (err) {
+                    console.error(`[Proxy update] Failed to update item on server for ${t}:`, err);
+                }
+                const res = await mte(t).update(id, updates);
+                return serverRes || res;
+            },
+            async delete(id) {
+                let serverRes = null;
+                try {
+                    serverRes = await serverEntity.delete(id);
+                } catch (err) {
+                    console.error(`[Proxy delete] Failed to delete item on server for ${t}:`, err);
+                }
+                const res = await mte(t).delete(id);
+                return serverRes || res;
+            },
+            async deleteMany(items) {
+                let serverRes = null;
+                try {
+                    serverRes = await serverEntity.deleteMany(items);
+                } catch (err) {
+                    console.error(`[Proxy deleteMany] Failed to deleteMany items on server for ${t}:`, err);
+                }
+                const res = await mte(t).deleteMany(items);
+                return serverRes || res;
+            },
+            schema() {
+                return mte(t).schema();
+            },
+            subscribe(callback) {
+                return mte(t).subscribe(callback);
             }
-        });
+        };
     }
 }), se = {
     entities: _te,
@@ -14147,8 +14223,8 @@ setTimeout(async () => {
                 const localItemsStrNormalized = JSON.stringify(localItems);
 
                 if (serverItemsStr !== localItemsStrNormalized || isImportPending) {
-                    if (localItems.length > 0) {
-                        console.log(`[Sync] Sincronizando servidor para ${ent} (Local: ${localItems.length} itens, Servidor: ${serverItems.length} itens)...`);
+                    if (isImportPending) {
+                        console.log(`[Sync] Import pending: Sincronizando servidor para ${ent} (Local: ${localItems.length} itens, Servidor: ${serverItems.length} itens)...`);
                         if (serverItems.length > 0) {
                             try {
                                 await eu.entities[ent].deleteMany([]);
@@ -14157,13 +14233,15 @@ setTimeout(async () => {
                             }
                         }
                         try {
-                            await eu.entities[ent].bulkCreate(localItems);
+                            if (localItems.length > 0) {
+                                await eu.entities[ent].bulkCreate(localItems);
+                            }
                             uploadedAny = true;
                         } catch (createErr) {
                             console.error(`[Sync] Erro ao enviar itens de ${ent} para o servidor:`, createErr);
                         }
-                    } else if (serverItems.length > 0) {
-                        console.log(`[Sync] Inicializando local storage para ${ent} com dados do servidor (${serverItems.length} itens)...`);
+                    } else {
+                        console.log(`[Sync] Sincronizando local storage para ${ent} com dados do servidor (${serverItems.length} itens)...`);
                         localStorage.setItem(localKey, serverItemsStr);
                         needsReload = true;
                     }
