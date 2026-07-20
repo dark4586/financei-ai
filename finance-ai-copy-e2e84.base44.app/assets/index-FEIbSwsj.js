@@ -14001,9 +14001,9 @@ function mte(e) {
         create(t) {
             const n = us(e),
                 r = { ...t,
-                    id: aD(),
-                    created_date: new Date().toISOString(),
-                    updated_date: new Date().toISOString()
+                    id: t.id || aD(),
+                    created_date: t.created_date || new Date().toISOString(),
+                    updated_date: t.updated_date || new Date().toISOString()
                 };
             return n.push(r), Zf(e, n), Promise.resolve(r)
         },
@@ -14011,9 +14011,9 @@ function mte(e) {
             const n = us(e),
                 r = new Date().toISOString(),
                 a = t.map(i => ({ ...i,
-                    id: aD(),
-                    created_date: r,
-                    updated_date: r
+                    id: i.id || aD(),
+                    created_date: i.created_date || r,
+                    updated_date: i.updated_date || r
                 }));
             return Zf(e, [...n, ...a]), Promise.resolve(a)
         },
@@ -14023,7 +14023,7 @@ function mte(e) {
             if (a === -1) return Promise.reject(new Error("Record not found"));
             const i = { ...r[a],
                 ...n,
-                updated_date: new Date().toISOString()
+                updated_date: n.updated_date || new Date().toISOString()
             };
             return r[a] = i, Zf(e, r), Promise.resolve(i)
         },
@@ -14152,7 +14152,7 @@ const {
                 } catch (err) {
                     console.error(`[Proxy update] Failed to update item on server for ${t}:`, err);
                 }
-                const res = await mte(t).update(id, updates);
+                const res = await mte(t).update(id, serverRes || updates);
                 return serverRes || res;
             },
             async delete(id) {
