@@ -69561,8 +69561,23 @@ function rIe() {
             }
             t(!1)
         }, s.readAsText(o), i.target.value = ""
-    }, a = () => {
-        gte(), window.location.reload()
+    }, a = async () => {
+        t(!0);
+        try {
+            const entitiesToClear = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
+            for (const ent of entitiesToClear) {
+                try {
+                    await se.entities[ent].deleteMany([]);
+                } catch (err) {
+                    console.error(`Error clearing ${ent} on server:`, err);
+                }
+            }
+        } catch (e) {
+            console.error("Error clearing server:", e);
+        }
+        gte();
+        t(!1);
+        window.location.reload();
     };
     return l.jsxs(Oe, {
         className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 space-y-4",
