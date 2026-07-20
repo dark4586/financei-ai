@@ -14200,6 +14200,18 @@ setTimeout(async () => {
         let uploadedAny = false;
         let needsReload = false;
 
+        const isDeepEqual = (o1, o2) => {
+            if (o1 === o2) return true;
+            if (typeof o1 !== 'object' || o1 === null || typeof o2 !== 'object' || o2 === null) return false;
+            const k1 = Object.keys(o1);
+            const k2 = Object.keys(o2);
+            if (k1.length !== k2.length) return false;
+            for (const key of k1) {
+                if (!isDeepEqual(o1[key], o2[key])) return false;
+            }
+            return true;
+        };
+
         for (const ent of entitiesToSync) {
             try {
                 const localKey = "financeai_" + ent;
@@ -14219,31 +14231,75 @@ setTimeout(async () => {
                 }
                 if (!Array.isArray(serverItems)) serverItems = [];
 
-                const serverItemsStr = JSON.stringify(serverItems);
-                const localItemsStrNormalized = JSON.stringify(localItems);
+                if (isImportPending) {
+                    console.log(`[Sync] Import pending: Sincronizando servidor para ${ent} (Local: ${localItems.length} itens, Servidor: ${serverItems.length} itens)...`);
+                    if (serverItems.length > 0) {
+                        try {
+                            await eu.entities[ent].deleteMany([]);
+                        } catch (delErr) {
+                            console.error(`[Sync] Erro ao deletar itens de ${ent} no servidor:`, delErr);
+                        }
+                    }
+                    try {
+                        if (localItems.length > 0) {
+                            await eu.entities[ent].bulkCreate(localItems);
+                        }
+                        uploadedAny = true;
+                    } catch (createErr) {
+                        console.error(`[Sync] Erro ao enviar itens de ${ent} para o servidor:`, createErr);
+                    }
+                } else {
+                    const localMap = new Map(localItems.map(item => [item.id, item]));
+                    const serverMap = new Map(serverItems.map(item => [item.id, item]));
+                    const allIds = new Set([...localMap.keys(), ...serverMap.keys()]);
+                    const mergedItems = [];
+                    let localChanged = false;
+                    let serverChanged = false;
 
-                if (serverItemsStr !== localItemsStrNormalized || isImportPending) {
-                    if (isImportPending) {
-                        console.log(`[Sync] Import pending: Sincronizando servidor para ${ent} (Local: ${localItems.length} itens, Servidor: ${serverItems.length} itens)...`);
-                        if (serverItems.length > 0) {
+                    for (const id of allIds) {
+                        const localItem = localMap.get(id);
+                        const serverItem = serverMap.get(id);
+
+                        if (localItem && serverItem) {
+                            const localDate = new Date(localItem.updated_date || localItem.created_date || 0);
+                            const serverDate = new Date(serverItem.updated_date || serverItem.created_date || 0);
+                            if (localDate.getTime() >= serverDate.getTime()) {
+                                mergedItems.push(localItem);
+                                if (!isDeepEqual(localItem, serverItem)) {
+                                    serverChanged = true;
+                                }
+                            } else {
+                                mergedItems.push(serverItem);
+                                if (!isDeepEqual(localItem, serverItem)) {
+                                    localChanged = true;
+                                }
+                            }
+                        } else if (localItem) {
+                            mergedItems.push(localItem);
+                            serverChanged = true;
+                        } else if (serverItem) {
+                            mergedItems.push(serverItem);
+                            localChanged = true;
+                        }
+                    }
+
+                    if (localChanged || serverChanged) {
+                        console.log(`[Sync] Sincronizando ${ent}: localChanged=${localChanged}, serverChanged=${serverChanged}, itens=${mergedItems.length}`);
+                        if (localChanged) {
+                            localStorage.setItem(localKey, JSON.stringify(mergedItems));
+                            needsReload = true;
+                        }
+                        if (serverChanged) {
                             try {
                                 await eu.entities[ent].deleteMany([]);
-                            } catch (delErr) {
-                                console.error(`[Sync] Erro ao deletar itens de ${ent} no servidor:`, delErr);
+                                if (mergedItems.length > 0) {
+                                    await eu.entities[ent].bulkCreate(mergedItems);
+                                }
+                                uploadedAny = true;
+                            } catch (srvErr) {
+                                console.error(`[Sync] Erro ao atualizar servidor para ${ent}:`, srvErr);
                             }
                         }
-                        try {
-                            if (localItems.length > 0) {
-                                await eu.entities[ent].bulkCreate(localItems);
-                            }
-                            uploadedAny = true;
-                        } catch (createErr) {
-                            console.error(`[Sync] Erro ao enviar itens de ${ent} para o servidor:`, createErr);
-                        }
-                    } else {
-                        console.log(`[Sync] Sincronizando local storage para ${ent} com dados do servidor (${serverItems.length} itens)...`);
-                        localStorage.setItem(localKey, serverItemsStr);
-                        needsReload = true;
                     }
                 }
             } catch (entErr) {
