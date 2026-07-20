@@ -485,21 +485,12 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
         }
 
         if (method === 'DELETE' && !subPath) {
-            const itemsToDelete = Array.isArray(body) ? body : [];
-            const idsToDelete = new Set(itemsToDelete.map(i => i.id).filter(Boolean));
-            if (idsToDelete.size > 0) {
-                const initialCount = db[entityName].length;
-                db[entityName] = db[entityName].filter(item => !idsToDelete.has(item.id));
-                const deletedCount = initialCount - db[entityName].length;
-                if (deletedCount > 0) saveDB();
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, count: deletedCount }));
-                logRequest(method, req.url, 200, `Deleted many ${deletedCount} items in ${entityName}`);
-            } else {
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, count: 0 }));
-                logRequest(method, req.url, 200, `Delete many skipped in ${entityName}`);
-            }
+            const initialCount = db[entityName].length;
+            db[entityName] = [];
+            saveDB();
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ success: true, count: initialCount }));
+            logRequest(method, req.url, 200, `Cleared all ${initialCount} items in ${entityName}`);
             return;
         }
 
