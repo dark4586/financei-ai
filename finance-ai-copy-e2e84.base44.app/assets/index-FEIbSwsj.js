@@ -14113,7 +14113,7 @@ const {
 
 setTimeout(async () => {
     try {
-        console.log("[Sync] Iniciando sincronização e mesclagem bidirecional de dados...");
+        console.log("[Sync] Iniciando sincronização unidirecional (Servidor -> Cliente)...");
         const entitiesToSync = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
         
         let needsReload = false;
@@ -14122,15 +14122,6 @@ setTimeout(async () => {
             try {
                 const localKey = "financeai_" + ent;
                 const localItemsStr = localStorage.getItem(localKey);
-                let localItems = [];
-                if (localItemsStr) {
-                    try {
-                        localItems = JSON.parse(localItemsStr);
-                    } catch (e) {
-                        localItems = [];
-                    }
-                }
-                if (!Array.isArray(localItems)) localItems = [];
 
                 let serverItems = [];
                 try {
@@ -14141,68 +14132,12 @@ setTimeout(async () => {
                 }
                 if (!Array.isArray(serverItems)) serverItems = [];
 
-                const mergedMap = new Map();
-                const itemsToUpload = [];
-                const itemsToUpdateOnServer = [];
+                const serverItemsStr = JSON.stringify(serverItems);
 
-                for (const sItem of serverItems) {
-                    if (sItem && sItem.id) {
-                        mergedMap.set(sItem.id, { source: "server", data: sItem });
-                    }
-                }
-
-                for (const lItem of localItems) {
-                    if (!lItem || !lItem.id) continue;
-
-                    const existing = mergedMap.get(lItem.id);
-                    if (existing) {
-                        const localTime = new Date(lItem.updated_date || lItem.created_date || 0).getTime();
-                        const serverTime = new Date(existing.data.updated_date || existing.data.created_date || 0).getTime();
-
-                        if (localTime > serverTime) {
-                            mergedMap.set(lItem.id, { source: "local", data: lItem });
-                            itemsToUpdateOnServer.push(lItem);
-                        }
-                    } else {
-                        const name = lItem.nome || lItem.descricao || "";
-                        const val = lItem.valor || 0;
-                        const key = `${name.trim().toLowerCase()}_${val}`;
-                        const duplicateOnServer = serverItems.some(sItem => {
-                            const sName = sItem.nome || sItem.descricao || "";
-                            const sVal = sItem.valor || 0;
-                            return `${sName.trim().toLowerCase()}_${sVal}` === key;
-                        });
-
-                        if (!duplicateOnServer) {
-                            mergedMap.set(lItem.id, { source: "local", data: lItem });
-                            itemsToUpload.push(lItem);
-                        }
-                    }
-                }
-
-                const mergedList = Array.from(mergedMap.values()).map(x => x.data);
-                const mergedListStr = JSON.stringify(mergedList);
-
-                if (mergedListStr !== localItemsStr) {
-                    localStorage.setItem(localKey, mergedListStr);
-                    console.log(`[Sync] Local storage atualizado para ${ent} (${mergedList.length} itens)`);
+                if (serverItemsStr !== localItemsStr) {
+                    localStorage.setItem(localKey, serverItemsStr);
+                    console.log(`[Sync] Local storage atualizado com dados do servidor para ${ent} (${serverItems.length} itens)`);
                     needsReload = true;
-                }
-
-                if (itemsToUpload.length > 0) {
-                    console.log(`[Sync] Enviando ${itemsToUpload.length} novos itens de ${ent} para o servidor...`);
-                    await se.entities[ent].bulkCreate(itemsToUpload);
-                }
-
-                if (itemsToUpdateOnServer.length > 0) {
-                    console.log(`[Sync] Atualizando ${itemsToUpdateOnServer.length} itens antigos de ${ent} no servidor...`);
-                    for (const item of itemsToUpdateOnServer) {
-                        try {
-                            await se.entities[ent].update(item.id, item);
-                        } catch (updateErr) {
-                            console.error(`[Sync] Falha ao atualizar item ${item.id} no servidor:`, updateErr);
-                        }
-                    }
                 }
             } catch (entErr) {
                 console.error(`[Sync] Erro crítico na entidade ${ent}:`, entErr);
@@ -14210,10 +14145,10 @@ setTimeout(async () => {
         }
 
         if (needsReload) {
-            console.log("[Sync] Dados locais atualizados com a mesclagem. Recarregando a página...");
+            console.log("[Sync] Dados locais atualizados com o servidor. Recarregando a página...");
             window.location.reload();
         } else {
-            console.log("[Sync] Sincronização e mesclagem bidirecional concluídas! Sem alterações pendentes.");
+            console.log("[Sync] Sincronização concluída! Sem alterações pendentes.");
         }
     } catch (err) {
         console.error("[Sync] Erro crítico no sincronizador:", err);
