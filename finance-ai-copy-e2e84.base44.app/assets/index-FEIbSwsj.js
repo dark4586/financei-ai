@@ -14042,7 +14042,7 @@ function mte(e) {
         }
     }
 }
-const Jv = ["Settings"];
+const Jv = ["Settings", "Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
 
 function gte() {
     Jv.forEach(e => localStorage.removeItem($k(e)))
@@ -14113,9 +14113,95 @@ const {
 
 setTimeout(async () => {
     try {
-        console.log("[Sync] Iniciando sincronização unidirecional (Servidor -> Cliente)...");
+        console.log("[Sync] Iniciando sincronização (Servidor -> Cliente)...");
         const entitiesToSync = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
         
+        // 1. Check if the server database has been wiped/reset
+        let isServerWiped = false;
+        try {
+            const [serverBanks, serverSavings, serverGoals, serverCreditCards] = await Promise.all([
+                se.entities.Bank.list().catch(() => []),
+                se.entities.Savings.list().catch(() => []),
+                se.entities.Goal.list().catch(() => []),
+                se.entities.CreditCard.list().catch(() => [])
+            ]);
+            
+            if (
+                Array.isArray(serverBanks) && serverBanks.length === 0 &&
+                Array.isArray(serverSavings) && serverSavings.length === 0 &&
+                Array.isArray(serverGoals) && serverGoals.length === 0 &&
+                Array.isArray(serverCreditCards) && serverCreditCards.length === 0
+            ) {
+                isServerWiped = true;
+                console.log("[Sync] Detectado que o servidor está vazio/resetado (Banks, Savings, Goals, CreditCards = 0).");
+            }
+        } catch (checkErr) {
+            console.error("[Sync] Erro ao checar estado do servidor:", checkErr);
+        }
+
+        const isImportPending = localStorage.getItem("financeai_import_pending") === "true";
+
+        if (isServerWiped || isImportPending) {
+            console.log(`[Sync] Restaurando servidor a partir do localStorage (isServerWiped=${isServerWiped}, isImportPending=${isImportPending})...`);
+            
+            let uploadedAny = false;
+            for (const ent of entitiesToSync) {
+                try {
+                    const localKey = "financeai_" + ent;
+                    const localItemsStr = localStorage.getItem(localKey);
+                    let localItems = [];
+                    try {
+                        localItems = localItemsStr ? JSON.parse(localItemsStr) : [];
+                    } catch (e) {
+                        localItems = [];
+                    }
+                    if (!Array.isArray(localItems)) localItems = [];
+
+                    // Clear server items first if there are any
+                    let serverItems = [];
+                    try {
+                        serverItems = await se.entities[ent].list();
+                    } catch (err) {
+                        serverItems = [];
+                    }
+                    if (!Array.isArray(serverItems)) serverItems = [];
+
+                    if (serverItems.length > 0) {
+                        try {
+                            await se.entities[ent].deleteMany(serverItems);
+                            console.log(`[Sync] Removidos ${serverItems.length} itens do servidor para ${ent}`);
+                        } catch (delErr) {
+                            console.error(`[Sync] Erro ao deletar itens de ${ent} no servidor:`, delErr);
+                        }
+                    }
+
+                    // Upload local items to server
+                    if (localItems.length > 0) {
+                        try {
+                            await se.entities[ent].bulkCreate(localItems);
+                            console.log(`[Sync] Enviados ${localItems.length} itens locais para o servidor para ${ent}`);
+                            uploadedAny = true;
+                        } catch (createErr) {
+                            console.error(`[Sync] Erro ao fazer upload de ${ent}:`, createErr);
+                        }
+                    }
+                } catch (entErr) {
+                    console.error(`[Sync] Erro crítico na restauração da entidade ${ent}:`, entErr);
+                }
+            }
+
+            if (isImportPending) {
+                localStorage.removeItem("financeai_import_pending");
+            }
+
+            if (uploadedAny) {
+                console.log("[Sync] Restauração concluída! Recarregando a página para aplicar os dados...");
+                window.location.reload();
+                return;
+            }
+        }
+
+        // Standard unidirectional sync (Server -> Client)
         let needsReload = false;
 
         for (const ent of entitiesToSync) {
@@ -69469,7 +69555,7 @@ function rIe() {
         s.onload = c => {
             try {
                 const d = JSON.parse(c.target.result);
-                vte(d), alert("✅ Dados importados com sucesso! Recarregando..."), window.location.reload()
+                localStorage.setItem("financeai_import_pending", "true"), vte(d), alert("✅ Dados importados com sucesso! Recarregando..."), window.location.reload()
             } catch {
                 alert("❌ Arquivo inválido.")
             }
