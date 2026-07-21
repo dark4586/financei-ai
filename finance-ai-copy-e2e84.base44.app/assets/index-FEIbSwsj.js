@@ -13945,6 +13945,7 @@ function us(e) {
         const t = localStorage.getItem($k(e));
         let parsed = t ? JSON.parse(t) : [];
         if (!Array.isArray(parsed)) parsed = [];
+        parsed = parsed.map(item => (item && typeof item === 'object' && item.data && typeof item.data === 'object' && (item.data.id || item.data.descricao || item.data.nome)) ? item.data : item);
         if (e === "Settings" && parsed.length > 0 && parsed[0]) {
             let modified = false;
             if (parsed[0].liquid_glass_color1 === "#667eea") {
@@ -14086,10 +14087,16 @@ const {
 } = Zc, eu = ute({
     appId: xte,
     serverUrl: bte,
-    token: wte,
-    functionsVersion: Ste,
-    requiresAuth: !1
-}), _te = new Proxy({}, {
+});
+
+function unwrapResponse(res) {
+    if (res && typeof res === 'object' && 'data' in res && 'status' in res) {
+        return res.data;
+    }
+    return res;
+}
+
+_te = new Proxy({}, {
     get(e, t) {
         if (t === "Settings") {
             return mte(t);
@@ -14118,12 +14125,14 @@ const {
                 };
                 let serverRes = null;
                 try {
-                    serverRes = await serverEntity.create(itemWithId);
+                    const raw = await serverEntity.create(itemWithId);
+                    serverRes = unwrapResponse(raw);
                 } catch (err) {
                     console.error(`[Proxy create] Failed to create item on server for ${t}:`, err);
                 }
-                const res = await mte(t).create(serverRes || itemWithId);
-                return serverRes || res;
+                const cleanItem = (serverRes && typeof serverRes === 'object' && !Array.isArray(serverRes)) ? serverRes : itemWithId;
+                const res = await mte(t).create(cleanItem);
+                return cleanItem || res;
             },
             async bulkCreate(items) {
                 const now = new Date().toISOString();
@@ -14135,12 +14144,14 @@ const {
                 }));
                 let serverRes = null;
                 try {
-                    serverRes = await serverEntity.bulkCreate(itemsWithIds);
+                    const raw = await serverEntity.bulkCreate(itemsWithIds);
+                    serverRes = unwrapResponse(raw);
                 } catch (err) {
                     console.error(`[Proxy bulkCreate] Failed to bulkCreate on server for ${t}:`, err);
                 }
-                const res = await mte(t).bulkCreate(serverRes || itemsWithIds);
-                return serverRes || res;
+                const cleanItems = Array.isArray(serverRes) ? serverRes : itemsWithIds;
+                const res = await mte(t).bulkCreate(cleanItems);
+                return cleanItems || res;
             },
             async update(id, updates) {
                 const updatesWithDate = {
@@ -14149,12 +14160,14 @@ const {
                 };
                 let serverRes = null;
                 try {
-                    serverRes = await serverEntity.update(id, updatesWithDate);
+                    const raw = await serverEntity.update(id, updatesWithDate);
+                    serverRes = unwrapResponse(raw);
                 } catch (err) {
                     console.error(`[Proxy update] Failed to update item on server for ${t}:`, err);
                 }
-                const res = await mte(t).update(id, serverRes || updatesWithDate);
-                return serverRes || res;
+                const cleanUpdates = (serverRes && typeof serverRes === 'object') ? serverRes : updatesWithDate;
+                const res = await mte(t).update(id, cleanUpdates);
+                return cleanUpdates || res;
             },
             async delete(id) {
                 try {
@@ -14167,14 +14180,13 @@ const {
                 } catch (e) {
                     console.error("Error saving deleted ID:", e);
                 }
-                let serverRes = null;
                 try {
-                    serverRes = await serverEntity.delete(id);
+                    await serverEntity.delete(id);
                 } catch (err) {
                     console.error(`[Proxy delete] Failed to delete item on server for ${t}:`, err);
                 }
                 const res = await mte(t).delete(id);
-                return serverRes || res;
+                return res;
             },
             async deleteMany(items) {
                 try {
@@ -14194,14 +14206,13 @@ const {
                 } catch (e) {
                     console.error("Error saving deleted IDs:", e);
                 }
-                let serverRes = null;
                 try {
-                    serverRes = await serverEntity.deleteMany(items);
+                    await serverEntity.deleteMany(items);
                 } catch (err) {
                     console.error(`[Proxy deleteMany] Failed to deleteMany items on server for ${t}:`, err);
                 }
                 const res = await mte(t).deleteMany(items);
-                return serverRes || res;
+                return res;
             },
             schema() {
                 return mte(t).schema();

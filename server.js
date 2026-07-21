@@ -444,6 +444,10 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
                 body = JSON.parse(bodyText);
             } catch (e) {}
         }
+        if (body && body.data && typeof body.data === 'object' && !body.id) {
+            body = body.data;
+        }
+        db[entityName] = db[entityName].map(item => (item && item.data && typeof item.data === 'object' && item.data.id) ? item.data : item);
 
         if (method === 'POST' && subPath === 'bulk') {
             const items = Array.isArray(body) ? body : [body];
