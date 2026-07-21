@@ -82188,52 +82188,16 @@ function $$e({
                 zIndex: 1,
                 animation: "splash-center-in 0.85s cubic-bezier(0.22,1,0.36,1) 0.1s both"
             },
-            children: [l.jsxs("div", {
+            children: [l.jsx("img", {
+                src: "https://media.base44.com/images/public/68f806c8a2f8b052f69dddc2/06ccad4d7_IMG_2980.png",
+                alt: "FinanceAI",
                 style: {
-                    position: "relative",
                     width: 112,
                     height: 112,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center"
-                },
-                children: [l.jsx("div", {
-                    style: {
-                        position: "absolute",
-                        inset: 0,
-                        borderRadius: 32,
-                        background: "linear-gradient(135deg, #131525 0%, #181935 50%, #201a3c 100%)",
-                        border: "1px solid rgba(255,255,255,0.08)",
-                        animation: "icon-glow-premium 3s ease-in-out infinite"
-                    }
-                }), l.jsxs("svg", {
-                    viewBox: "0 0 24 24",
-                    fill: "none",
-                    stroke: "#ffffff",
-                    strokeWidth: 1.8,
-                    strokeLinecap: "round",
-                    strokeLinejoin: "round",
-                    style: {
-                        position: "relative",
-                        width: 56,
-                        height: 56,
-                        filter: "drop-shadow(0 0 15px rgba(167,139,250,0.6))",
-                        animation: "coin-3d-spin 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite",
-                        transformStyle: "preserve-3d",
-                        willChange: "transform",
-                        backfaceVisibility: "hidden"
-                    },
-                    children: [l.jsx("circle", {
-                        cx: "12",
-                        cy: "12",
-                        r: "10",
-                        fill: "rgba(255,255,255,0.03)"
-                    }), l.jsx("path", {
-                        d: "M12 6v12"
-                    }), l.jsx("path", {
-                        d: "M15 9.5H11.5a2.5 2.5 0 0 0 0 5H13a2.5 2.5 0 0 1 0 5H9.5"
-                    })]
-                })]
+                    borderRadius: 28,
+                    objectFit: "cover",
+                    boxShadow: "0 12px 36px rgba(0,0,0,0.5)"
+                }
             }), l.jsxs("div", {
                 style: {
                     display: "flex",
