@@ -82123,21 +82123,33 @@ function $$e({
           90%  { opacity: 0.4; }
           100% { transform: translateY(-10vh) scale(1.3); opacity: 0; }
         }
-        @keyframes ring-pulse {
-          0%, 100% { transform: scale(1); opacity: 0.18; }
-          50%       { transform: scale(1.07); opacity: 0.06; }
+        @keyframes ring-pulse-premium {
+          0% { transform: rotate(0deg) scale(0.9); opacity: 0.08; }
+          50% { transform: rotate(180deg) scale(1.05); opacity: 0.22; }
+          100% { transform: rotate(360deg) scale(1.1); opacity: 0.08; }
         }
         @keyframes splash-center-in {
           from { opacity: 0; transform: scale(0.72) translateY(24px); }
           to   { opacity: 1; transform: scale(1) translateY(0); }
         }
-        @keyframes icon-glow {
-          0%, 100% { box-shadow: 0 0 0 1px rgba(255,255,255,0.12), 0 20px 60px rgba(0,0,0,0.9), 0 0 70px rgba(99,102,241,0.3); }
-          50%       { box-shadow: 0 0 0 1px rgba(255,255,255,0.22), 0 20px 60px rgba(0,0,0,0.9), 0 0 130px rgba(99,102,241,0.6); }
+        @keyframes icon-glow-premium {
+          0%, 100% {
+            box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 50px rgba(99,102,241,0.25), inset 0 0 20px rgba(255,255,255,0.03);
+            border-color: rgba(99,102,241,0.2);
+            transform: translateY(0) scale(1);
+          }
+          50% {
+            box-shadow: 0 25px 60px rgba(0,0,0,0.85), 0 0 90px rgba(139,92,246,0.55), inset 0 0 30px rgba(139,92,246,0.12);
+            border-color: rgba(167,139,250,0.55);
+            transform: translateY(-6px) scale(1.02);
+          }
         }
-        @keyframes emoji-bounce {
-          0%, 100% { transform: translateY(0) rotate(-4deg); }
-          50%       { transform: translateY(-7px) rotate(4deg); }
+        @keyframes coin-3d-spin {
+          0% { transform: rotateY(0deg) translateY(0); }
+          40% { transform: rotateY(180deg) translateY(-8px); }
+          50% { transform: rotateY(180deg) translateY(-8px); }
+          90% { transform: rotateY(360deg) translateY(0); }
+          100% { transform: rotateY(360deg) translateY(0); }
         }
         @keyframes title-shimmer {
           0%   { background-position: 0% center; }
@@ -82163,8 +82175,8 @@ function $$e({
                 width: r,
                 height: r,
                 borderRadius: "50%",
-                border: "1px solid rgba(255,255,255,0.07)",
-                animation: `ring-pulse 2.8s ease-in-out ${a*.45}s infinite`
+                border: "1px dashed rgba(99,102,241,0.15)",
+                animation: `ring-pulse-premium 4s linear ${a*.9}s infinite`
             }
         }, a)), l.jsxs("div", {
             style: {
@@ -82189,9 +82201,10 @@ function $$e({
                     style: {
                         position: "absolute",
                         inset: 0,
-                        borderRadius: 28,
-                        background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-                        animation: "icon-glow 2.8s ease-in-out infinite"
+                        borderRadius: 32,
+                        background: "linear-gradient(135deg, #131525 0%, #181935 50%, #201a3c 100%)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        animation: "icon-glow-premium 3s ease-in-out infinite"
                     }
                 }), l.jsxs("svg", {
                     viewBox: "0 0 24 24",
@@ -82204,8 +82217,9 @@ function $$e({
                         position: "relative",
                         width: 56,
                         height: 56,
-                        filter: "drop-shadow(0 0 12px rgba(165,180,252,0.5))",
-                        animation: "emoji-bounce 2.6s ease-in-out 0.5s infinite",
+                        filter: "drop-shadow(0 0 15px rgba(167,139,250,0.6))",
+                        animation: "coin-3d-spin 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite",
+                        transformStyle: "preserve-3d",
                         willChange: "transform",
                         backfaceVisibility: "hidden"
                     },
