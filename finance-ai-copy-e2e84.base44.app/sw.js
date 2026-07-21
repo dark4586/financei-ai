@@ -1,4 +1,4 @@
-const CACHE_NAME = 'financeai-v37';
+const CACHE_NAME = 'financeai-v38';
 
 self.addEventListener('install', (event) => {
     self.skipWaiting();
