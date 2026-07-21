@@ -13923,6 +13923,19 @@ const Eq = typeof window > "u",
     },
     pte = "financeai_";
 
+function parseNumber(val) {
+    if (typeof val === 'number') return isNaN(val) ? 0 : val;
+    if (!val) return 0;
+    let s = String(val).trim().replace(/\s/g, '').replace(/R\$/gi, '');
+    if (s.includes(',') && s.includes('.')) {
+        s = s.replace(/\./g, '').replace(',', '.');
+    } else if (s.includes(',')) {
+        s = s.replace(',', '.');
+    }
+    const num = parseFloat(s);
+    return isNaN(num) ? 0 : num;
+}
+
 function $k(e) {
     return `${pte}${e}`
 }
@@ -14329,6 +14342,9 @@ setTimeout(async () => {
                             }
                         }
                     }
+                    try {
+                        localStorage.removeItem(deletedKey);
+                    } catch (e) {}
                 }
             } catch (entErr) {
                 console.error(`[Sync] Erro na sincronização da entidade ${ent}:`, entErr);
@@ -71573,7 +71589,7 @@ function uIe() {
         S.preventDefault();
         const E = c.find(P => P.id === a.banco_id),
             O = { ...a,
-                valor: parseFloat(a.valor),
+                valor: parseNumber(a.valor),
                 dia_vencimento: parseInt(a.dia_vencimento),
                 status: "pendente",
                 banco_nome: (E == null ? void 0 : E.nome) || "",
@@ -76474,10 +76490,10 @@ function wIe() {
         const Pe = banksList.find(fn => fn.id === savingsForm.banco_id),
             Nt = { ...savingsForm,
                 banco_nome: (Pe == null ? void 0 : Pe.nome) || "",
-                valor_investido: parseFloat(savingsForm.valor_investido),
-                aporte_mensal: parseFloat(savingsForm.aporte_mensal),
-                taxa_rendimento: parseFloat(savingsForm.taxa_rendimento),
-                retirada_mensal: parseFloat(savingsForm.retirada_mensal)
+                valor_investido: parseNumber(savingsForm.valor_investido),
+                aporte_mensal: parseNumber(savingsForm.aporte_mensal),
+                taxa_rendimento: parseNumber(savingsForm.taxa_rendimento),
+                retirada_mensal: parseNumber(savingsForm.retirada_mensal)
             };
         editingSavings ? updateMutation.mutate({
             id: editingSavings.id,
@@ -79127,8 +79143,8 @@ function $Ie() {
         D.preventDefault();
         const H = w.find(X => X.id === f.banco_id),
             V = { ...f,
-                valor: parseFloat(f.valor),
-                valor_recebido: parseFloat(f.valor_recebido || 0),
+                valor: parseNumber(f.valor),
+                valor_recebido: parseNumber(f.valor_recebido || 0),
                 status: "pendente",
                 dia_recebimento: f.dia_recebimento ? parseInt(f.dia_recebimento) : null,
                 banco_nome: (H == null ? void 0 : H.nome) || ""

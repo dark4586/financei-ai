@@ -485,13 +485,25 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
         }
 
         if (method === 'DELETE' && !subPath) {
-            const initialCount = db[entityName].length;
-            db[entityName] = [];
-            saveDB();
-            res.writeHead(200, { 'Content-Type': 'application/json' });
-            res.end(JSON.stringify({ success: true, count: initialCount }));
-            logRequest(method, req.url, 200, `Cleared all ${initialCount} items in ${entityName}`);
-            return;
+            const items = Array.isArray(body) ? body : (body && Array.isArray(body.items) ? body.items : null);
+            if (items && items.length > 0) {
+                const ids = items.map(x => typeof x === 'object' ? x.id : x).filter(Boolean);
+                const initialCount = db[entityName].length;
+                db[entityName] = db[entityName].filter(item => !ids.includes(item.id));
+                saveDB();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, count: initialCount - db[entityName].length }));
+                logRequest(method, req.url, 200, `Deleted specified ${ids.length} items in ${entityName}`);
+                return;
+            } else {
+                const initialCount = db[entityName].length;
+                db[entityName] = [];
+                saveDB();
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, count: initialCount }));
+                logRequest(method, req.url, 200, `Cleared all ${initialCount} items in ${entityName}`);
+                return;
+            }
         }
 
         if (subPath) {
@@ -523,9 +535,19 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
                     res.end(JSON.stringify(db[entityName][itemIndex]));
                     logRequest(method, req.url, 200, `Updated item ${subPath} in ${entityName}`);
                 } else {
-                    res.writeHead(404, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ error: 'Item not found' }));
-                    logRequest(method, req.url, 404, `Item ${subPath} not found in ${entityName} for update`);
+                    // Create if missing on PUT
+                    const now = new Date().toISOString();
+                    const newItem = {
+                        ...body,
+                        id: subPath,
+                        created_date: body.created_date || now,
+                        updated_date: now
+                    };
+                    db[entityName].push(newItem);
+                    saveDB();
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify(newItem));
+                    logRequest(method, req.url, 200, `Created item ${subPath} via PUT in ${entityName}`);
                 }
                 return;
             }
@@ -538,9 +560,9 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
                     res.end(JSON.stringify({ success: true }));
                     logRequest(method, req.url, 200, `Deleted item ${subPath} in ${entityName}`);
                 } else {
-                    res.writeHead(404, { 'Content-Type': 'application/json' });
-                    res.end(JSON.stringify({ error: 'Item not found' }));
-                    logRequest(method, req.url, 404, `Item ${subPath} not found in ${entityName} for delete`);
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true }));
+                    logRequest(method, req.url, 200, `Item ${subPath} already deleted in ${entityName}`);
                 }
                 return;
             }

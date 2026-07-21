@@ -247,6 +247,15 @@
                     const method = (init && init.method ? init.method : (input && input.method ? input.method : 'GET')).toUpperCase();
                     let bodyText = init && init.body ? init.body : (input && input.body ? input.body : null);
                     
+                    try {
+                        const res = await originalFetch.apply(this, [input, init]);
+                        if (res.ok) {
+                            return res;
+                        }
+                    } catch (e) {
+                        console.warn("[LocalDB Interceptor] Network error, using local DB fallback:", e);
+                    }
+
                     await ensureMigratedForApp(appId);
                     const { statusCode, responseBody } = handleLocalEntityRequest(method, urlStr, entityName, subPath, bodyText);
                     
@@ -274,7 +283,7 @@
 
             XMLHttpRequest.prototype.send = function(body) {
                 const urlStr = this._url;
-                const method = this._method.toUpperCase();
+                const method = (this._method || 'GET').toUpperCase();
                 
                 const url = new URL(urlStr, window.location.origin);
                 const pathname = url.pathname;
@@ -286,37 +295,7 @@
                     const subPath = parts[6] || '';
                     const self = this;
                     
-                    ensureMigratedForApp(appId).then(() => {
-                        const { statusCode, responseBody } = handleLocalEntityRequest(method, urlStr, entityName, subPath, body);
-                        
-                        setTimeout(() => {
-                            Object.defineProperty(self, 'status', { get: () => statusCode, configurable: true });
-                            Object.defineProperty(self, 'statusText', { get: () => 'OK', configurable: true });
-                            Object.defineProperty(self, 'readyState', { get: () => 4, configurable: true });
-                            
-                            const responseText = JSON.stringify(responseBody);
-                            let response = responseText;
-                            if (self.responseType === 'json') {
-                                response = responseBody;
-                            }
-                            Object.defineProperty(self, 'responseText', { get: () => responseText, configurable: true });
-                            Object.defineProperty(self, 'response', { get: () => response, configurable: true });
-                            
-                            self.getResponseHeader = function(header) {
-                                if (header.toLowerCase() === 'content-type') return 'application/json';
-                                return null;
-                            };
-                            self.getAllResponseHeaders = function() {
-                                return 'content-type: application/json\r\n';
-                            };
-                            
-                            if (typeof self.onreadystatechange === 'function') {
-                                self.onreadystatechange();
-                            }
-                            self.dispatchEvent(new Event('readystatechange'));
-                            self.dispatchEvent(new Event('load'));
-                        }, 0);
-                    });
+                    return originalSend.apply(this, [body]);
                 } else {
                     return originalSend.apply(this, [body]);
                 }
