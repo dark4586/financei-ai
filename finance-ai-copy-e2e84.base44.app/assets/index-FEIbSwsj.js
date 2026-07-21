@@ -14097,42 +14097,63 @@ const {
                 return mte(t).get(id);
             },
             async create(item) {
+                const itemWithId = {
+                    ...item,
+                    id: item.id || aD(),
+                    created_date: item.created_date || new Date().toISOString(),
+                    updated_date: item.updated_date || new Date().toISOString()
+                };
                 let serverRes = null;
                 try {
-                    serverRes = await serverEntity.create(item);
+                    serverRes = await serverEntity.create(itemWithId);
                 } catch (err) {
                     console.error(`[Proxy create] Failed to create item on server for ${t}:`, err);
                 }
-                const localItem = { ...item };
-                if (serverRes && serverRes.id) {
-                    localItem.id = serverRes.id;
-                    localItem.created_date = serverRes.created_date || localItem.created_date;
-                    localItem.updated_date = serverRes.updated_date || localItem.updated_date;
-                }
-                const res = await mte(t).create(localItem);
+                const res = await mte(t).create(serverRes || itemWithId);
                 return serverRes || res;
             },
             async bulkCreate(items) {
+                const now = new Date().toISOString();
+                const itemsWithIds = items.map(item => ({
+                    ...item,
+                    id: item.id || aD(),
+                    created_date: item.created_date || now,
+                    updated_date: item.updated_date || now
+                }));
                 let serverRes = null;
                 try {
-                    serverRes = await serverEntity.bulkCreate(items);
+                    serverRes = await serverEntity.bulkCreate(itemsWithIds);
                 } catch (err) {
                     console.error(`[Proxy bulkCreate] Failed to bulkCreate on server for ${t}:`, err);
                 }
-                const res = await mte(t).bulkCreate(serverRes || items);
+                const res = await mte(t).bulkCreate(serverRes || itemsWithIds);
                 return serverRes || res;
             },
             async update(id, updates) {
+                const updatesWithDate = {
+                    ...updates,
+                    updated_date: updates.updated_date || new Date().toISOString()
+                };
                 let serverRes = null;
                 try {
-                    serverRes = await serverEntity.update(id, updates);
+                    serverRes = await serverEntity.update(id, updatesWithDate);
                 } catch (err) {
                     console.error(`[Proxy update] Failed to update item on server for ${t}:`, err);
                 }
-                const res = await mte(t).update(id, serverRes || updates);
+                const res = await mte(t).update(id, serverRes || updatesWithDate);
                 return serverRes || res;
             },
             async delete(id) {
+                try {
+                    const deletedKey = "financeai_deleted_ids_" + t;
+                    const deletedIds = JSON.parse(localStorage.getItem(deletedKey) || "[]");
+                    if (!deletedIds.includes(id)) {
+                        deletedIds.push(id);
+                        localStorage.setItem(deletedKey, JSON.stringify(deletedIds));
+                    }
+                } catch (e) {
+                    console.error("Error saving deleted ID:", e);
+                }
                 let serverRes = null;
                 try {
                     serverRes = await serverEntity.delete(id);
@@ -14143,6 +14164,23 @@ const {
                 return serverRes || res;
             },
             async deleteMany(items) {
+                try {
+                    const deletedKey = "financeai_deleted_ids_" + t;
+                    const deletedIds = JSON.parse(localStorage.getItem(deletedKey) || "[]");
+                    const idsToTrack = Array.isArray(items) ? items.map(item => typeof item === 'object' ? item.id : item) : [];
+                    let added = false;
+                    for (const id of idsToTrack) {
+                        if (id && !deletedIds.includes(id)) {
+                            deletedIds.push(id);
+                            added = true;
+                        }
+                    }
+                    if (added) {
+                        localStorage.setItem(deletedKey, JSON.stringify(deletedIds));
+                    }
+                } catch (e) {
+                    console.error("Error saving deleted IDs:", e);
+                }
                 let serverRes = null;
                 try {
                     serverRes = await serverEntity.deleteMany(items);
@@ -14192,6 +14230,7 @@ setTimeout(async () => {
         for (const ent of entitiesToSync) {
             try {
                 const localKey = "financeai_" + ent;
+                const deletedKey = "financeai_deleted_ids_" + ent;
                 const localItemsStr = localStorage.getItem(localKey);
                 let localItems = [];
                 try {
@@ -14209,6 +14248,9 @@ setTimeout(async () => {
                 if (!Array.isArray(serverItems)) serverItems = [];
 
                 if (isImportPending) {
+                    try {
+                        localStorage.removeItem(deletedKey);
+                    } catch (e) {}
                     console.log(`[Sync] Import pending: Sincronizando servidor para ${ent} (Local: ${localItems.length} itens, Servidor: ${serverItems.length} itens)...`);
                     if (serverItems.length > 0) {
                         try {
@@ -14226,6 +14268,11 @@ setTimeout(async () => {
                         console.error(`[Sync] Erro ao enviar itens de ${ent} para o servidor:`, createErr);
                     }
                 } else {
+                    let deletedIds = [];
+                    try {
+                        deletedIds = JSON.parse(localStorage.getItem(deletedKey) || "[]");
+                    } catch (e) {}
+
                     const localMap = new Map(localItems.map(item => [item.id, item]));
                     const serverMap = new Map(serverItems.map(item => [item.id, item]));
                     const allIds = new Set([...localMap.keys(), ...serverMap.keys()]);
@@ -14255,8 +14302,12 @@ setTimeout(async () => {
                             mergedItems.push(localItem);
                             serverChanged = true;
                         } else if (serverItem) {
-                            mergedItems.push(serverItem);
-                            localChanged = true;
+                            if (deletedIds.includes(id)) {
+                                serverChanged = true;
+                            } else {
+                                mergedItems.push(serverItem);
+                                localChanged = true;
+                            }
                         }
                     }
 
