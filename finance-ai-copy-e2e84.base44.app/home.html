@@ -31,20 +31,21 @@
             const originalSend = XMLHttpRequest.prototype.send;
             const originalSetRequestHeader = XMLHttpRequest.prototype.setRequestHeader;
 
-            let migrationPromise = null;
-            function ensureMigrated() {
-                if (localStorage.getItem('local_db_initialized') === 'true') {
+            const migrationPromises = {};
+            function ensureMigratedForApp(appId) {
+                if (!appId) return Promise.resolve();
+                if (localStorage.getItem('local_db_initialized_' + appId) === 'true') {
                     return Promise.resolve();
                 }
-                if (!migrationPromise) {
-                    migrationPromise = (async () => {
+                if (!migrationPromises[appId]) {
+                    migrationPromises[appId] = (async () => {
+                        console.log("[LocalDB] Starting migration for appId: " + appId);
                         const collections = [
                             'Bank', 'Income', 'MonthlyExpense', 'FixedExpense', 'Debt', 'Savings', 
                             'Goal', 'CreditCard', 'DebitCard', 'MonthlyHistory', 'ScheduledDeposit', 
                             'Achievement', 'Category', 'Notification', 'Note', 'ChatMessage', 
                             'GameStats', 'AIProfile', 'Loan', 'Settings', 'Routine'
                         ];
-                        const appId = "69fdc875c6ab6facb4be2e84";
                         for (const col of collections) {
                             try {
                                 const res = await originalFetch(`/api/apps/${appId}/entities/${col}`);
@@ -52,16 +53,18 @@
                                     const data = await res.json();
                                     if (Array.isArray(data)) {
                                         localStorage.setItem('local_db_' + col, JSON.stringify(data));
+                                        console.log(`[LocalDB] Migrated ${data.length} items for ${col}`);
                                     }
                                 }
                             } catch (e) {
-                                console.error("Migration failed for " + col, e);
+                                console.error(`[LocalDB] Migration failed for ${col}:`, e);
                             }
                         }
-                        localStorage.setItem('local_db_initialized', 'true');
+                        localStorage.setItem('local_db_initialized_' + appId, 'true');
+                        console.log("[LocalDB] Migration complete for appId: " + appId);
                     })();
                 }
-                return migrationPromise;
+                return migrationPromises[appId];
             }
 
             function handleLocalEntityRequest(method, urlStr, entityName, subPath, bodyText) {
@@ -155,8 +158,8 @@
                 } else if (method === 'PUT') {
                     if (subPath) {
                         const idx = dbData.findIndex(x => x.id === subPath);
+                        const now = new Date().toISOString();
                         if (idx !== -1) {
-                            const now = new Date().toISOString();
                             dbData[idx] = {
                                 ...dbData[idx],
                                 ...body,
@@ -165,12 +168,19 @@
                             localStorage.setItem('local_db_' + entityName, JSON.stringify(dbData));
                             responseBody = dbData[idx];
                         } else {
-                            statusCode = 404;
-                            responseBody = { error: 'Item not found' };
+                            const newItem = {
+                                ...body,
+                                id: subPath,
+                                created_date: now,
+                                updated_date: now
+                            };
+                            dbData.push(newItem);
+                            localStorage.setItem('local_db_' + entityName, JSON.stringify(dbData));
+                            responseBody = newItem;
                         }
                     } else {
                         statusCode = 404;
-                        responseBody = { error: 'Item not found' };
+                        responseBody = { error: 'Item ID required for PUT' };
                     }
                 } else if (method === 'PATCH') {
                     if (subPath === 'update-many') {
@@ -199,11 +209,8 @@
                         if (idx !== -1) {
                             dbData.splice(idx, 1);
                             localStorage.setItem('local_db_' + entityName, JSON.stringify(dbData));
-                            responseBody = { success: true };
-                        } else {
-                            statusCode = 404;
-                            responseBody = { error: 'Item not found' };
                         }
+                        responseBody = { success: true };
                     } else {
                         const count = dbData.length;
                         dbData = [];
@@ -215,6 +222,7 @@
                     responseBody = { error: 'Method not allowed' };
                 }
                 
+                console.log(`[LocalDB Interceptor] ${method} ${urlStr} -> Status ${statusCode}`, responseBody);
                 return { statusCode, responseBody };
             }
 
@@ -228,19 +236,23 @@
                     urlStr = input.url;
                 }
                 
-                const match = urlStr.match(/\/api\/apps\/[^\/]+\/entities\/([^\/]+)(?:\/([^\/?#]+))?/);
-                if (match && match[1] !== 'User') {
-                    const entityName = match[1];
-                    const subPath = match[2];
+                const url = new URL(urlStr, window.location.origin);
+                const pathname = url.pathname;
+                const parts = pathname.split('/');
+                
+                if (parts[1] === 'api' && parts[2] === 'apps' && parts[4] === 'entities' && parts[5] && parts[5] !== 'User') {
+                    const appId = parts[3];
+                    const entityName = parts[5];
+                    const subPath = parts[6] || '';
                     const method = (init && init.method ? init.method : (input && input.method ? input.method : 'GET')).toUpperCase();
                     let bodyText = init && init.body ? init.body : (input && input.body ? input.body : null);
                     
-                    await ensureMigrated();
+                    await ensureMigratedForApp(appId);
                     const { statusCode, responseBody } = handleLocalEntityRequest(method, urlStr, entityName, subPath, bodyText);
                     
                     return new Response(JSON.stringify(responseBody), {
                         status: statusCode,
-                        statusText: statusCode === 200 ? 'OK' : (statusCode === 404 ? 'Not Found' : 'Error'),
+                        statusText: statusCode === 200 ? 'OK' : 'Error',
                         headers: { 'Content-Type': 'application/json' }
                     });
                 }
@@ -261,21 +273,25 @@
             };
 
             XMLHttpRequest.prototype.send = function(body) {
-                const url = this._url;
+                const urlStr = this._url;
                 const method = this._method.toUpperCase();
-                const match = url.match(/\/api\/apps\/[^\/]+\/entities\/([^\/]+)(?:\/([^\/?#]+))?/);
                 
-                if (match && match[1] !== 'User') {
-                    const entityName = match[1];
-                    const subPath = match[2];
+                const url = new URL(urlStr, window.location.origin);
+                const pathname = url.pathname;
+                const parts = pathname.split('/');
+                
+                if (parts[1] === 'api' && parts[2] === 'apps' && parts[4] === 'entities' && parts[5] && parts[5] !== 'User') {
+                    const appId = parts[3];
+                    const entityName = parts[5];
+                    const subPath = parts[6] || '';
                     const self = this;
                     
-                    ensureMigrated().then(() => {
-                        const { statusCode, responseBody } = handleLocalEntityRequest(method, url, entityName, subPath, body);
+                    ensureMigratedForApp(appId).then(() => {
+                        const { statusCode, responseBody } = handleLocalEntityRequest(method, urlStr, entityName, subPath, body);
                         
                         setTimeout(() => {
                             Object.defineProperty(self, 'status', { get: () => statusCode, configurable: true });
-                            Object.defineProperty(self, 'statusText', { get: () => (statusCode === 200 ? 'OK' : 'Not Found'), configurable: true });
+                            Object.defineProperty(self, 'statusText', { get: () => 'OK', configurable: true });
                             Object.defineProperty(self, 'readyState', { get: () => 4, configurable: true });
                             
                             const responseText = JSON.stringify(responseBody);
@@ -478,7 +494,7 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js?v=38').catch(() => {});
+                navigator.serviceWorker.register('/sw.js?v=39').catch(() => {});
             });
         }
     </script>
