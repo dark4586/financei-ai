@@ -14098,129 +14098,7 @@ function unwrapResponse(res) {
 
 const _te = new Proxy({}, {
     get(e, t) {
-        if (t === "Settings") {
-            return mte(t);
-        }
-        if (!Jv.includes(t)) {
-            return eu.entities[t];
-        }
-        const serverEntity = eu.entities[t];
-        if (!serverEntity) return mte(t);
-        return {
-            async list(sort, limit) {
-                return mte(t).list(sort, limit);
-            },
-            async filter(query, sort, limit) {
-                return mte(t).filter(query, sort, limit);
-            },
-            async get(id) {
-                return mte(t).get(id);
-            },
-            async create(item) {
-                const itemWithId = {
-                    ...item,
-                    id: item.id || aD(),
-                    created_date: item.created_date || new Date().toISOString(),
-                    updated_date: item.updated_date || new Date().toISOString()
-                };
-                let serverRes = null;
-                try {
-                    const raw = await serverEntity.create(itemWithId);
-                    serverRes = unwrapResponse(raw);
-                } catch (err) {
-                    console.error(`[Proxy create] Failed to create item on server for ${t}:`, err);
-                }
-                const cleanItem = (serverRes && typeof serverRes === 'object' && !Array.isArray(serverRes)) ? serverRes : itemWithId;
-                const res = await mte(t).create(cleanItem);
-                return cleanItem || res;
-            },
-            async bulkCreate(items) {
-                const now = new Date().toISOString();
-                const itemsWithIds = items.map(item => ({
-                    ...item,
-                    id: item.id || aD(),
-                    created_date: item.created_date || now,
-                    updated_date: item.updated_date || now
-                }));
-                let serverRes = null;
-                try {
-                    const raw = await serverEntity.bulkCreate(itemsWithIds);
-                    serverRes = unwrapResponse(raw);
-                } catch (err) {
-                    console.error(`[Proxy bulkCreate] Failed to bulkCreate on server for ${t}:`, err);
-                }
-                const cleanItems = Array.isArray(serverRes) ? serverRes : itemsWithIds;
-                const res = await mte(t).bulkCreate(cleanItems);
-                return cleanItems || res;
-            },
-            async update(id, updates) {
-                const updatesWithDate = {
-                    ...updates,
-                    updated_date: updates.updated_date || new Date().toISOString()
-                };
-                let serverRes = null;
-                try {
-                    const raw = await serverEntity.update(id, updatesWithDate);
-                    serverRes = unwrapResponse(raw);
-                } catch (err) {
-                    console.error(`[Proxy update] Failed to update item on server for ${t}:`, err);
-                }
-                const cleanUpdates = (serverRes && typeof serverRes === 'object') ? serverRes : updatesWithDate;
-                const res = await mte(t).update(id, cleanUpdates);
-                return cleanUpdates || res;
-            },
-            async delete(id) {
-                try {
-                    const deletedKey = "financeai_deleted_ids_" + t;
-                    const deletedIds = JSON.parse(localStorage.getItem(deletedKey) || "[]");
-                    if (!deletedIds.includes(id)) {
-                        deletedIds.push(id);
-                        localStorage.setItem(deletedKey, JSON.stringify(deletedIds));
-                    }
-                } catch (e) {
-                    console.error("Error saving deleted ID:", e);
-                }
-                try {
-                    await serverEntity.delete(id);
-                } catch (err) {
-                    console.error(`[Proxy delete] Failed to delete item on server for ${t}:`, err);
-                }
-                const res = await mte(t).delete(id);
-                return res;
-            },
-            async deleteMany(items) {
-                try {
-                    const deletedKey = "financeai_deleted_ids_" + t;
-                    const deletedIds = JSON.parse(localStorage.getItem(deletedKey) || "[]");
-                    const idsToTrack = Array.isArray(items) ? items.map(item => typeof item === 'object' ? item.id : item) : [];
-                    let added = false;
-                    for (const id of idsToTrack) {
-                        if (id && !deletedIds.includes(id)) {
-                            deletedIds.push(id);
-                            added = true;
-                        }
-                    }
-                    if (added) {
-                        localStorage.setItem(deletedKey, JSON.stringify(deletedIds));
-                    }
-                } catch (e) {
-                    console.error("Error saving deleted IDs:", e);
-                }
-                try {
-                    await serverEntity.deleteMany(items);
-                } catch (err) {
-                    console.error(`[Proxy deleteMany] Failed to deleteMany items on server for ${t}:`, err);
-                }
-                const res = await mte(t).deleteMany(items);
-                return res;
-            },
-            schema() {
-                return mte(t).schema();
-            },
-            subscribe(callback) {
-                return mte(t).subscribe(callback);
-            }
-        };
+        return mte(t);
     }
 }), se = {
     entities: _te,
@@ -14233,77 +14111,29 @@ const _te = new Proxy({}, {
 
 setTimeout(async () => {
     try {
-        console.log("[Sync] Iniciando sincronização segura...");
+        console.log("[LocalStore] Armazenamento 100% Local Ativo.");
         const entitiesToSync = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
-        const isImportPending = localStorage.getItem("financeai_import_pending") === "true";
 
         for (const ent of entitiesToSync) {
             try {
                 const localKey = "financeai_" + ent;
-                const deletedKey = "financeai_deleted_ids_" + ent;
-                let deletedIds = [];
-                try {
-                    deletedIds = JSON.parse(localStorage.getItem(deletedKey) || "[]");
-                } catch (e) {}
-                if (!Array.isArray(deletedIds)) deletedIds = [];
-
-                let serverItems = [];
-                try {
-                    serverItems = await eu.entities[ent].list();
-                } catch (err) {
-                    console.error(`[Sync] Falha ao listar ${ent} no servidor:`, err);
-                    continue;
-                }
-                if (!Array.isArray(serverItems)) serverItems = [];
-
-                // Deduplicate server items by ID
-                const uniqueServerMap = new Map();
-                for (const item of serverItems) {
-                    if (item && item.id && !deletedIds.includes(item.id)) {
-                        uniqueServerMap.set(item.id, item);
-                    } else if (item && item.id && deletedIds.includes(item.id)) {
-                        try {
-                            await eu.entities[ent].delete(item.id);
-                        } catch (e) {}
-                    }
-                }
-                const cleanServerItems = Array.from(uniqueServerMap.values());
-
                 const localItemsStr = localStorage.getItem(localKey);
-                let localItems = [];
-                try {
-                    localItems = localItemsStr ? JSON.parse(localItemsStr) : [];
-                } catch (e) {}
-                if (!Array.isArray(localItems)) localItems = [];
-
-                // Find any locally created items not yet on server
-                const unpushedLocalItems = localItems.filter(item => item && item.id && !uniqueServerMap.has(item.id) && !deletedIds.includes(item.id));
-                if (unpushedLocalItems.length > 0 && !isImportPending) {
+                // Initial seed only if localStorage for this entity has never been initialized
+                if (localItemsStr === null) {
+                    let serverItems = [];
                     try {
-                        await eu.entities[ent].bulkCreate(unpushedLocalItems);
-                        for (const item of unpushedLocalItems) {
-                            uniqueServerMap.set(item.id, item);
-                        }
-                    } catch (e) {
-                        console.error(`[Sync] Erro ao enviar novos itens locais de ${ent} para o servidor:`, e);
+                        serverItems = await eu.entities[ent].list();
+                    } catch (err) {}
+                    if (Array.isArray(serverItems) && serverItems.length > 0) {
+                        localStorage.setItem(localKey, JSON.stringify(serverItems));
+                    } else {
+                        localStorage.setItem(localKey, JSON.stringify([]));
                     }
                 }
-
-                const finalItems = Array.from(uniqueServerMap.values());
-                localStorage.setItem(localKey, JSON.stringify(finalItems));
-            } catch (entErr) {
-                console.error(`[Sync] Erro na sincronização da entidade ${ent}:`, entErr);
-            }
+            } catch (entErr) {}
         }
-
-        if (isImportPending) {
-            localStorage.removeItem("financeai_import_pending");
-        }
-        console.log("[Sync] Sincronização concluída com sucesso!");
-    } catch (err) {
-        console.error("[Sync] Erro no sincronizador:", err);
-    }
-}, 1500);
+    } catch (err) {}
+}, 500);
 
 function Lk(e) {
     const t = C.useRef(null);
