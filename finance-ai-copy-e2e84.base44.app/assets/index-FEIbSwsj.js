@@ -14233,34 +14233,19 @@ const _te = new Proxy({}, {
 
 setTimeout(async () => {
     try {
-        console.log("[Sync] Iniciando sincronização bidirecional...");
+        console.log("[Sync] Iniciando sincronização segura...");
         const entitiesToSync = ["Bank", "Income", "MonthlyExpense", "FixedExpense", "Debt", "Savings", "Goal", "CreditCard", "DebitCard", "MonthlyHistory", "ScheduledDeposit", "Achievement", "Category", "Notification", "Note", "ChatMessage", "GameStats", "AIProfile", "Loan"];
         const isImportPending = localStorage.getItem("financeai_import_pending") === "true";
-        let uploadedAny = false;
-        let needsReload = false;
-
-        const isDeepEqual = (o1, o2) => {
-            if (o1 === o2) return true;
-            if (typeof o1 !== 'object' || o1 === null || typeof o2 !== 'object' || o2 === null) return false;
-            const k1 = Object.keys(o1);
-            const k2 = Object.keys(o2);
-            if (k1.length !== k2.length) return false;
-            for (const key of k1) {
-                if (!isDeepEqual(o1[key], o2[key])) return false;
-            }
-            return true;
-        };
 
         for (const ent of entitiesToSync) {
             try {
                 const localKey = "financeai_" + ent;
                 const deletedKey = "financeai_deleted_ids_" + ent;
-                const localItemsStr = localStorage.getItem(localKey);
-                let localItems = [];
+                let deletedIds = [];
                 try {
-                    localItems = localItemsStr ? JSON.parse(localItemsStr) : [];
+                    deletedIds = JSON.parse(localStorage.getItem(deletedKey) || "[]");
                 } catch (e) {}
-                if (!Array.isArray(localItems)) localItems = [];
+                if (!Array.isArray(deletedIds)) deletedIds = [];
 
                 let serverItems = [];
                 try {
@@ -14271,92 +14256,41 @@ setTimeout(async () => {
                 }
                 if (!Array.isArray(serverItems)) serverItems = [];
 
-                if (isImportPending) {
-                    try {
-                        localStorage.removeItem(deletedKey);
-                    } catch (e) {}
-                    console.log(`[Sync] Import pending: Sincronizando servidor para ${ent} (Local: ${localItems.length} itens, Servidor: ${serverItems.length} itens)...`);
-                    if (serverItems.length > 0) {
+                // Deduplicate server items by ID
+                const uniqueServerMap = new Map();
+                for (const item of serverItems) {
+                    if (item && item.id && !deletedIds.includes(item.id)) {
+                        uniqueServerMap.set(item.id, item);
+                    } else if (item && item.id && deletedIds.includes(item.id)) {
                         try {
-                            await eu.entities[ent].deleteMany([]);
-                        } catch (delErr) {
-                            console.error(`[Sync] Erro ao deletar itens de ${ent} no servidor:`, delErr);
-                        }
+                            await eu.entities[ent].delete(item.id);
+                        } catch (e) {}
                     }
-                    try {
-                        if (localItems.length > 0) {
-                            await eu.entities[ent].bulkCreate(localItems);
-                        }
-                        uploadedAny = true;
-                    } catch (createErr) {
-                        console.error(`[Sync] Erro ao enviar itens de ${ent} para o servidor:`, createErr);
-                    }
-                } else {
-                    let deletedIds = [];
-                    try {
-                        deletedIds = JSON.parse(localStorage.getItem(deletedKey) || "[]");
-                    } catch (e) {}
-
-                    const localMap = new Map(localItems.map(item => [item.id, item]));
-                    const serverMap = new Map(serverItems.map(item => [item.id, item]));
-                    const allIds = new Set([...localMap.keys(), ...serverMap.keys()]);
-                    const mergedItems = [];
-                    let localChanged = false;
-                    let serverChanged = false;
-
-                    for (const id of allIds) {
-                        const localItem = localMap.get(id);
-                        const serverItem = serverMap.get(id);
-
-                        if (localItem && serverItem) {
-                            const localDate = new Date(localItem.updated_date || localItem.created_date || 0);
-                            const serverDate = new Date(serverItem.updated_date || serverItem.created_date || 0);
-                            if (localDate.getTime() >= serverDate.getTime()) {
-                                mergedItems.push(localItem);
-                                if (!isDeepEqual(localItem, serverItem)) {
-                                    serverChanged = true;
-                                }
-                            } else {
-                                mergedItems.push(serverItem);
-                                if (!isDeepEqual(localItem, serverItem)) {
-                                    localChanged = true;
-                                }
-                            }
-                        } else if (localItem) {
-                            mergedItems.push(localItem);
-                            serverChanged = true;
-                        } else if (serverItem) {
-                            if (deletedIds.includes(id)) {
-                                serverChanged = true;
-                            } else {
-                                mergedItems.push(serverItem);
-                                localChanged = true;
-                            }
-                        }
-                    }
-
-                    if (localChanged || serverChanged) {
-                        console.log(`[Sync] Sincronizando ${ent}: localChanged=${localChanged}, serverChanged=${serverChanged}, itens=${mergedItems.length}`);
-                        if (localChanged) {
-                            localStorage.setItem(localKey, JSON.stringify(mergedItems));
-                            needsReload = true;
-                        }
-                        if (serverChanged) {
-                            try {
-                                await eu.entities[ent].deleteMany([]);
-                                if (mergedItems.length > 0) {
-                                    await eu.entities[ent].bulkCreate(mergedItems);
-                                }
-                                uploadedAny = true;
-                            } catch (srvErr) {
-                                console.error(`[Sync] Erro ao atualizar servidor para ${ent}:`, srvErr);
-                            }
-                        }
-                    }
-                    try {
-                        localStorage.removeItem(deletedKey);
-                    } catch (e) {}
                 }
+                const cleanServerItems = Array.from(uniqueServerMap.values());
+
+                const localItemsStr = localStorage.getItem(localKey);
+                let localItems = [];
+                try {
+                    localItems = localItemsStr ? JSON.parse(localItemsStr) : [];
+                } catch (e) {}
+                if (!Array.isArray(localItems)) localItems = [];
+
+                // Find any locally created items not yet on server
+                const unpushedLocalItems = localItems.filter(item => item && item.id && !uniqueServerMap.has(item.id) && !deletedIds.includes(item.id));
+                if (unpushedLocalItems.length > 0 && !isImportPending) {
+                    try {
+                        await eu.entities[ent].bulkCreate(unpushedLocalItems);
+                        for (const item of unpushedLocalItems) {
+                            uniqueServerMap.set(item.id, item);
+                        }
+                    } catch (e) {
+                        console.error(`[Sync] Erro ao enviar novos itens locais de ${ent} para o servidor:`, e);
+                    }
+                }
+
+                const finalItems = Array.from(uniqueServerMap.values());
+                localStorage.setItem(localKey, JSON.stringify(finalItems));
             } catch (entErr) {
                 console.error(`[Sync] Erro na sincronização da entidade ${ent}:`, entErr);
             }
@@ -14365,15 +14299,9 @@ setTimeout(async () => {
         if (isImportPending) {
             localStorage.removeItem("financeai_import_pending");
         }
-
-        if (uploadedAny || needsReload) {
-            console.log("[Sync] Sincronização concluída! Recarregando a página...");
-            window.location.reload();
-        } else {
-            console.log("[Sync] Sincronização concluída! Sem alterações pendentes.");
-        }
+        console.log("[Sync] Sincronização concluída com sucesso!");
     } catch (err) {
-        console.error("[Sync] Erro crítico no sincronizador:", err);
+        console.error("[Sync] Erro no sincronizador:", err);
     }
 }, 1500);
 

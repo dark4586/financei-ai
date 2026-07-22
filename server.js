@@ -452,20 +452,25 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
         if (method === 'POST' && subPath === 'bulk') {
             const items = Array.isArray(body) ? body : [body];
             const now = new Date().toISOString();
+            const existingMap = new Map((db[entityName] || []).map(item => [item.id, item]));
             const createdItems = items.map(item => {
-                const newItem = { ...item };
-                if (!newItem.id) {
-                    newItem.id = `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-                }
-                if (!newItem.created_date) newItem.created_date = now;
-                if (!newItem.updated_date) newItem.updated_date = now;
+                const id = item.id || `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
+                const existing = existingMap.get(id) || {};
+                const newItem = {
+                    ...existing,
+                    ...item,
+                    id,
+                    created_date: item.created_date || existing.created_date || now,
+                    updated_date: now
+                };
+                existingMap.set(id, newItem);
                 return newItem;
             });
-            db[entityName] = [...db[entityName], ...createdItems];
+            db[entityName] = Array.from(existingMap.values());
             saveDB();
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(createdItems));
-            logRequest(method, req.url, 200, `Bulk created ${createdItems.length} items in ${entityName}`);
+            logRequest(method, req.url, 200, `Bulk upserted ${createdItems.length} items in ${entityName}`);
             return;
         }
 
@@ -490,22 +495,28 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
 
         if (method === 'DELETE' && !subPath) {
             const items = Array.isArray(body) ? body : (body && Array.isArray(body.items) ? body.items : null);
-            if (items && items.length > 0) {
+            if (items && Array.isArray(items)) {
                 const ids = items.map(x => typeof x === 'object' ? x.id : x).filter(Boolean);
                 const initialCount = db[entityName].length;
-                db[entityName] = db[entityName].filter(item => !ids.includes(item.id));
-                saveDB();
+                if (ids.length > 0) {
+                    db[entityName] = db[entityName].filter(item => !ids.includes(item.id));
+                    saveDB();
+                }
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, count: initialCount - db[entityName].length }));
                 logRequest(method, req.url, 200, `Deleted specified ${ids.length} items in ${entityName}`);
                 return;
-            } else {
+            } else if (body && body.clearAll === true) {
                 const initialCount = db[entityName].length;
                 db[entityName] = [];
                 saveDB();
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ success: true, count: initialCount }));
                 logRequest(method, req.url, 200, `Cleared all ${initialCount} items in ${entityName}`);
+                return;
+            } else {
+                res.writeHead(200, { 'Content-Type': 'application/json' });
+                res.end(JSON.stringify({ success: true, count: 0 }));
                 return;
             }
         }
@@ -616,17 +627,23 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
 
         if (method === 'POST' && !subPath) {
             const now = new Date().toISOString();
+            const itemId = body.id || `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
             const newItem = {
                 ...body,
-                id: body.id || `${Date.now()}_${Math.random().toString(36).slice(2, 9)}`,
+                id: itemId,
                 created_date: body.created_date || now,
                 updated_date: body.updated_date || now
             };
-            db[entityName].push(newItem);
+            const existingIdx = db[entityName].findIndex(item => item.id === itemId);
+            if (existingIdx !== -1) {
+                db[entityName][existingIdx] = { ...db[entityName][existingIdx], ...newItem };
+            } else {
+                db[entityName].push(newItem);
+            }
             saveDB();
             res.writeHead(200, { 'Content-Type': 'application/json' });
             res.end(JSON.stringify(newItem));
-            logRequest(method, req.url, 200, `Created item ${newItem.id} in ${entityName}`);
+            logRequest(method, req.url, 200, `Created/Updated item ${newItem.id} in ${entityName}`);
             return;
         }
 
