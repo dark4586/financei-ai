@@ -74808,6 +74808,7 @@ function bIe() {
                                     className: "absolute -bottom-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-[#0f0f0f]"
                                 })]
                             }), l.jsxs("div", {
+                                className: "flex flex-col justify-center",
                                 children: [l.jsxs("div", {
                                     className: "flex items-center gap-2",
                                     children: [l.jsxs("h1", {
@@ -74816,11 +74817,8 @@ function bIe() {
                                     }), l.jsx(ly, {
                                         className: "w-5 h-5 text-yellow-400 animate-pulse"
                                     })]
-                                }), l.jsx("p", {
-                                    className: "text-gray-400 text-sm",
-                                    children: "Visão completa das suas finanças"
                                 }), l.jsxs("div", {
-                                    className: "flex flex-wrap gap-1.5 mt-2",
+                                    className: "flex flex-wrap gap-1.5 mt-1.5",
                                     children: [l.jsxs(Be.button, {
                                         whileTap: {
                                             scale: .95
@@ -83235,9 +83233,9 @@ function z$e({
                                 style: i != null && i.display_mode && i.display_mode !== "normal" ? (() => {
                                     const v = i.display_mode === "ultra_wide" ? .68 : .82;
                                     return {
-                                        transform: `scale(${v})`,
-                                        transformOrigin: "top left",
-                                        width: `${1/v*100}%`
+                                        zoom: v,
+                                        width: `${1/v*100}%`,
+                                        minHeight: `${1/v*100}%`
                                     }
                                 })() : void 0,
                                 children: e
