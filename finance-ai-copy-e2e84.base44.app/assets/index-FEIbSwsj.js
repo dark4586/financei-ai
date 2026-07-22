@@ -82334,6 +82334,12 @@ function z$e({
             return ((v = window.matchMedia) == null ? void 0 : v.call(window, "(prefers-color-scheme: dark)").matches) ?? !0
         });
     const [appBgUrl, setAppBgUrl] = Y.useState("");
+    const [isMobile, setIsMobile] = Y.useState(() => typeof window !== "undefined" ? window.innerWidth < 768 : false);
+    Y.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
     Y.useEffect(() => {
         let active = true;
         let objectUrl = "";
@@ -83230,12 +83236,11 @@ function z$e({
                                 transition: {
                                     duration: .15
                                 },
-                                style: i != null && i.display_mode && i.display_mode !== "normal" ? (() => {
+                                style: !isMobile && i != null && i.display_mode && i.display_mode !== "normal" ? (() => {
                                     const v = i.display_mode === "ultra_wide" ? .68 : .82;
                                     return {
                                         zoom: v,
-                                        width: `${1/v*100}%`,
-                                        minHeight: `${1/v*100}%`
+                                        width: `${1/v*100}%`
                                     }
                                 })() : void 0,
                                 children: e
