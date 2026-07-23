@@ -82333,8 +82333,13 @@ function ScaledDisplayWrapper({ displayMode, children }) {
         }
         const updateHeight = () => {
             if (contentRef.current) {
-                const unscaledH = contentRef.current.getBoundingClientRect().height;
-                setScaledHeight(unscaledH * v);
+                const unscaledH = Math.max(
+                    contentRef.current.offsetHeight || 0,
+                    contentRef.current.scrollHeight || 0
+                );
+                if (unscaledH > 0) {
+                    setScaledHeight(Math.ceil(unscaledH * v) + 24);
+                }
             }
         };
         updateHeight();
@@ -82345,8 +82350,10 @@ function ScaledDisplayWrapper({ displayMode, children }) {
             });
             ro.observe(contentRef.current);
         }
+        const timer = setTimeout(updateHeight, 300);
         return () => {
             if (ro) ro.disconnect();
+            clearTimeout(timer);
         };
     }, [v, children]);
 
