@@ -82319,6 +82319,61 @@ function q$e({
 }
 Qe("Home"), Qe("ChatIA"), Qe("Receitas"), Qe("DespesasFixas"), Qe("Dividas"), Qe("Bancos"), Qe("MeusInvestimentos"), Qe("Objetivos"), Qe("Planejamento"), Qe("HistoricoMensal"), Qe("Emprestimos"), Qe("Anotacoes"), Qe("Calculadora"), Qe("Configuracoes"), Qe("Perfil");
 
+function ScaledDisplayWrapper({ displayMode, children }) {
+    const containerRef = Y.useRef(null);
+    const contentRef = Y.useRef(null);
+    const [scaledHeight, setScaledHeight] = Y.useState(null);
+
+    const v = displayMode === "ultra_wide" ? 0.68 : displayMode === "wide" ? 0.82 : 1;
+
+    Y.useEffect(() => {
+        if (v === 1 || !contentRef.current) {
+            setScaledHeight(null);
+            return;
+        }
+        const updateHeight = () => {
+            if (contentRef.current) {
+                const unscaledH = contentRef.current.getBoundingClientRect().height;
+                setScaledHeight(unscaledH * v);
+            }
+        };
+        updateHeight();
+        let ro = null;
+        if (typeof ResizeObserver !== "undefined") {
+            ro = new ResizeObserver(() => {
+                updateHeight();
+            });
+            ro.observe(contentRef.current);
+        }
+        return () => {
+            if (ro) ro.disconnect();
+        };
+    }, [v, children]);
+
+    if (v === 1) {
+        return children;
+    }
+
+    return l.jsx("div", {
+        ref: containerRef,
+        style: {
+            position: "relative",
+            width: "100%",
+            height: scaledHeight ? `${scaledHeight}px` : "auto",
+            overflow: "hidden"
+        },
+        children: l.jsx("div", {
+            ref: contentRef,
+            style: {
+                transform: `scale(${v})`,
+                transformOrigin: "top left",
+                width: `${(1 / v) * 100}%`
+            },
+            children: children
+        })
+    });
+}
+
 function z$e({
     children: e,
     currentPageName: t
@@ -82334,12 +82389,6 @@ function z$e({
             return ((v = window.matchMedia) == null ? void 0 : v.call(window, "(prefers-color-scheme: dark)").matches) ?? !0
         });
     const [appBgUrl, setAppBgUrl] = Y.useState("");
-    const [isMobile, setIsMobile] = Y.useState(() => typeof window !== "undefined" ? window.innerWidth < 768 : false);
-    Y.useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
-        window.addEventListener("resize", handleResize);
-        return () => window.removeEventListener("resize", handleResize);
-    }, []);
     Y.useEffect(() => {
         let active = true;
         let objectUrl = "";
@@ -83236,14 +83285,10 @@ function z$e({
                                 transition: {
                                     duration: .15
                                 },
-                                style: !isMobile && i != null && i.display_mode && i.display_mode !== "normal" ? (() => {
-                                    const v = i.display_mode === "ultra_wide" ? .68 : .82;
-                                    return {
-                                        zoom: v,
-                                        width: `${1/v*100}%`
-                                    }
-                                })() : void 0,
-                                children: e
+                                children: l.jsx(ScaledDisplayWrapper, {
+                                    displayMode: i == null ? void 0 : i.display_mode,
+                                    children: e
+                                })
                             }, n.pathname)
                         })]
                     })]
