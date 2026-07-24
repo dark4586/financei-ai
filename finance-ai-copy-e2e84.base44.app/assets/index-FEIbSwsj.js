@@ -59362,19 +59362,38 @@ function YOe() {
                                 })]
                             }), l.jsxs("div", {
                                 children: [l.jsx(he, {
-                                    children: "🖼️ Logo do Banco"
+                                    children: "🖼️ Logo do Banco (Upload ou URL)"
                                 }), l.jsxs("div", {
-                                    className: "flex gap-3 items-center",
-                                    children: [l.jsx(Re, {
-                                        type: "file",
-                                        accept: "image/*",
-                                        onChange: Pr,
-                                        className: "bg-[#2a2a2a] border-[#404040] text-white",
-                                        disabled: v
-                                    }), j.logo_url && l.jsx("img", {
-                                        src: j.logo_url,
-                                        alt: "Logo",
-                                        className: "w-12 h-12 rounded object-contain bg-white p-1"
+                                    className: "space-y-2",
+                                    children: [l.jsxs("div", {
+                                        className: "flex gap-3 items-center",
+                                        children: [l.jsx(Re, {
+                                            type: "file",
+                                            accept: "image/*",
+                                            onChange: Pr,
+                                            className: "bg-[#2a2a2a] border-[#404040] text-white flex-1",
+                                            disabled: v
+                                        }), j.logo_url && l.jsx("img", {
+                                            src: j.logo_url,
+                                            alt: "Logo",
+                                            className: "w-12 h-12 rounded object-contain bg-white p-1 flex-shrink-0"
+                                        })]
+                                    }), l.jsx(Re, {
+                                        type: "text",
+                                        placeholder: "ou cole a URL da imagem aqui (ex: https://...)",
+                                        value: j.logo_url || "",
+                                        onChange: Z => N({ ...j, logo_url: Z.target.value }),
+                                        className: "bg-[#2a2a2a] border-[#404040] text-white text-xs"
+                                    }), l.jsxs("div", {
+                                        className: "flex flex-wrap gap-1 mt-1 text-xs",
+                                        children: [
+                                            l.jsx("span", { className: "text-gray-400 self-center mr-1", children: "Logos:" }),
+                                            l.jsx("button", { type: "button", onClick: () => N({ ...j, nome: j.nome || "Mercado Pago", logo_url: "https://api.iconify.design/simple-icons:mercadopago.svg?color=%23009ee3", cor_principal: "#009ee3" }), className: "px-2 py-1 bg-blue-600/30 hover:bg-blue-600/50 rounded text-blue-300 border border-blue-500/30", children: "💙 Mercado Pago" }),
+                                            l.jsx("button", { type: "button", onClick: () => N({ ...j, nome: j.nome || "Nubank", logo_url: "https://api.iconify.design/simple-icons:nubank.svg?color=%23820ad1", cor_principal: "#7b0ccd" }), className: "px-2 py-1 bg-purple-600/30 hover:bg-purple-600/50 rounded text-purple-300 border border-purple-500/30", children: "💜 Nubank" }),
+                                            l.jsx("button", { type: "button", onClick: () => N({ ...j, nome: j.nome || "Bradesco", logo_url: "https://api.iconify.design/simple-icons:bradesco.svg?color=%23cc092f", cor_principal: "#cc092f" }), className: "px-2 py-1 bg-red-600/30 hover:bg-red-600/50 rounded text-red-300 border border-red-500/30", children: "❤️ Bradesco" }),
+                                            l.jsx("button", { type: "button", onClick: () => N({ ...j, nome: j.nome || "Itaú", logo_url: "https://api.iconify.design/simple-icons:itau.svg?color=%23ec7000", cor_principal: "#ec7000" }), className: "px-2 py-1 bg-orange-600/30 hover:bg-orange-600/50 rounded text-orange-300 border border-orange-500/30", children: "🧡 Itaú" }),
+                                            l.jsx("button", { type: "button", onClick: () => N({ ...j, nome: j.nome || "Santander", logo_url: "https://api.iconify.design/simple-icons:santander.svg?color=%23ec0000", cor_principal: "#ec0000" }), className: "px-2 py-1 bg-red-700/30 hover:bg-red-700/50 rounded text-red-200 border border-red-600/30", children: "🔴 Santander" })
+                                        ]
                                     })]
                                 })]
                             }), l.jsxs("div", {
@@ -74065,13 +74084,13 @@ function checkAndTriggerNotifications(data) {
             const val = parseFloat(s.valor_investido || 0);
             const rate = parseFloat(s.taxa_rendimento || 0);
             if (val > 0 && rate > 0) {
-                dailyYield += (val * (rate / 100)) / 365;
+                dailyYield += (val * (rate / 100)) / 30;
             }
         });
-        if (dailyYield > 0.01) {
+        if (dailyYield > 0.0001) {
             const id = `daily_yield_${todayStr}`;
             if (!(await isNotificationShown(id))) {
-                showLocalNotification(id, "📈 Rendimento de CDB", `Seus investimentos renderam aproximadamente R$ ${formatVal(dailyYield)} hoje!`, "/MeusInvestimentos");
+                showLocalNotification(id, "📈 Rendimento Diário", `Seus investimentos renderam aproximadamente R$ ${dailyYield < 0.01 ? dailyYield.toFixed(4) : formatVal(dailyYield)} nas últimas 24h!`, "/MeusInvestimentos");
             }
         }
 
@@ -76342,7 +76361,14 @@ function wIe() {
             })
         }
         return m
-    }, n = e.reduce((c, d) => c + getInvestedValueAsOf(d, todayStr), 0), r = e.reduce((c, d) => c + (d.aporte_mensal || 0), 0), a = e.reduce((c, d) => c + getInvestedValueAsOf(d, todayStr) * d.taxa_rendimento / 100, 0), i = e.reduce((c, d) => c + (d.retirada_mensal || 0), 0), o = a - i, s = {
+    }, n = e.reduce((c, d) => c + getInvestedValueAsOf(d, todayStr), 0), r = e.reduce((c, d) => c + (d.aporte_mensal || 0), 0), a = e.reduce((c, d) => c + getInvestedValueAsOf(d, todayStr) * d.taxa_rendimento / 100, 0), i = e.reduce((c, d) => c + (d.retirada_mensal || 0), 0), o = a - i,
+    currDateInv = new Date(),
+    currDayInv = currDateInv.getDate(),
+    daysInCurrMonthInv = new Date(currDateInv.getFullYear(), currDateInv.getMonth() + 1, 0).getDate(),
+    daysRemainingInv = daysInCurrMonthInv - currDayInv,
+    rendAccruedInv = a * (currDayInv / daysInCurrMonthInv),
+    rendRestanteInv = a * (daysRemainingInv / daysInCurrMonthInv),
+    s = {
         cdb: "CDB",
         poupanca: "Poupança",
         tesouro_direto: "Tesouro Direto",
@@ -76430,12 +76456,15 @@ function wIe() {
                         }), l.jsxs("div", {
                             children: [l.jsx("p", {
                                 className: "text-gray-400 text-sm",
-                                children: "Rendimento Mensal"
+                                children: "Rendimento Mensal (Mês Inteiro)"
                             }), l.jsxs("h3", {
                                 className: "text-2xl font-bold text-white",
                                 children: ["R$ ", a.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
+                            }), l.jsx("p", {
+                                className: "text-[11px] text-green-400/90 mt-1 leading-tight",
+                                children: `⚡ R$ ${rendAccruedInv.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} já renderam (${currDayInv}/${daysInCurrMonthInv} dias) • ⏳ R$ ${rendRestanteInv.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} nos últimos ${daysRemainingInv} dias`
                             })]
                         })]
                     })
@@ -78139,7 +78168,14 @@ function CIe() {
     } = Ve({
         queryKey: ["scheduledDeposits"],
         queryFn: () => se.entities.ScheduledDeposit.list()
-    }), activeSettings = (cc && cc[0]) || {}, currentTheme = activeSettings.tema || "dark", isDark = !["light", "material3_light"].includes(currentTheme), todayStrForPlan = new Date().toISOString().split("T")[0], getInvestedValueAsOfPlan = (c, dateStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia <= dateStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, t = e.reduce((p, m) => p + getInvestedValueAsOfPlan(m, todayStrForPlan), 0), n = e.reduce((p, m) => p + getInvestedValueAsOfPlan(m, todayStrForPlan) * m.taxa_rendimento / 100, 0), r = e.reduce((p, m) => p + (m.retirada_mensal || 0), 0), a = e.reduce((p, m) => p + (m.aporte_mensal || 0), 0), i = n - r + a, s = ((p = 48) => {
+    }), activeSettings = (cc && cc[0]) || {}, currentTheme = activeSettings.tema || "dark", isDark = !["light", "material3_light"].includes(currentTheme), todayStrForPlan = new Date().toISOString().split("T")[0], getInvestedValueAsOfPlan = (c, dateStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia <= dateStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, t = e.reduce((p, m) => p + getInvestedValueAsOfPlan(m, todayStrForPlan), 0), n = e.reduce((p, m) => p + getInvestedValueAsOfPlan(m, todayStrForPlan) * m.taxa_rendimento / 100, 0), r = e.reduce((p, m) => p + (m.retirada_mensal || 0), 0), a = e.reduce((p, m) => p + (m.aporte_mensal || 0), 0), i = n - r + a,
+    currDatePlan = new Date(),
+    currDayPlan = currDatePlan.getDate(),
+    daysInCurrMonthPlan = new Date(currDatePlan.getFullYear(), currDatePlan.getMonth() + 1, 0).getDate(),
+    daysRemainingPlan = daysInCurrMonthPlan - currDayPlan,
+    rendAccruedPlan = n * (currDayPlan / daysInCurrMonthPlan),
+    rendRestantePlan = n * (daysRemainingPlan / daysInCurrMonthPlan),
+    s = ((p = 48) => {
         const m = [],
             g = new Date(2025, 11, 1),
             w = new Date < g ? g : new Date;
@@ -78204,12 +78240,15 @@ function CIe() {
                         }), l.jsxs("div", {
                             children: [l.jsx("p", {
                                 className: "text-gray-400 text-sm",
-                                children: "📈 Rendimento Mensal"
+                                children: "📈 Rendimento Mensal (Mês Inteiro)"
                             }), l.jsxs("h3", {
                                 className: "text-2xl font-bold " + (isDark ? "text-white" : "text-gray-900"),
                                 children: ["R$ ", n.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 })]
+                            }), l.jsx("p", {
+                                className: "text-[11px] text-green-400 mt-1 leading-tight",
+                                children: `⚡ R$ ${rendAccruedPlan.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} acumulados (${currDayPlan}/${daysInCurrMonthPlan} dias) • ⏳ R$ ${rendRestantePlan.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} nos últimos ${daysRemainingPlan} dias`
                             })]
                         })]
                     })

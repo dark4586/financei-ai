@@ -584,6 +584,36 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
         }
 
         if (method === 'GET' && !subPath) {
+            if (entityName === 'Savings' && db.Savings) {
+                let updated = false;
+                const now = new Date();
+                db.Savings.forEach(item => {
+                    if (item && item.taxa_rendimento > 0 && item.valor_investido > 0) {
+                        const lastDateStr = item.last_rendimento_date || item.updated_date || item.created_date || item.data_inicio;
+                        if (lastDateStr) {
+                            const lastDate = new Date(lastDateStr);
+                            const diffMs = now.getTime() - lastDate.getTime();
+                            const daysPassed = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+                            if (daysPassed >= 1) {
+                                const monthlyRate = parseFloat(item.taxa_rendimento) / 100;
+                                const dailyRate = monthlyRate / 30;
+                                const accruedMultiplier = Math.pow(1 + dailyRate, daysPassed);
+                                const newValor = parseFloat((item.valor_investido * accruedMultiplier).toFixed(4));
+                                if (newValor > item.valor_investido) {
+                                    item.valor_investido = newValor;
+                                    item.last_rendimento_date = now.toISOString();
+                                    item.updated_date = now.toISOString();
+                                    updated = true;
+                                }
+                            }
+                        }
+                    }
+                });
+                if (updated) {
+                    saveDB();
+                }
+            }
+
             const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
             const qParam = parsedUrl.searchParams.get('q');
             const sortParam = parsedUrl.searchParams.get('sort');

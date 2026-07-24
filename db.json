@@ -12,13 +12,13 @@
     },
     {
       "nome": "Mercado Pago",
-      "logo_url": "https://base44.app/api/apps/69fdc875c6ab6facb4be2e84/files/mp/public/69fdc875c6ab6facb4be2e84/fbea0ab46_f040a5bfb2cd6c1b29ffcd45ad3ecd91.jpg",
-      "cor_principal": "#3b82f6",
+      "logo_url": "https://api.iconify.design/simple-icons:mercadopago.svg?color=%23009ee3",
+      "cor_principal": "#009ee3",
       "tipo": "banco_tradicional",
       "saldo_atual": 0,
       "id": "1782930492695_dntcgni",
       "created_date": "2026-07-01T18:28:12.695Z",
-      "updated_date": "2026-07-01T18:28:12.695Z"
+      "updated_date": "2026-07-24T12:00:00.000Z"
     },
     {
       "nome": "Jeitto",
@@ -346,7 +346,24 @@
       "updated_date": "2026-07-04T12:34:14.704Z"
     }
   ],
-  "Savings": [],
+  "Savings": [
+    {
+      "banco_id": "1782930492695_dntcgni",
+      "tipo": "cdb",
+      "nome": "CDB Mercado Pago",
+      "valor_investido": 0.91,
+      "aporte_mensal": 0,
+      "taxa_rendimento": 1.26,
+      "retirada_mensal": 0,
+      "data_inicio": "2026-07-01",
+      "familiar": "",
+      "banco_nome": "Mercado Pago",
+      "id": "1784568893426_9cdduwn",
+      "created_date": "2026-07-20T17:34:53.426Z",
+      "updated_date": "2026-07-24T12:00:00.000Z",
+      "last_rendimento_date": "2026-07-24T12:00:00.000Z"
+    }
+  ],
   "Goal": [],
   "CreditCard": [
     {
