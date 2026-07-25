@@ -59071,7 +59071,7 @@ function YOe() {
                                                     className: "text-right mr-1",
                                                     children: [l.jsxs("span", {
                                                         className: "text-base font-bold text-white",
-                                                        children: ["R$ ", Z.valor_investido.toLocaleString("pt-BR", {
+                                                        children: ["R$ ", (Z.valor_investido + fn).toLocaleString("pt-BR", {
                                                             minimumFractionDigits: 2
                                                         })]
                                                     }), fn > 0 && l.jsxs("p", {
@@ -74472,7 +74472,7 @@ function bIe() {
         return K + (J.valor_recebido || 0);
     }
     return K + (J.valor || 0)
-}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + ((J.valor || 0) - (J.valor_recebido || 0)), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.reduce((K, J) => K + getCardBillForMonth(J, S), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), initialInvestmentsVal = b.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === S && isItemCreatedBeforeOrInMonth(K, S)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), totalAportadoNoMes = W + scheduledAportesVal + initialInvestmentsVal, U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V, z = X - L - W, _dbg = console.log("FINANCEAI DEBUG:", {X, L, W, scheduledAportesVal, initialInvestmentsVal, z, totalAportadoNoMes, U, S, b, scheduledList}), activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), getGoalSavedValue = K => { let val = K.valor_economizado || 0; if (K.investimento_vinculado_id) { const inv = b.find(item => item.id === K.investimento_vinculado_id); if (inv) val += (inv.valor_investido || 0); } return val; }, ie = X === 0 ? z >= 0 ? {
+}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + ((J.valor || 0) - (J.valor_recebido || 0)), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.reduce((K, J) => K + getCardBillForMonth(J, S), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), initialInvestmentsVal = b.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === S && isItemCreatedBeforeOrInMonth(K, S)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), totalAportadoNoMes = W + scheduledAportesVal + initialInvestmentsVal, U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V, z = X - L - W, _dbg = console.log("FINANCEAI DEBUG:", {X, L, W, scheduledAportesVal, initialInvestmentsVal, z, totalAportadoNoMes, U, S, b, scheduledList}), activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), getGoalSavedValue = K => { let val = K.valor_economizado || 0; if (K.investimento_vinculado_id) { const inv = b.find(item => item.id === K.investimento_vinculado_id); if (inv) val += getInvestedValueAsOfMonth(inv, S); } return val; }, ie = X === 0 ? z >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
@@ -77302,7 +77302,19 @@ function _Ie() {
     } = Ve({
         queryKey: ["savings"],
         queryFn: () => se.entities.Savings.list()
-    }), d = st({
+    }), {
+        data: scheduledListForGoals = []
+    } = Ve({
+        queryKey: ["scheduledDeposits"],
+        queryFn: () => se.entities.ScheduledDeposit.list()
+    }), getInvestedValueForGoal = (inv) => {
+        if (!inv) return 0;
+        const base = inv.valor_investido || 0;
+        const extras = (scheduledListForGoals || [])
+            .filter(sd => sd.investimento_id === inv.id && !sd.efetivado)
+            .reduce((sum, sd) => sum + (sd.valor || 0), 0);
+        return base + extras;
+    }, d = st({
         mutationFn: S => se.entities.Goal.create(S),
         onSuccess: () => {
             o.invalidateQueries({
@@ -77370,7 +77382,7 @@ function _Ie() {
         const E = S.valor_economizado || 0;
         if (S.investimento_vinculado_id) {
             const O = c.find(P => P.id === S.investimento_vinculado_id);
-            if (O) return E + O.valor_investido
+            if (O) return E + getInvestedValueForGoal(O)
         }
         return E
     }, v = s.filter(S => S.status === "ativo"), b = v.reduce((S, E) => S + E.valor_alvo, 0), j = v.reduce((S, E) => S + x(E), 0), N = v.reduce((S, E) => S + (E.economia_mensal || 0), 0), k = {
@@ -77571,7 +77583,7 @@ function _Ie() {
                                         children: M.nome
                                     }), l.jsxs("p", {
                                         className: "text-sm text-cyan-400",
-                                        children: ["R$ ", M.valor_investido.toLocaleString("pt-BR", {
+                                        children: ["R$ ", getInvestedValueForGoal(M).toLocaleString("pt-BR", {
                                             minimumFractionDigits: 2
                                         })]
                                     })]
@@ -77619,7 +77631,7 @@ function _Ie() {
                                 className: "text-xs text-gray-500 pt-2 border-t border-[#2a2a2a]",
                                 children: ["💡 Valor manual economizado: R$ ", S.valor_economizado.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
-                                }), " + Investimento: R$ ", M.valor_investido.toLocaleString("pt-BR", {
+                                }), " + Investimento: R$ ", getInvestedValueForGoal(M).toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
                                 }), " = Total: R$ ", E.toLocaleString("pt-BR", {
                                     minimumFractionDigits: 2
@@ -77812,7 +77824,7 @@ function _Ie() {
                                         children: "Nenhum"
                                     }), c.map(S => l.jsxs(we, {
                                         value: S.id,
-                                        children: [S.nome, " - R$ ", S.valor_investido.toLocaleString("pt-BR", {
+                                        children: [S.nome, " - R$ ", getInvestedValueForGoal(S).toLocaleString("pt-BR", {
                                             minimumFractionDigits: 2
                                         })]
                                     }, S.id))]
