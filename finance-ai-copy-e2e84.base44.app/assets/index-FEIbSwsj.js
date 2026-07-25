@@ -74618,11 +74618,11 @@ function bIe() {
             }
             const Jt = G.filter(at => {
                 if (!at.valor_alvo || at.valor_alvo === 0) return !1;
-                const de = (at.valor_economizado || 0) / at.valor_alvo * 100;
+                const de = getGoalSavedValue(at) / at.valor_alvo * 100;
                 return de >= 80 && de < 100
             });
             Jt.length > 0 && Jt.forEach(at => {
-                const de = at.valor_alvo - (at.valor_economizado || 0);
+                const de = at.valor_alvo - getGoalSavedValue(at);
                 J.push({
                     type: "opportunity",
                     title: "🎯 Meta Quase Alcançada!",
@@ -76039,7 +76039,7 @@ function bIe() {
                                                             })
                                                         }), l.jsxs("p", {
                                                             className: "text-xs text-gray-500 mt-1.5",
-                                                            children: ["R$ ", formatBRL(K.valor_economizado || 0), " / R$ ", formatBRL(K.valor_alvo || 0)]
+                                                            children: ["R$ ", formatBRL(savedVal), " / R$ ", formatBRL(K.valor_alvo || 0)]
                                                         })]
                                                     })
                                                 }), l.jsx(wl, {
@@ -76053,7 +76053,7 @@ function bIe() {
                                                             children: ["🎯 Meta: R$ ", formatBRL(K.valor_alvo || 0)]
                                                         }), l.jsxs("p", {
                                                             className: "text-gray-300",
-                                                            children: ["💰 Economizado: R$ ", formatBRL(K.valor_economizado || 0)]
+                                                            children: ["💰 Economizado: R$ ", formatBRL(savedVal)]
                                                         }), l.jsxs("p", {
                                                             className: "text-gray-300",
                                                             children: ["📅 Mensal: R$ ", formatBRL(K.economia_mensal || 0)]
