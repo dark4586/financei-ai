@@ -58361,6 +58361,7 @@ function YOe() {
         dia_vencimento: "",
         mes_vencimento: "",
         dia_fechamento: "",
+        parcelas: "1",
         status: "aberta",
         ativo: !0,
         banco_debito_id: "",
@@ -58593,6 +58594,7 @@ function YOe() {
             dia_vencimento: "",
             mes_vencimento: "",
             dia_fechamento: "",
+            parcelas: "1",
             status: "aberta",
             ativo: !0,
             banco_debito_id: "",
@@ -58688,6 +58690,7 @@ function YOe() {
             mes_vencimento: cardMonth,
             dia_fechamento: parseInt(D.dia_fechamento),
             data_vencimento: computedDataVencimento,
+            parcelas: parseInt(D.parcelas) || 1,
             status: D.status || "aberta",
             ativo: D.ativo
         };
@@ -59188,7 +59191,7 @@ function YOe() {
                                                         children: Z.nome
                                                     }), l.jsxs("p", {
                                                         className: "text-xs text-gray-400 truncate",
-                                                        children: [(Pe == null ? void 0 : Pe.nome) || "Sem banco", " • Dia ", Z.dia_vencimento, "/", Z.mes_vencimento]
+                                                        children: [(Pe == null ? void 0 : Pe.nome) || "Sem banco", " • Dia ", Z.dia_vencimento, "/", Z.mes_vencimento, Z.parcelas && Z.parcelas > 1 ? ` • ${Z.parcelas}x parcelas` : ""]
                                                     })]
                                                 })]
                                             }), l.jsxs("div", {
@@ -59213,6 +59216,7 @@ function YOe() {
                                                             dia_vencimento: Z.dia_vencimento.toString(),
                                                             mes_vencimento: (Z.mes_vencimento || new Date().getMonth() + 1).toString(),
                                                             dia_fechamento: Z.dia_fechamento.toString(),
+                                                            parcelas: (Z.parcelas || 1).toString(),
                                                             status: Z.status || "aberta",
                                                             ativo: Z.ativo,
                                                             banco_debito_id: Z.banco_debito_id || "",
@@ -59801,6 +59805,20 @@ function YOe() {
                                         }),
                                         className: "bg-[#2a2a2a] border-[#404040] text-white",
                                         required: !0
+                                    })]
+                                }), l.jsxs("div", {
+                                    children: [l.jsx(he, {
+                                        children: "🔢 Parcelas"
+                                    }), l.jsx(Re, {
+                                        type: "number",
+                                        min: "1",
+                                        max: "72",
+                                        value: D.parcelas || "1",
+                                        onChange: Z => H({ ...D,
+                                            parcelas: Z.target.value
+                                        }),
+                                        className: "bg-[#2a2a2a] border-[#404040] text-white",
+                                        placeholder: "Ex: 1 ou 12"
                                     })]
                                 })]
                             }), l.jsxs("div", {
@@ -71230,6 +71248,7 @@ function DespesasHistory({
     expenses: e,
     onEdit: t,
     onDelete: n,
+    onDeleteCardBill: onDeleteCB,
     selectedMonth: r,
     categoriasMap: a
 }) {
@@ -71280,9 +71299,9 @@ function DespesasHistory({
                             children: ["R$ ", i.valor.toLocaleString("pt-BR", {
                                 minimumFractionDigits: 2
                             })]
-                        }), !i.isCardBill && l.jsxs("div", {
+                        }), l.jsxs("div", {
                             className: "flex items-center gap-1 flex-wrap justify-end",
-                            children: [l.jsx(xe, {
+                            children: [!i.isCardBill && l.jsx(xe, {
                                 variant: "ghost",
                                 size: "icon",
                                 onClick: () => t(i),
@@ -71293,7 +71312,16 @@ function DespesasHistory({
                             }), l.jsx(xe, {
                                 variant: "ghost",
                                 size: "icon",
-                                onClick: () => n(i.id),
+                                title: i.isCardBill ? "Apagar Pagamento da Fatura" : "Apagar Despesa",
+                                onClick: () => {
+                                    if (i.isCardBill) {
+                                        if (confirm(`Deseja apagar o pagamento da fatura "${i.nome}"? A fatura voltará a ficar aberta.`)) {
+                                            if (onDeleteCB) onDeleteCB(i);
+                                        }
+                                    } else {
+                                        n(i.id);
+                                    }
+                                },
                                 className: "text-red-400 hover:text-red-300 hover:bg-red-500/10 w-8 h-8",
                                 children: l.jsx(fr, {
                                     className: "w-4 h-4"
@@ -71518,6 +71546,33 @@ function uIe() {
                 status: "paga"
             }
         });
+    };
+    const unpayCardBill = async (cardItem) => {
+        const cardId = cardItem.id;
+        const targetCard = (Array.isArray(creditCardsList) ? creditCardsList : []).find(c => c.id === cardId) || cardItem;
+        const paidAmount = targetCard.valor_ultimo_pagamento || cardItem.valor || 0;
+        if (targetCard.banco_debito_id) {
+            const bank = c.find(b => b.id === targetCard.banco_debito_id);
+            if (bank) {
+                await se.entities.Bank.update(bank.id, {
+                    ...bank,
+                    saldo_atual: (bank.saldo_atual || 0) + paidAmount
+                });
+                o.invalidateQueries({ queryKey: ["banks"] });
+            }
+        }
+        await updateCardMutation.mutateAsync({
+            id: targetCard.id,
+            data: {
+                ...targetCard,
+                valor_fatura_atual: paidAmount,
+                limite_disponivel: Math.max(0, (targetCard.limite_total || 0) - paidAmount),
+                valor_ultimo_pagamento: 0,
+                ultimo_pagamento: null,
+                status: "aberta"
+            }
+        });
+        o.invalidateQueries({ queryKey: ["creditCards"] });
     };
     const v = s.filter(S => S.ativa && isItemCreatedBeforeOrInMonth(S, selectedMonth)).reduce((S, E) => S + (E.valor || 0), 0) + [...unpaidCardBills, ...paidCardBills].reduce((sum, item) => sum + (item.valor || 0), 0);
     const b = s.filter(S => isFixedExpensePaidInMonth(S, selectedMonth) && isItemCreatedBeforeOrInMonth(S, selectedMonth)).length + paidCardBills.length;
@@ -71761,6 +71816,7 @@ function uIe() {
                     ],
                     onEdit: w,
                     onDelete: S => p.mutate(S),
+                    onDeleteCardBill: unpayCardBill,
                     selectedMonth: selectedMonth,
                     categoriasMap: N
                 }), l.jsx(zr, {
@@ -74412,7 +74468,7 @@ function bIe() {
         return K + (J.valor_recebido || 0);
     }
     return K + (J.valor || 0)
-}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + ((J.valor || 0) - (J.valor_recebido || 0)), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.reduce((K, J) => K + getCardBillForMonth(J, S), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), initialInvestmentsVal = b.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === S && isItemCreatedBeforeOrInMonth(K, S)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), totalAportadoNoMes = W + scheduledAportesVal + initialInvestmentsVal, U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V, z = X - L - W, _dbg = console.log("FINANCEAI DEBUG:", {X, L, W, scheduledAportesVal, initialInvestmentsVal, z, totalAportadoNoMes, U, S, b, scheduledList}), activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), ie = X === 0 ? z >= 0 ? {
+}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + ((J.valor || 0) - (J.valor_recebido || 0)), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.reduce((K, J) => K + getCardBillForMonth(J, S), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), initialInvestmentsVal = b.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === S && isItemCreatedBeforeOrInMonth(K, S)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), totalAportadoNoMes = W + scheduledAportesVal + initialInvestmentsVal, U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V, z = X - L - W, _dbg = console.log("FINANCEAI DEBUG:", {X, L, W, scheduledAportesVal, initialInvestmentsVal, z, totalAportadoNoMes, U, S, b, scheduledList}), activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), getGoalSavedValue = K => { let val = K.valor_economizado || 0; if (K.investimento_vinculado_id) { const inv = b.find(item => item.id === K.investimento_vinculado_id); if (inv) val += (inv.valor_investido || 0); } return val; }, ie = X === 0 ? z >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
@@ -74481,7 +74537,9 @@ function bIe() {
                 }, 0),
                 Pr = w.filter($e => $e.ativa && (!$e.mes_referencia || $e.mes_referencia.includes(zt))).reduce(($e, Je) => $e + Je.valor, 0),
                 at = x.reduce(($e, Je) => $e + getDebtInstallmentForMonth(Je, zt), 0),
-                de = Pr + at + F + V,
+                cardBillInMonth = N.reduce(($e, Je) => $e + getCardBillForMonth(Je, zt), 0),
+                goalsInMonth = j.filter($e => $e.status === "ativo" && isItemCreatedBeforeOrInMonth($e, zt)).reduce(($e, Je) => $e + (Je.economia_mensal || 0), 0),
+                de = Pr + at + cardBillInMonth + goalsInMonth,
                 Ce = k.reduce(($e, Je) => $e + Wv(Je, zt), 0);
             K.push({
                 mes: tt(It, "MMM/yy", {
@@ -75346,7 +75404,8 @@ function bIe() {
                                                         className: "space-y-3.5",
                                                         children: [
                                                             G.slice(0, 2).map((K, J) => {
-                                                                const pct = (K.valor_economizado || 0) / (K.valor_alvo || 1) * 100;
+                                                                const savedVal = getGoalSavedValue(K);
+                                                                const pct = savedVal / (K.valor_alvo || 1) * 100;
                                                                 return l.jsxs("div", {
                                                                     className: "space-y-1.5",
                                                                     children: [
@@ -75928,7 +75987,8 @@ function bIe() {
                                 }), l.jsxs("div", {
                                     className: "space-y-3",
                                     children: [G.slice(0, 3).map((K, J) => {
-                                        const ve = (K.valor_economizado || 0) / (K.valor_alvo || 1) * 100;
+                                        const savedVal = getGoalSavedValue(K);
+                                        const ve = savedVal / (K.valor_alvo || 1) * 100;
                                         return l.jsx(Be.div, {
                                             initial: {
                                                 opacity: 0,
