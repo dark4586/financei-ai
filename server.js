@@ -72,7 +72,8 @@ const MIME_TYPES = {
     '.jpeg': 'image/jpeg',
     '.gif': 'image/gif',
     '.svg': 'image/svg+xml',
-    '.ico': 'image/x-icon'
+    '.ico': 'image/x-icon',
+    '.webp': 'image/webp'
 };
 function getRequestBody(req) {
     return new Promise((resolve, reject) => {
@@ -311,8 +312,12 @@ async function handleUploadFile(req, res) {
 
         fs.writeFileSync(targetPath, filePart.data);
 
+        const ext = path.extname(filePart.filename || '').toLowerCase();
+        const mimeType = MIME_TYPES[ext] ? MIME_TYPES[ext].split(';')[0] : 'image/png';
+        const base64Data = `data:${mimeType};base64,${filePart.data.toString('base64')}`;
+
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify({ file_url: `/images/${safeFilename}` }));
+        res.end(JSON.stringify({ file_url: base64Data, relative_url: `/images/${safeFilename}` }));
         logRequest(req.method, req.url, 200, `Uploaded file: ${safeFilename}`);
     } catch (e) {
         console.error("UploadFile handler failed:", e);
