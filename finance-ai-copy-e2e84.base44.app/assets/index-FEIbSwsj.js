@@ -74134,19 +74134,23 @@ function checkAndTriggerNotifications(data) {
         const todayStr = tt(now, "yyyy-MM-dd");
         const formatVal = (val) => (val || 0).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-        // 1. Rendimento Diario
+        // 1. Rendimento Diario (Dias uteis - Seg a Sex as 8h)
+        const isBusinessDay = now.getDay() >= 1 && now.getDay() <= 5;
+        const isAfter8am = now.getHours() >= 8;
         let dailyYield = 0;
-        savings.forEach(s => {
-            const val = parseFloat(s.valor_investido || 0);
-            const rate = parseFloat(s.taxa_rendimento || 0);
-            if (val > 0 && rate > 0) {
-                dailyYield += (val * (rate / 100)) / 30;
-            }
-        });
-        if (dailyYield > 0.0001) {
-            const id = `daily_yield_${todayStr}`;
-            if (!(await isNotificationShown(id))) {
-                showLocalNotification(id, "📈 Rendimento Diário", `Seus investimentos renderam aproximadamente R$ ${dailyYield < 0.01 ? dailyYield.toFixed(4) : formatVal(dailyYield)} nas últimas 24h!`, "/MeusInvestimentos");
+        if (isBusinessDay && isAfter8am) {
+            savings.forEach(s => {
+                const val = parseFloat(s.valor_investido || 0);
+                const rate = parseFloat(s.taxa_rendimento || 0);
+                if (val > 0 && rate > 0) {
+                    dailyYield += (val * (rate / 100)) / 22; // 22 dias uteis por mes
+                }
+            });
+            if (dailyYield > 0.0001) {
+                const id = `daily_yield_${todayStr}`;
+                if (!(await isNotificationShown(id))) {
+                    showLocalNotification(id, "📈 Rendimento Diário", `Seus investimentos renderam aproximadamente R$ ${dailyYield < 0.01 ? dailyYield.toFixed(4) : formatVal(dailyYield)} hoje!`, "/MeusInvestimentos");
+                }
             }
         }
 
@@ -74839,7 +74843,7 @@ function bIe() {
         }
     }, [w, x, v, b, j, N, k, activeSettings]);
 
-    const realSaldoLivre = z - scheduledAportesVal - initialInvestmentsVal;
+    const realSaldoLivre = z - scheduledAportesVal;
     return l.jsx(g0, {
         children: l.jsx(bP, {
             onRefresh: ce,
@@ -75113,7 +75117,7 @@ function bIe() {
                                         children: [
                                             { title: "Receita Bruta", val: X, sub: "Entradas Totais", color: "text-green-400" },
                                             { title: "Despesa Total", val: L, sub: `${X > 0 ? (L / X * 100).toFixed(0) : 0}% da Receita`, color: "text-red-400" },
-                                            { title: "Saldo Livre", val: z - scheduledAportesVal - initialInvestmentsVal, sub: totalAportadoNoMes > 0 ? `Total: R$ ${formatBRL(z + W)} (-R$ ${formatBRL(totalAportadoNoMes)} em investimentos)` : (z >= 0 ? "Resultado Positivo" : "Orçamento em Déficit"), color: (z - scheduledAportesVal - initialInvestmentsVal) >= 0 ? "text-blue-400" : "text-orange-400" },
+                                            { title: "Saldo Livre", val: z - scheduledAportesVal, sub: scheduledAportesVal > 0 ? `Total: R$ ${formatBRL(z)} (-R$ ${formatBRL(scheduledAportesVal)} agendados)` : (z >= 0 ? "Resultado Positivo" : "Orçamento em Déficit"), color: (z - scheduledAportesVal) >= 0 ? "text-blue-400" : "text-orange-400" },
                                             { title: "Total Investido", val: U, sub: `Aporte: R$ ${D.toFixed(0)}/mês`, color: "text-purple-400" },
                                             { title: "Contas a Receber", val: $, sub: "Valores Pendentes", color: "text-yellow-400" },
                                             { title: "Despesas Fixas", val: M, sub: "Comprometimento Fixo", color: "text-gray-300" },
@@ -75313,7 +75317,7 @@ function bIe() {
                                         children: [
                                             { label: "Receitas", val: X, color: "text-green-400", desc: "Faturamento deste mês" },
                                             { label: "Despesas", val: L, color: "text-red-400", desc: "Total comprometido" },
-                                            { label: "Saldo Livre", val: z - scheduledAportesVal - initialInvestmentsVal, color: (z - scheduledAportesVal - initialInvestmentsVal) >= 0 ? "text-blue-400" : "text-orange-400", desc: totalAportadoNoMes > 0 ? `Total: R$ ${formatBRL(z + W)} (-R$ ${formatBRL(totalAportadoNoMes)} em investimentos)` : "Saldo residual" },
+                                            { label: "Saldo Livre", val: z - scheduledAportesVal, color: (z - scheduledAportesVal) >= 0 ? "text-blue-400" : "text-orange-400", desc: totalAportadoNoMes > 0 ? `Total: R$ ${formatBRL(z + W)} (-R$ ${formatBRL(totalAportadoNoMes)} em investimentos)` : "Saldo residual" },
                                             { label: "Total Investido", val: U, color: "text-purple-400", desc: "Patrimônio acumulado" }
                                         ].map((K, J) => l.jsxs(Oe, {
                                             className: "bg-[#1a1a1a] border-[#2a2a2a] p-4 flex flex-col justify-between h-28 relative overflow-hidden",
@@ -75528,12 +75532,12 @@ function bIe() {
                             }, {
                                 id: "balance",
                                 icon: Vu,
-                                iconColor: (z - scheduledAportesVal - initialInvestmentsVal) >= 0 ? "text-blue-400" : "text-orange-400",
-                                iconBg: (z - scheduledAportesVal - initialInvestmentsVal) >= 0 ? "from-blue-500/20 to-cyan-500/10" : "from-orange-500/20 to-red-500/10",
+                                iconColor: (z - scheduledAportesVal) >= 0 ? "text-blue-400" : "text-orange-400",
+                                iconBg: (z - scheduledAportesVal) >= 0 ? "from-blue-500/20 to-cyan-500/10" : "from-orange-500/20 to-red-500/10",
                                 label: "Saldo Livre",
-                                value: Math.abs(z - scheduledAportesVal - initialInvestmentsVal),
-                                valueColor: (z - scheduledAportesVal - initialInvestmentsVal) >= 0 ? "text-green-400" : "text-red-400",
-                                sub: (z - scheduledAportesVal - initialInvestmentsVal) >= 0 ? "✨ Sobrando" : "⚠️ Déficit",
+                                value: Math.abs(z - scheduledAportesVal),
+                                valueColor: (z - scheduledAportesVal) >= 0 ? "text-green-400" : "text-red-400",
+                                sub: (z - scheduledAportesVal) >= 0 ? "✨ Sobrando" : "⚠️ Déficit",
                                 tooltip: l.jsxs("div", {
                                     className: "space-y-1.5 text-sm",
                                     children: [l.jsx("p", {
@@ -75552,11 +75556,8 @@ function bIe() {
                                         className: "text-gray-300",
                                         children: ["📅 Aporte Agendado: R$ ", formatBRL(scheduledAportesVal)]
                                     }), l.jsxs("p", {
-                                        className: "text-gray-300",
-                                        children: ["🚀 Investimento Inicial: R$ ", formatBRL(initialInvestmentsVal)]
-                                    }), l.jsxs("p", {
-                                        className: `${(z - scheduledAportesVal - initialInvestmentsVal)>=0?"text-green-400":"text-red-400"} font-semibold pt-1 border-t border-white/10`,
-                                        children: ["Saldo Livre: R$ ", formatBRL(z - scheduledAportesVal - initialInvestmentsVal)]
+                                        className: `${(z - scheduledAportesVal)>=0?"text-green-400":"text-red-400"} font-semibold pt-1 border-t border-white/10`,
+                                        children: ["Saldo Livre: R$ ", formatBRL(z - scheduledAportesVal)]
                                     })]
                                 })
                             }, {
@@ -80794,7 +80795,7 @@ function A$e({
         var ht;
         const J = (((ht = K.mes_referencia) == null ? void 0 : ht.includes(x)) || K.recorrente || K.tipo === "salario_semanal") && isItemCreatedBeforeOrInMonth(K, x);
         return J
-    }).reduce((K, J) => J.tipo === "devedor" ? K + (J.valor_recebido || 0) : K + (J.valor || 0), 0), b = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), j = w.reduce((K, J) => K + Wv(J, x), 0), N = v + b + j, M_val = d.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(x)) && isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + J.valor, 0), S = f.reduce((K, J) => K + getDebtInstallmentForMonth(J, x), 0), getInvestedValueAsOfMonth = (cObj, monthStr) => { const val = cObj.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === cObj.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === x).reduce((sum, sd) => sum + sd.valor, 0), E = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, x), 0), O = m.reduce((K, J) => K + getCardBillForMonth(J, x), 0), P = g.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, x)), $ = P.reduce((K, J) => K + (J.economia_mensal || 0), 0), I = p.filter(K => isItemCreatedBeforeOrInMonth(K, x) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= x)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), k = M_val + S + O + $ + I, M = N - k, initialInvestmentsVal = p.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === x && isItemCreatedBeforeOrInMonth(K, x)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), screensaverRealSaldoLivre = M - scheduledAportesVal - initialInvestmentsVal, R = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), F = f.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, x)), U = N === 0 ? M >= 0 ? {
+    }).reduce((K, J) => J.tipo === "devedor" ? K + (J.valor_recebido || 0) : K + (J.valor || 0), 0), b = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), j = w.reduce((K, J) => K + Wv(J, x), 0), N = v + b + j, M_val = d.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(x)) && isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + J.valor, 0), S = f.reduce((K, J) => K + getDebtInstallmentForMonth(J, x), 0), getInvestedValueAsOfMonth = (cObj, monthStr) => { const val = cObj.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === cObj.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === x).reduce((sum, sd) => sum + sd.valor, 0), E = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, x), 0), O = m.reduce((K, J) => K + getCardBillForMonth(J, x), 0), P = g.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, x)), $ = P.reduce((K, J) => K + (J.economia_mensal || 0), 0), I = p.filter(K => isItemCreatedBeforeOrInMonth(K, x) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= x)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), k = M_val + S + O + $ + I, M = N - k, initialInvestmentsVal = p.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === x && isItemCreatedBeforeOrInMonth(K, x)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), screensaverRealSaldoLivre = M - scheduledAportesVal, R = p.filter(K => isItemCreatedBeforeOrInMonth(K, x)).reduce((K, J) => K + (J.valor_investido || 0) * (J.taxa_rendimento / 100), 0), F = f.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, x)), U = N === 0 ? M >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
