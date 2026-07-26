@@ -68265,7 +68265,7 @@ function N4e() {
 
             const expVal = O.filter(J => J.ativa && (!J.mes_referencia || J.mes_referencia.includes(monthKey)) && isItemCreatedBeforeOrInMonth(J, monthKey)).reduce((J, ve) => J + (ve.valor || 0), 0);
             const debtVal = P.reduce((J, ve) => J + getDebtInstallmentForMonth(ve, monthKey), 0);
-            const goalVal = $.filter(J => J.status === "ativo" && isItemCreatedBeforeOrInMonth(J, monthKey)).reduce((J, ve) => J + (ve.economia_mensal || 0), 0);
+            const goalVal = $.filter(J => (J.status === "ativo" || J.status === "concluido" || J.status === "concluida") && isItemCreatedBeforeOrInMonth(J, monthKey)).reduce((J, ve) => J + (ve.economia_mensal || 0), 0);
             const investVal = I.filter(J => isItemCreatedBeforeOrInMonth(J, monthKey) && (!J.data_inicio || J.data_inicio.substring(0, 7) <= monthKey)).reduce((J, ve) => J + (ve.aporte_mensal || 0), 0);
             const cardVal = F.reduce((J, ve) => J + getCardBillForMonth(ve, monthKey), 0);
 
@@ -74475,7 +74475,7 @@ function bIe() {
         return K + (J.valor_recebido || 0);
     }
     return K + (J.valor || 0)
-}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + ((J.valor || 0) - (J.valor_recebido || 0)), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.reduce((K, J) => K + getCardBillForMonth(J, S), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), initialInvestmentsVal = b.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === S && isItemCreatedBeforeOrInMonth(K, S)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), totalAportadoNoMes = W + scheduledAportesVal + initialInvestmentsVal, U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V, z = X - L - W, _dbg = console.log("FINANCEAI DEBUG:", {X, L, W, scheduledAportesVal, initialInvestmentsVal, z, totalAportadoNoMes, U, S, b, scheduledList}), activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => K.status === "ativo" && isItemCreatedBeforeOrInMonth(K, S)), getGoalSavedValue = K => { let val = K.valor_economizado || 0; if (K.investimento_vinculado_id) { const inv = b.find(item => item.id === K.investimento_vinculado_id); if (inv) val += getInvestedValueAsOfMonth(inv, S); } return val; }, ie = X === 0 ? z >= 0 ? {
+}, 0), $ = v.filter(K => K.tipo === "devedor" && K.status === "pendente" && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + ((J.valor || 0) - (J.valor_recebido || 0)), 0), I = k.reduce((K, J) => K + Wv(J, S), 0), M = w.filter(K => K.ativa && (!K.mes_referencia || K.mes_referencia.includes(S)) && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + J.valor, 0), R = x.reduce((K, J) => K + getDebtInstallmentForMonth(J, S), 0), F = N.reduce((K, J) => K + getCardBillForMonth(J, S), 0), W = b.filter(K => isItemCreatedBeforeOrInMonth(K, S) && (!K.data_inicio || K.data_inicio.substring(0, 7) <= S)).reduce((K, J) => K + (J.aporte_mensal || 0), 0), getInvestedValueAsOfMonth = (c, monthStr) => { const val = c.valor_investido || 0; const extras = (scheduledList || []).filter(sd => sd.investimento_id === c.id && !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) <= monthStr); return val + extras.reduce((sum, sd) => sum + sd.valor, 0); }, scheduledAportesVal = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === S).reduce((sum, sd) => sum + sd.valor, 0), initialInvestmentsVal = b.filter(K => K.data_inicio && K.data_inicio.substring(0, 7) === S && isItemCreatedBeforeOrInMonth(K, S)).reduce((sum, J) => sum + (J.valor_investido || 0), 0), totalAportadoNoMes = W + scheduledAportesVal + initialInvestmentsVal, U = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S), 0), D = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + getInvestedValueAsOfMonth(J, S) * (J.taxa_rendimento / 100), 0), H = b.filter(K => isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.retirada_mensal || 0), 0), V = j.filter(K => (K.status === "ativo" || K.status === "concluido" || K.status === "concluida") && isItemCreatedBeforeOrInMonth(K, S)).reduce((K, J) => K + (J.economia_mensal || 0), 0), X = P + H + I, L = M + R + F + V, z = X - L - W, _dbg = console.log("FINANCEAI DEBUG:", {X, L, W, scheduledAportesVal, initialInvestmentsVal, z, totalAportadoNoMes, U, S, b, scheduledList}), activeDebts = x.filter(K => K.status === "ativa" && isItemCreatedBeforeOrInMonth(K, S)), G = j.filter(K => (K.status === "ativo" || K.status === "concluido" || K.status === "concluida") && isItemCreatedBeforeOrInMonth(K, S)), getGoalSavedValue = K => { let val = K.valor_economizado || 0; if (K.investimento_vinculado_id) { const inv = b.find(item => item.id === K.investimento_vinculado_id); if (inv) val += getInvestedValueAsOfMonth(inv, S); } return val; }, ie = X === 0 ? z >= 0 ? {
         text: "Estável",
         color: "bg-yellow-500/35 text-yellow-300",
         emoji: "😊"
@@ -74545,7 +74545,7 @@ function bIe() {
                 Pr = w.filter($e => $e.ativa && (!$e.mes_referencia || $e.mes_referencia.includes(zt))).reduce(($e, Je) => $e + Je.valor, 0),
                 at = x.reduce(($e, Je) => $e + getDebtInstallmentForMonth(Je, zt), 0),
                 cardBillInMonth = N.reduce(($e, Je) => $e + getCardBillForMonth(Je, zt), 0),
-                goalsInMonth = j.filter($e => $e.status === "ativo" && isItemCreatedBeforeOrInMonth($e, zt)).reduce(($e, Je) => $e + (Je.economia_mensal || 0), 0),
+                goalsInMonth = j.filter($e => ($e.status === "ativo" || $e.status === "concluido" || $e.status === "concluida") && isItemCreatedBeforeOrInMonth($e, zt)).reduce(($e, Je) => $e + (Je.economia_mensal || 0), 0),
                 de = Pr + at + cardBillInMonth + goalsInMonth,
                 Ce = k.reduce(($e, Je) => $e + Wv(Je, zt), 0);
             K.push({
@@ -75413,6 +75413,7 @@ function bIe() {
                                                             G.slice(0, 2).map((K, J) => {
                                                                 const savedVal = getGoalSavedValue(K);
                                                                 const pct = savedVal / (K.valor_alvo || 1) * 100;
+                                                                const isDone = pct >= 100 || K.status === "concluido" || K.status === "concluida";
                                                                 return l.jsxs("div", {
                                                                     className: "space-y-1.5",
                                                                     children: [
@@ -75420,14 +75421,14 @@ function bIe() {
                                                                             className: "flex items-center justify-between text-xs",
                                                                             children: [
                                                                                 l.jsx("span", { className: "text-white font-medium", children: K.nome }),
-                                                                                l.jsxs("span", { className: "text-purple-400 font-bold", children: [pct.toFixed(0), "%"] })
+                                                                                l.jsxs("span", { className: isDone ? "text-emerald-400 font-bold animate-pulse flex items-center gap-1" : "text-purple-400 font-bold", children: [isDone ? "🎉 100%" : `${pct.toFixed(0)}%`] })
                                                                             ]
                                                                         }),
                                                                         l.jsx("div", {
                                                                             className: "w-full bg-[#2a2a2a] rounded-full h-2 overflow-hidden",
-                                                                            children: l.jsx("div", { className: "bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full", style: { width: `${Math.min(pct, 100)}%` } })
+                                                                            children: l.jsx("div", { className: isDone ? "bg-gradient-to-r from-emerald-400 to-green-500 h-full rounded-full animate-pulse shadow-sm shadow-emerald-500/50" : "bg-gradient-to-r from-purple-500 to-indigo-500 h-full rounded-full", style: { width: `${Math.min(pct, 100)}%` } })
                                                                         }),
-                                                                        l.jsxs("p", { className: "text-[10px] text-gray-500", children: ["Guardado: R$ ", (K.valor_economizado || 0).toLocaleString("pt-BR"), " / R$ ", (K.valor_alvo || 0).toLocaleString("pt-BR")] })
+                                                                        l.jsxs("p", { className: "text-[10px] text-gray-500 flex justify-between items-center", children: [l.jsxs("span", { children: ["Guardado: R$ ", (K.valor_economizado || 0).toLocaleString("pt-BR"), " / R$ ", (K.valor_alvo || 0).toLocaleString("pt-BR")] }), isDone && l.jsx("span", { className: "text-emerald-400 font-semibold", children: "🏆 Concluída!" })] })
                                                                     ]
                                                                 }, J);
                                                             }),
@@ -75993,6 +75994,7 @@ function bIe() {
                                     children: [G.slice(0, 3).map((K, J) => {
                                         const savedVal = getGoalSavedValue(K);
                                         const ve = savedVal / (K.valor_alvo || 1) * 100;
+                                        const isDone = ve >= 100 || K.status === "concluido" || K.status === "concluida";
                                         return l.jsx(Be.div, {
                                             initial: {
                                                 opacity: 0,
@@ -76022,13 +76024,13 @@ function bIe() {
                                                                     children: K.nome
                                                                 })]
                                                             }), l.jsxs("span", {
-                                                                className: "text-purple-400 font-bold text-sm ml-2 flex-shrink-0",
-                                                                children: [ve.toFixed(0), "%"]
+                                                                className: isDone ? "text-emerald-400 font-bold text-sm ml-2 flex-shrink-0 animate-pulse" : "text-purple-400 font-bold text-sm ml-2 flex-shrink-0",
+                                                                children: [isDone ? "🎉 100%" : `${ve.toFixed(0)}%`]
                                                             })]
                                                         }), l.jsx("div", {
                                                             className: "w-full bg-[#1a1a1a] rounded-full h-1.5 overflow-hidden",
                                                             children: l.jsx(Be.div, {
-                                                                className: "bg-gradient-to-r from-purple-500 to-pink-500 h-1.5 rounded-full",
+                                                                className: isDone ? "bg-gradient-to-r from-emerald-400 to-green-500 h-1.5 rounded-full animate-pulse shadow-sm shadow-emerald-500/50" : "bg-gradient-to-r from-purple-500 to-indigo-500 h-1.5 rounded-full",
                                                                 initial: {
                                                                     width: 0
                                                                 },
@@ -76042,8 +76044,8 @@ function bIe() {
                                                                 }
                                                             })
                                                         }), l.jsxs("p", {
-                                                            className: "text-xs text-gray-500 mt-1.5",
-                                                            children: ["R$ ", formatBRL(savedVal), " / R$ ", formatBRL(K.valor_alvo || 0)]
+                                                            className: "text-xs text-gray-500 mt-1.5 flex justify-between items-center",
+                                                            children: [l.jsxs("span", { children: ["R$ ", formatBRL(savedVal), " / R$ ", formatBRL(K.valor_alvo || 0)] }), isDone && l.jsx("span", { className: "text-emerald-400 font-semibold", children: "🏆" })]
                                                         })]
                                                     })
                                                 }), l.jsx(wl, {
@@ -77388,7 +77390,7 @@ function _Ie() {
             if (O) return E + getInvestedValueForGoal(O)
         }
         return E
-    }, v = s.filter(S => S.status === "ativo"), b = v.reduce((S, E) => S + E.valor_alvo, 0), j = v.reduce((S, E) => S + x(E), 0), N = v.reduce((S, E) => S + (E.economia_mensal || 0), 0), k = {
+    }, v = s.filter(S => S.status === "ativo" || S.status === "concluido" || S.status === "concluida"), b = v.reduce((S, E) => S + E.valor_alvo, 0), j = v.reduce((S, E) => S + x(E), 0), N = v.reduce((S, E) => S + (E.economia_mensal || 0), 0), k = {
         baixa: "bg-blue-500/20 text-blue-400",
         media: "bg-yellow-500/20 text-yellow-400",
         alta: "bg-red-500/20 text-red-400"
@@ -77488,6 +77490,7 @@ function _Ie() {
                     const E = x(S),
                         O = E / S.valor_alvo * 100,
                         P = S.valor_alvo - E,
+                        isDone = O >= 100 || S.status === "concluido" || S.status === "concluida",
                         $ = (() => {
                             const targetDate = new Date(S.data_alvo + "T12:00:00");
                             const today = new Date();
@@ -77503,8 +77506,17 @@ function _Ie() {
                         I = $ > 0 ? `${$} ${$===1?"mês":"meses"}` : $ === 0 ? "Este mês" : "Vencido",
                         M = c.find(R => R.id === S.investimento_vinculado_id);
                     return l.jsxs(Oe, {
-                        className: "bg-[#1a1a1a] border-[#2a2a2a] p-6",
-                        children: [l.jsxs("div", {
+                        className: isDone ? "bg-[#1a1a1a] border-emerald-500/40 p-6 relative overflow-hidden ring-1 ring-emerald-500/30" : "bg-[#1a1a1a] border-[#2a2a2a] p-6",
+                        children: [isDone && l.jsxs("div", {
+                            className: "mb-4 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 via-green-500/30 to-emerald-500/20 border border-emerald-500/40 flex items-center justify-between animate-pulse shadow-lg shadow-emerald-950/30",
+                            children: [
+                                l.jsxs("span", {
+                                    className: "text-xs md:text-sm font-bold text-emerald-300 flex items-center gap-2",
+                                    children: [l.jsx("span", { className: "text-lg animate-bounce inline-block", children: "🎉" }), " Meta Concluída com Sucesso! 100% Alcançado!"]
+                                }),
+                                l.jsx("span", { className: "text-lg", children: "🏆" })
+                            ]
+                        }), l.jsxs("div", {
                             className: "flex items-start justify-between mb-4",
                             children: [l.jsxs("div", {
                                 className: "flex-1",
@@ -77516,9 +77528,9 @@ function _Ie() {
                                     }), l.jsx("span", {
                                         className: `text-xs px-2 py-1 rounded ${k[S.prioridade]}`,
                                         children: S.prioridade
-                                    }), S.status === "concluido" && l.jsx("span", {
-                                        className: "text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded",
-                                        children: "Concluído"
+                                    }), isDone && l.jsx("span", {
+                                        className: "text-xs bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 px-2.5 py-1 rounded-full font-bold flex items-center gap-1 animate-pulse",
+                                        children: "🏆 Concluído!"
                                     }), S.status === "pausado" && l.jsx("span", {
                                         className: "text-xs bg-gray-500/20 text-gray-400 px-2 py-1 rounded",
                                         children: "Pausado"
@@ -77559,9 +77571,9 @@ function _Ie() {
                             children: [l.jsxs("div", {
                                 children: [l.jsxs("div", {
                                     className: "flex justify-between text-sm mb-2",
-                                    children: [l.jsxs("span", {
-                                        className: "text-gray-400",
-                                        children: ["Progresso: ", O.toFixed(1), "%"]
+                                    children: [l.jsx("span", {
+                                        className: isDone ? "text-emerald-400 font-bold" : "text-gray-400",
+                                        children: isDone ? "🎉 100% Concluído!" : `Progresso: ${O.toFixed(1)}%`
                                     }), l.jsxs("span", {
                                         className: "text-gray-400",
                                         children: ["R$ ", E.toLocaleString("pt-BR", {
@@ -81380,7 +81392,7 @@ function O$e() {
                 v = t.filter(P => P.ativa).reduce((P, $) => P + $.valor, 0),
                 b = n.reduce((P, $) => P + getDebtInstallmentForMonth($, g), 0),
                 j = r.filter(P => (P.valor_fatura_atual || 0) > 0).reduce((P, $) => P + ($.valor_fatura_atual || 0), 0),
-                N = a.filter(P => P.status === "ativo").reduce((P, $) => P + ($.economia_mensal || 0), 0),
+                N = a.filter(P => P.status === "ativo" || P.status === "concluido" || P.status === "concluida").reduce((P, $) => P + ($.economia_mensal || 0), 0),
                 k = i.reduce((P, $) => P + ($.aporte_mensal || 0), 0),
                 S = w + x,
                 E = v + b + j + N + k,
