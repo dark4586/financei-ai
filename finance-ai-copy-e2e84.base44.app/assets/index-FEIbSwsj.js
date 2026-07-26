@@ -68310,8 +68310,7 @@ function N4e() {
     C.useEffect(() => {
         E.length + O.length + P.length > 0 && p(o6(D()))
     }, [E, O, P, $, I, selectedMonth]), C.useEffect(() => {
-        if (e.length === 0 && !sessionStorage.getItem("luna_welcomed_v2")) {
-            sessionStorage.setItem("luna_welcomed_v2", "1");
+        if (e.length === 0) {
             const B = D(),
                 ie = B.saldoMensal >= 0 ? `você tem **R$ ${B.saldoMensal.toLocaleString("pt-BR",{minimumFractionDigits:2})}** livres por mês` : `seus gastos excedem sua renda em **R$ ${Math.abs(B.saldoMensal).toLocaleString("pt-BR",{minimumFractionDigits:2})}**`;
             t([{
@@ -68600,7 +68599,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                             }, ie)
                         })
                     }), l.jsxs("div", {
-                        className: "pt-2 pb-2 border-t border-white/5 flex-shrink-0",
+                        className: "pt-2 pb-4 md:pb-6 border-t border-white/5 flex-shrink-0",
                         children: [l.jsxs("form", {
                             onSubmit: B => {
                                 B.preventDefault(), V()
@@ -83409,7 +83408,7 @@ function z$e({
                                 transition: {
                                     duration: .15
                                 },
-                                children: l.jsx(ScaledDisplayWrapper, {
+                                children: t === "ChatIA" ? e : l.jsx(ScaledDisplayWrapper, {
                                     displayMode: i == null ? void 0 : i.display_mode,
                                     children: e
                                 })
