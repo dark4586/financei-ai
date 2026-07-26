@@ -68479,7 +68479,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
             icon: r8
         }];
     return l.jsxs("div", {
-        className: "bg-[#121212] min-h-[calc(100dvh-136px)] md:min-h-screen flex flex-col w-full max-w-full overflow-hidden",
+        className: "bg-[#121212] h-full flex-1 flex flex-col w-full max-w-full overflow-hidden relative",
         children: [l.jsx("div", {
             className: "hidden md:block sticky top-0 z-10 bg-[#121212]/95 backdrop-blur-xl border-b border-white/5 px-8 py-4",
             children: l.jsxs("div", {
@@ -68523,7 +68523,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                 })]
             })
         }), l.jsx("div", {
-            className: "md:hidden flex-shrink-0 flex bg-white/5 border-b border-white/5 px-4 pt-1 pb-0 gap-1",
+            className: "md:hidden flex-shrink-0 sticky top-0 z-30 bg-[#121212] border-b border-white/5 px-4 py-1.5 gap-1 flex",
             children: G.map(B => {
                 const ie = B.icon;
                 return l.jsxs("button", {
@@ -68537,7 +68537,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                 }, B.id)
             })
         }), l.jsx("div", {
-            className: "w-full max-w-4xl mx-auto px-4 md:px-8 pb-2 flex-1 min-h-0 flex flex-col overflow-y-auto overflow-x-hidden md:overflow-visible",
+            className: "w-full max-w-4xl mx-auto px-4 md:px-8 pb-2 flex-1 min-h-0 flex flex-col overflow-hidden",
             children: l.jsxs(Hr, {
                 mode: "wait",
                 children: [o === "chat" && l.jsxs(Be.div, {
@@ -83381,7 +83381,7 @@ function z$e({
                     children: [l.jsx(I$e, {
                         currentPageName: t
                     }), l.jsxs("div", {
-                        className: "flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 pt-14 md:pt-0",
+                        className: t === "ChatIA" ? "flex-1 overflow-hidden pb-20 md:pb-0 pt-14 md:pt-0 flex flex-col h-[calc(100dvh-136px)] md:h-[calc(100vh-64px)]" : "flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 pt-14 md:pt-0",
                         style: {
                             scrollbarWidth: "none",
                             msOverflowStyle: "none"
@@ -83392,6 +83392,7 @@ function z$e({
                             mode: "wait",
                             initial: !1,
                             children: l.jsx(Be.div, {
+                                className: t === "ChatIA" ? "h-full flex flex-col flex-1 min-h-0" : "",
                                 initial: {
                                     opacity: 0
                                 },
