@@ -68351,10 +68351,12 @@ Deseja que eu te dê mais conselhos ou simule um plano de economia?`;
             }
         }
     }, [D]), C.useEffect(() => {
-        var B;
-        (B = j.current) == null || B.scrollIntoView({
-            behavior: "smooth"
-        })
+        if (j.current) {
+            j.current.scrollTo({
+                top: j.current.scrollHeight,
+                behavior: "smooth"
+            });
+        }
     }, [e, a, m, w]);
     const H = C.useCallback(async B => {
             x("executing");
@@ -68537,7 +68539,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                 }, B.id)
             })
         }), l.jsx("div", {
-            className: "w-full max-w-4xl mx-auto px-4 md:px-8 pb-2 flex-1 min-h-0 flex flex-col h-full overflow-hidden",
+            className: "w-full max-w-4xl mx-auto px-4 md:px-8 flex-1 min-h-0 flex flex-col h-full overflow-hidden",
             children: l.jsxs(Hr, {
                 mode: "wait",
                 children: [o === "chat" && l.jsxs(Be.div, {
@@ -68550,8 +68552,9 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                     exit: {
                         opacity: 0
                     },
-                    className: "flex flex-col flex-1 min-h-0 h-full justify-between overflow-hidden",
+                    className: "flex flex-col flex-1 min-h-0 h-full overflow-hidden",
                     children: [l.jsxs("div", {
+                        ref: j,
                         className: "flex-1 min-h-0 overflow-y-auto py-4 space-y-3 flex flex-col justify-end",
                         style: {
                             scrollbarWidth: "none"
@@ -68579,12 +68582,10 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                                         }])
                                     }
                                 })
-                            }), a && l.jsx(v4e, {}), l.jsx("div", {
-                                ref: j
-                            })]
+                            }), a && l.jsx(v4e, {})]
                         })]
                     }), e.length <= 1 && l.jsx("div", {
-                        className: "pb-3 grid grid-cols-2 md:grid-cols-4 gap-2 flex-shrink-0 mt-auto",
+                        className: "py-2 grid grid-cols-2 md:grid-cols-4 gap-2 flex-shrink-0",
                         children: i6.slice(0, 4).map((B, ie) => {
                             const be = B.icon;
                             return l.jsxs("button", {
@@ -68599,7 +68600,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                             }, ie)
                         })
                     }), l.jsxs("div", {
-                        className: "pt-3 pb-1 border-t border-white/5 flex-shrink-0 mt-auto",
+                        className: "pt-2 pb-2 border-t border-white/5 flex-shrink-0",
                         children: [l.jsxs("form", {
                             onSubmit: B => {
                                 B.preventDefault(), V()
@@ -68656,7 +68657,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                     exit: {
                         opacity: 0
                     },
-                    className: "py-6 space-y-4",
+                    className: "flex-1 min-h-0 overflow-y-auto py-6 space-y-4",
                     children: [l.jsxs("div", {
                         className: "flex items-center justify-between",
                         children: [l.jsxs("div", {
@@ -68734,7 +68735,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                     exit: {
                         opacity: 0
                     },
-                    className: "py-6 space-y-6",
+                    className: "flex-1 min-h-0 overflow-y-auto py-6 space-y-6",
                     children: [l.jsxs("div", {
                         children: [l.jsx("h2", {
                             className: "text-lg font-bold text-white",
@@ -83384,7 +83385,7 @@ function z$e({
                     children: [l.jsx(I$e, {
                         currentPageName: t
                     }), l.jsxs("div", {
-                        className: t === "ChatIA" ? "flex-1 h-full min-h-0 overflow-hidden pb-20 md:pb-0 pt-14 md:pt-0 flex flex-col" : "flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 pt-14 md:pt-0",
+                        className: t === "ChatIA" ? "flex-1 h-full min-h-0 overflow-hidden pb-14 md:pb-0 pt-14 md:pt-0 flex flex-col" : "flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 pt-14 md:pt-0",
                         style: {
                             scrollbarWidth: "none",
                             msOverflowStyle: "none"
