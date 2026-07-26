@@ -75904,9 +75904,9 @@ function bIe() {
                             })]
                         })
 }), l.jsxs("div", {
-    className: "dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5",
+    className: "dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mt-5 md:mt-6",
     children: [l.jsxs("div", {
-        className: "dashboard-col-1 contents md:block md:space-y-5",
+        className: "dashboard-col-1 flex flex-col gap-5 md:gap-6 space-y-0",
         children: [
             l.jsx(Be.div, {
                             className: "order-1 md:order-none",
@@ -76085,7 +76085,7 @@ function bIe() {
 })
         ]
     }), l.jsxs("div", {
-        className: "dashboard-col-2 contents md:block md:space-y-5",
+        className: "dashboard-col-2 flex flex-col gap-5 md:gap-6 space-y-0",
         children: [
             l.jsx(Be.div, {
                             className: "order-2 md:order-none",
