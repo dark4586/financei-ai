@@ -83381,7 +83381,7 @@ function z$e({
                     children: [l.jsx(I$e, {
                         currentPageName: t
                     }), l.jsxs("div", {
-                        className: t === "ChatIA" ? "flex-1 overflow-hidden pb-20 md:pb-0 pt-14 md:pt-0 flex flex-col h-[calc(100dvh-136px)] md:h-[calc(100vh-64px)]" : "flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 pt-14 md:pt-0",
+                        className: t === "ChatIA" ? "flex-1 overflow-hidden pb-20 md:pb-0 pt-14 md:pt-0 flex flex-col min-h-0" : "flex-1 overflow-y-auto overflow-x-hidden pb-20 md:pb-0 pt-14 md:pt-0",
                         style: {
                             scrollbarWidth: "none",
                             msOverflowStyle: "none"
