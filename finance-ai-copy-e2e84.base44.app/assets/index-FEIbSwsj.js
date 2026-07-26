@@ -68537,7 +68537,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                 }, B.id)
             })
         }), l.jsx("div", {
-            className: "w-full max-w-4xl mx-auto px-4 md:px-8 pb-2 flex-1 min-h-0 flex flex-col overflow-hidden",
+            className: "w-full max-w-4xl mx-auto px-4 md:px-8 pb-2 flex-1 min-h-0 flex flex-col h-full overflow-hidden",
             children: l.jsxs(Hr, {
                 mode: "wait",
                 children: [o === "chat" && l.jsxs(Be.div, {
@@ -68550,38 +68550,41 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                     exit: {
                         opacity: 0
                     },
-                    className: "flex flex-col flex-1 min-h-0 h-full",
+                    className: "flex flex-col flex-1 min-h-0 h-full justify-between overflow-hidden",
                     children: [l.jsxs("div", {
-                        className: "flex-1 min-h-0 overflow-y-auto py-4 space-y-3",
+                        className: "flex-1 min-h-0 overflow-y-auto py-4 space-y-3 flex flex-col justify-end",
                         style: {
                             scrollbarWidth: "none"
                         },
-                        children: [e.map((B, ie) => l.jsx(y4e, {
-                            message: B,
-                            index: ie
-                        }, ie)), w === "executing" && l.jsx("div", {
-                            className: "px-2",
-                            children: l.jsx(r6, {
-                                mode: "executing"
-                            })
-                        }), m && !w && l.jsx("div", {
-                            className: "px-2",
-                            children: l.jsx(r6, {
-                                mode: "confirm",
-                                action: m,
-                                onConfirm: () => H(m),
-                                onCancel: () => {
-                                    g(null), t(B => [...B, {
-                                        role: "assistant",
-                                        content: "Tudo bem, ação cancelada! Posso ajudar com mais alguma coisa?"
-                                    }])
-                                }
-                            })
-                        }), a && l.jsx(v4e, {}), l.jsx("div", {
-                            ref: j
+                        children: [l.jsxs("div", {
+                            className: "space-y-3 w-full mt-auto",
+                            children: [e.map((B, ie) => l.jsx(y4e, {
+                                message: B,
+                                index: ie
+                            }, ie)), w === "executing" && l.jsx("div", {
+                                className: "px-2",
+                                children: l.jsx(r6, {
+                                    mode: "executing"
+                                })
+                            }), m && !w && l.jsx("div", {
+                                className: "px-2",
+                                children: l.jsx(r6, {
+                                    mode: "confirm",
+                                    action: m,
+                                    onConfirm: () => H(m),
+                                    onCancel: () => {
+                                        g(null), t(B => [...B, {
+                                            role: "assistant",
+                                            content: "Tudo bem, ação cancelada! Posso ajudar com mais alguma coisa?"
+                                        }])
+                                    }
+                                })
+                            }), a && l.jsx(v4e, {}), l.jsx("div", {
+                                ref: j
+                            })]
                         })]
                     }), e.length <= 1 && l.jsx("div", {
-                        className: "pb-3 grid grid-cols-2 md:grid-cols-4 gap-2",
+                        className: "pb-3 grid grid-cols-2 md:grid-cols-4 gap-2 flex-shrink-0 mt-auto",
                         children: i6.slice(0, 4).map((B, ie) => {
                             const be = B.icon;
                             return l.jsxs("button", {
@@ -68596,7 +68599,7 @@ Responda APENAS com JSON: {"insights": [{"type": "warning|opportunity|suggestion
                             }, ie)
                         })
                     }), l.jsxs("div", {
-                        className: "pt-3 border-t border-white/5",
+                        className: "pt-3 pb-1 border-t border-white/5 flex-shrink-0 mt-auto",
                         children: [l.jsxs("form", {
                             onSubmit: B => {
                                 B.preventDefault(), V()
