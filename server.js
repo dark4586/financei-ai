@@ -502,17 +502,24 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
             const items = Array.isArray(body) ? body : (body && Array.isArray(body.items) ? body.items : null);
             if (items && Array.isArray(items)) {
                 const ids = items.map(x => typeof x === 'object' ? x.id : x).filter(Boolean);
-                const initialCount = db[entityName].length;
+                const initialCount = (db[entityName] || []).length;
                 if (ids.length > 0) {
                     db[entityName] = db[entityName].filter(item => !ids.includes(item.id));
                     saveDB();
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true, count: initialCount - db[entityName].length }));
+                    logRequest(method, req.url, 200, `Deleted specified ${ids.length} items in ${entityName}`);
+                    return;
+                } else {
+                    db[entityName] = [];
+                    saveDB();
+                    res.writeHead(200, { 'Content-Type': 'application/json' });
+                    res.end(JSON.stringify({ success: true, count: initialCount }));
+                    logRequest(method, req.url, 200, `Cleared all ${initialCount} items in ${entityName} (empty deleteMany array)`);
+                    return;
                 }
-                res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ success: true, count: initialCount - db[entityName].length }));
-                logRequest(method, req.url, 200, `Deleted specified ${ids.length} items in ${entityName}`);
-                return;
-            } else if (body && body.clearAll === true) {
-                const initialCount = db[entityName].length;
+            } else if (!body || body.clearAll === true || (typeof body === 'object' && Object.keys(body).length === 0)) {
+                const initialCount = (db[entityName] || []).length;
                 db[entityName] = [];
                 saveDB();
                 res.writeHead(200, { 'Content-Type': 'application/json' });
