@@ -73010,7 +73010,7 @@ function xIe() {
         const I = [],
             M = new Date,
             R = RM(M),
-            F = new Date(2026, 6, 1);
+            F = new Date(2026, 7, 1);
         if (Gw(R, F)) return [];
         const W = (M.getFullYear() - F.getFullYear()) * 12 + (M.getMonth() - F.getMonth()),
             U = Math.max(1, Math.min(W + 1, 12));
@@ -73059,7 +73059,7 @@ function xIe() {
     }, v = () => {
         const I = [],
             M = new Date,
-            R = new Date(2026, 6, 1);
+            R = new Date(2026, 7, 1);
         let F = Ms(M, {
             weekStartsOn: 0
         });
@@ -73422,7 +73422,7 @@ function xIe() {
                                 children: "Nenhum histórico disponível ainda"
                             }), l.jsx("p", {
                                 className: "text-sm mt-2",
-                                children: "O histórico começará a partir de Julho/2026"
+                                children: "O histórico começará a partir de Agosto/2026"
                             })]
                         })
                     }) : l.jsxs(l.Fragment, {
@@ -74510,7 +74510,7 @@ function bIe() {
         document.fullscreenElement ? (document.exitFullscreen().catch(() => {}), s(!1)) : (document.documentElement.requestFullscreen().catch(() => {}), s(!0))
     }, le = (() => {
         const K = [],
-            J = new Date(2026, 6, 1),
+            J = new Date(2026, 7, 1),
             ve = new Date(),
             et = Math.max(1, (ve.getFullYear() - J.getFullYear()) * 12 + (ve.getMonth() - J.getMonth()) + 1);
         for (let ht = 0; ht < et; ht++) {
