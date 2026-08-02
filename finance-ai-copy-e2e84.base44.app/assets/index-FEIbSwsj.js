@@ -75746,13 +75746,28 @@ function bIe() {
                                 })]
                             })
                         })
-                    }), l.jsx(Be.div, {
-                        custom: 4,
-                        variants: qe,
-                        initial: "hidden",
-                        animate: "visible",
-                        children: l.jsxs(Oe, {
-                            className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 md:p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer",
+                    }), l.jsxs(nu, {
+                        children: [l.jsx(ru, {
+                            asChild: !0,
+                            children: l.jsx(Be.div, {
+                                custom: 4,
+                                variants: qe,
+                                initial: "hidden",
+                                animate: "visible",
+                                whileHover: {
+                                    y: -4,
+                                    scale: 1.01
+                                },
+                                whileTap: {
+                                    scale: .99
+                                },
+                                transition: {
+                                    type: "spring",
+                                    stiffness: 400,
+                                    damping: 25
+                                },
+                                children: l.jsxs(Oe, {
+                                    className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 md:p-6 transition-all duration-300 hover:shadow-xl cursor-pointer",
                             children: [l.jsxs("div", {
                                 className: "flex items-center gap-2 mb-5",
                                 children: [l.jsx("div", {
@@ -75905,8 +75920,17 @@ function bIe() {
                                         })
                                     })
                                 })
-                            })]
-                        })
+                            })
+                        }), l.jsx(wl, {
+                            side: "bottom",
+                            style: Ie,
+                            className: "text-white p-3 max-w-xs",
+                            children: l.jsx("p", {
+                                className: "text-sm text-gray-300",
+                                children: "💡 Projeção estimada do fluxo de caixa e saldo para os próximos meses"
+                            })
+                        })]
+                    })
 }), l.jsxs("div", {
     className: "dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mt-5 md:mt-6",
     children: [l.jsxs("div", {
