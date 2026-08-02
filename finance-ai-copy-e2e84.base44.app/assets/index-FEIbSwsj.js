@@ -54268,11 +54268,10 @@ function _Ae({
         staleTime: 3e4
     });
     const activeSettings = (cc && cc[0]) || {};
-    const currentTheme = activeSettings.tema || "dark";
-    const isDark = ["dark", "liquid_glass", "material3_dark"].includes(currentTheme);
+    const isDark = !["light", "material3"].includes(currentTheme);
     const Ie = {
-        background: isDark ? "#1a1a1a" : "#fff",
-        border: isDark ? "1px solid #2a2a2a" : "1px solid #e5e7eb",
+        background: isDark ? "rgba(24, 24, 30, 0.94)" : "#fff",
+        border: isDark ? "1px solid rgba(255, 255, 255, 0.14)" : "1px solid #e5e7eb",
         borderRadius: 8,
         color: isDark ? "#fff" : "#000"
     };
@@ -72949,7 +72948,7 @@ function xIe() {
     });
     const activeSettings = (cc && cc[0]) || {};
     const currentTheme = activeSettings.tema || "dark";
-    const isDark = ["dark", "liquid_glass", "material3_dark"].includes(currentTheme);
+    const isDark = !["light", "material3"].includes(currentTheme);
     const Ie = {
         backgroundColor: isDark ? "rgba(0, 0, 0, 0.95)" : "rgba(255, 255, 255, 0.95)",
         border: isDark ? "1px solid #2a2a2a" : "1px solid #e5e7eb",
@@ -74778,22 +74777,22 @@ function bIe() {
             })
         },
         isLiquidGlass = currentTheme === "liquid_glass",
-        isDarkTheme = ["dark", "liquid_glass", "material3_dark"].includes(currentTheme),
+        isDarkTheme = !["light", "material3"].includes(currentTheme),
         Ie = {
             backgroundColor: isLiquidGlass 
-                ? "rgba(15, 15, 25, 0.78)" 
+                ? "rgba(15, 15, 25, 0.85)" 
                 : isDarkTheme 
-                    ? "rgba(30, 30, 30, 0.95)" 
-                    : "rgba(255, 255, 255, 0.96)",
+                    ? "rgba(24, 24, 30, 0.94)" 
+                    : "rgba(255, 255, 255, 0.94)",
             border: isLiquidGlass 
                 ? "1px solid rgba(255, 255, 255, 0.16)" 
                 : isDarkTheme 
-                    ? "1px solid rgba(255, 255, 255, 0.12)" 
+                    ? "1px solid rgba(255, 255, 255, 0.14)" 
                     : "1px solid rgba(0, 0, 0, 0.12)",
             borderRadius: "12px",
-            backdropFilter: isLiquidGlass ? "blur(14px)" : "none",
-            WebkitBackdropFilter: isLiquidGlass ? "blur(14px)" : "none",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.3)"
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.35)"
         },
         tooltipLabelStyle = {
             color: isDarkTheme ? "#ffffff" : "#1a1a1a",
@@ -74801,7 +74800,7 @@ function bIe() {
             marginBottom: 4
         },
         tooltipItemStyle = {
-            color: isDarkTheme ? "#cccccc" : "#4b5563",
+            color: isDarkTheme ? "#d1d5db" : "#4b5563",
             fontSize: 12
         };
     C.useEffect(() => {
@@ -75810,8 +75809,10 @@ function bIe() {
                                                 itemStyle: tooltipItemStyle,
                                                 formatter: K => `R$ ${K.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                                                 cursor: {
-                                                    fill: "rgba(255,255,255,0.04)"
-                                                }
+                                                    fill: isDarkTheme ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.06)"
+                                                },
+                                                animationDuration: 150,
+                                                isAnimationActive: true
                                             }), l.jsx(Ra, {
                                                 wrapperStyle: {
                                                     color: "#888",
@@ -75949,7 +75950,9 @@ function bIe() {
                                             contentStyle: Ie,
                                             labelStyle: tooltipLabelStyle,
                                             itemStyle: tooltipItemStyle,
-                                            formatter: (K, J) => [`R$ ${K.toLocaleString("pt-BR",{minimumFractionDigits:2})}`, J]
+                                            formatter: (K, J) => [`R$ ${K.toLocaleString("pt-BR",{minimumFractionDigits:2})}`, J],
+                                            animationDuration: 150,
+                                            isAnimationActive: true
                                         }), l.jsx(Ra, {
                                             wrapperStyle: {
                                                 color: "#aaa",
