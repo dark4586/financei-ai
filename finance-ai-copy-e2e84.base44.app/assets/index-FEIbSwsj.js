@@ -75803,7 +75803,7 @@ function bIe() {
                                                 },
                                                 axisLine: !1,
                                                 tickLine: !1,
-                                                allowDecimals: !1, domain: [0, K => Math.max(1000, Math.ceil((K || 1000) / 1000) * 1000)], tickFormatter: K => `${Math.round(K/1e3)}k`
+                                                domain: [0, (() => { const mv = Math.max(1000, ...(le || []).flatMap(d => [d.receitas || 0, d.despesas || 0, Math.abs(d.saldo || 0), d.investimento || 0])); return mv <= 3000 ? 3000 : mv <= 4000 ? 4000 : Math.ceil(mv / 1000) * 1000; })()], ticks: (() => { const mv = Math.max(1000, ...(le || []).flatMap(d => [d.receitas || 0, d.despesas || 0, Math.abs(d.saldo || 0), d.investimento || 0])); const dm = mv <= 3000 ? 3000 : mv <= 4000 ? 4000 : Math.ceil(mv / 1000) * 1000; const st = dm <= 4000 ? 1000 : Math.ceil(dm / 4 / 1000) * 1000; const tk = []; for (let i = 0; i <= dm; i += st) tk.push(i); return tk; })(), tickFormatter: K => `${K/1e3}k`
                                             }), l.jsx(er, {
                                                 contentStyle: Ie,
                                                 labelStyle: tooltipLabelStyle,
@@ -76751,7 +76751,7 @@ function wIe() {
                                     stroke: "#94a3b8"
                                 }), l.jsx(Ia, {
                                     stroke: "#94a3b8",
-                                    allowDecimals: !1, domain: [0, m => Math.max(1000, Math.ceil((m || 1000) / 1000) * 1000)], tickFormatter: m => `R$ ${Math.round(m/1e3)}k`
+                                    domain: [0, m => Math.max(1000, Math.ceil((m || 1000) / 1000) * 1000)], tickCount: 5, tickFormatter: m => `R$ ${Math.round(m/1e3)}k`
                                 }), l.jsx(er, {
                                     formatter: m => `R$ ${m.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                                     contentStyle: {
@@ -78445,7 +78445,7 @@ function CIe() {
                             stroke: isDark ? "#ffffff" : "#6b7280"
                         }), l.jsx(Ia, {
                             stroke: isDark ? "#ffffff" : "#6b7280",
-                            allowDecimals: !1, domain: [0, p => Math.max(1000, Math.ceil((p || 1000) / 1000) * 1000)], tickFormatter: p => `R$ ${Math.round(p/1e3)}k`
+                            domain: [0, p => Math.max(1000, Math.ceil((p || 1000) / 1000) * 1000)], tickCount: 5, tickFormatter: p => `R$ ${Math.round(p/1e3)}k`
                         }), l.jsx(er, {
                             formatter: p => `R$ ${p.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                             contentStyle: isDark ? {
