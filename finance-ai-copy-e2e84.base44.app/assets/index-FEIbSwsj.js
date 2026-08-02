@@ -75760,7 +75760,7 @@ function bIe() {
                                     className: "w-1 h-5 rounded-full bg-gradient-to-b from-blue-400 to-purple-500"
                                 }), l.jsx("h3", {
                                     className: "text-base font-semibold text-white",
-                                    children: le.length <= 1 ? "Projeção Financeira — Jul/26" : `Projeção Financeira — Jul/26 a ${le[le.length - 1].mes.charAt(0).toUpperCase() + le[le.length - 1].mes.slice(1)}`
+                                    children: le.length <= 1 ? "Projeção Financeira — Ago/26" : `Projeção Financeira — Ago/26 a ${le[le.length - 1].mes.charAt(0).toUpperCase() + le[le.length - 1].mes.slice(1)}`
                                 })]
                             }), l.jsx("div", {
                                 className: "overflow-x-auto",
@@ -75784,7 +75784,7 @@ function bIe() {
                                             barSize: 8,
                                             children: [l.jsx(sc, {
                                                 strokeDasharray: "3 3",
-                                                stroke: "rgba(255,255,255,0.06)",
+                                                stroke: "rgba(255,255,255,0.25)",
                                                 vertical: !1
                                             }), l.jsx(Ma, {
                                                 dataKey: "mes",
