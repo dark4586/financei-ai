@@ -75689,10 +75689,7 @@ function bIe() {
                             transition: {
                                 duration: .35
                             },
-                            children: l.jsxs(nu, {
-                                children: [l.jsx(ru, {
-                                    asChild: !0,
-                                    children: l.jsx(Be.div, {
+                            children: l.jsx(Be.div, {
                                         whileHover: {
                                             y: -2
                                         },
@@ -75735,21 +75732,10 @@ function bIe() {
                                             })]
                                         })
                                     })
-                                }), l.jsx(wl, {
-                                    side: "bottom",
-                                    style: Ie,
-                                    className: "text-white p-3",
-                                    children: l.jsx("p", {
-                                        className: "text-sm text-gray-300",
-                                        children: "💡 Não conta como renda até ser recebido"
-                                    })
-                                })]
+                                
                             })
                         })
-                    }), l.jsxs(nu, {
-                        children: [l.jsx(ru, {
-                            asChild: !0,
-                            children: l.jsx(Be.div, {
+                    , l.jsx(Be.div, {
                                 custom: 4,
                                 variants: qe,
                                 initial: "hidden",
@@ -75923,16 +75909,7 @@ function bIe() {
                             })]
                         })
                     })
-                }), l.jsx(wl, {
-                    side: "bottom",
-                    style: Ie,
-                    className: "text-white p-3 max-w-xs",
-                    children: l.jsx("p", {
-                        className: "text-sm text-gray-300",
-                        children: "💡 Projeção estimada do fluxo de caixa e saldo para os próximos meses"
-                    })
-                })]
-            }), l.jsxs("div", {
+                , l.jsxs("div", {
     className: "dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mt-5 md:mt-6",
     children: [l.jsxs("div", {
         className: "dashboard-col-1 flex flex-col gap-5 md:gap-6 space-y-0",
