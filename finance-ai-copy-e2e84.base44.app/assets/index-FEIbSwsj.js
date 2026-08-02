@@ -75753,13 +75753,13 @@ function bIe() {
                         initial: "hidden",
                         animate: "visible",
                         children: l.jsxs(Oe, {
-                            className: isDarkTheme ? "bg-[#1a1a1a] border-[#2a2a2a] p-5 md:p-6" : "bg-white border-gray-200 shadow-sm p-5 md:p-6",
+                            className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 md:p-6",
                             children: [l.jsxs("div", {
                                 className: "flex items-center gap-2 mb-5",
                                 children: [l.jsx("div", {
                                     className: "w-1 h-5 rounded-full bg-gradient-to-b from-blue-400 to-purple-500"
                                 }), l.jsx("h3", {
-                                    className: isDarkTheme ? "text-base font-semibold text-white" : "text-base font-semibold text-gray-900",
+                                    className: "text-base font-semibold text-white",
                                     children: le.length <= 1 ? "Projeção Financeira — Ago/26" : `Projeção Financeira — Ago/26 a ${le[le.length - 1].mes.charAt(0).toUpperCase() + le[le.length - 1].mes.slice(1)}`
                                 })]
                             }), l.jsx("div", {
@@ -75784,21 +75784,21 @@ function bIe() {
                                             barSize: 8,
                                             children: [l.jsx(sc, {
                                                 strokeDasharray: "3 3",
-                                                stroke: isDarkTheme ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.25)",
+                                                stroke: "#2a2a2a",
                                                 vertical: !1
                                             }), l.jsx(Ma, {
                                                 dataKey: "mes",
-                                                stroke: isDarkTheme ? "#555" : "#ccc",
+                                                stroke: "#888",
                                                 tick: {
-                                                    fill: isDarkTheme ? "#aaaaaa" : "#333333",
+                                                    fill: "#888",
                                                     fontSize: 11
                                                 },
                                                 axisLine: !1,
                                                 tickLine: !1
                                             }), l.jsx(Ia, {
-                                                stroke: isDarkTheme ? "#555" : "#ccc",
+                                                stroke: "#888",
                                                 tick: {
-                                                    fill: isDarkTheme ? "#aaaaaa" : "#333333",
+                                                    fill: "#888",
                                                     fontSize: 11
                                                 },
                                                 axisLine: !1,
@@ -75810,11 +75810,11 @@ function bIe() {
                                                 itemStyle: tooltipItemStyle,
                                                 formatter: K => `R$ ${K.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                                                 cursor: {
-                                                    fill: isDarkTheme ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"
+                                                    fill: "rgba(255,255,255,0.04)"
                                                 }
                                             }), l.jsx(Ra, {
                                                 wrapperStyle: {
-                                                    color: isDarkTheme ? "#aaaaaa" : "#333333",
+                                                    color: "#888",
                                                     fontSize: 12,
                                                     paddingTop: 8
                                                 }
