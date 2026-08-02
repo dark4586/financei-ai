@@ -75920,18 +75920,19 @@ function bIe() {
                                         })
                                     })
                                 })
-                            })
-                        }), l.jsx(wl, {
-                            side: "bottom",
-                            style: Ie,
-                            className: "text-white p-3 max-w-xs",
-                            children: l.jsx("p", {
-                                className: "text-sm text-gray-300",
-                                children: "💡 Projeção estimada do fluxo de caixa e saldo para os próximos meses"
-                            })
-                        })]
+                            })]
+                        })
                     })
-}), l.jsxs("div", {
+                }), l.jsx(wl, {
+                    side: "bottom",
+                    style: Ie,
+                    className: "text-white p-3 max-w-xs",
+                    children: l.jsx("p", {
+                        className: "text-sm text-gray-300",
+                        children: "💡 Projeção estimada do fluxo de caixa e saldo para os próximos meses"
+                    })
+                })]
+            }), l.jsxs("div", {
     className: "dashboard-grid grid grid-cols-1 md:grid-cols-2 gap-5 md:gap-6 mt-5 md:mt-6",
     children: [l.jsxs("div", {
         className: "dashboard-col-1 flex flex-col gap-5 md:gap-6 space-y-0",
