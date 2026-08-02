@@ -75752,20 +75752,8 @@ function bIe() {
                         variants: qe,
                         initial: "hidden",
                         animate: "visible",
-                        whileHover: {
-                            y: -4,
-                            scale: 1.005
-                        },
-                        whileTap: {
-                            scale: 0.995
-                        },
-                        transition: {
-                            type: "spring",
-                            stiffness: 400,
-                            damping: 25
-                        },
                         children: l.jsxs(Oe, {
-                            className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 md:p-6 transition-all duration-300 hover:shadow-xl",
+                            className: "bg-[#1a1a1a] border-[#2a2a2a] p-5 md:p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl cursor-pointer",
                             children: [l.jsxs("div", {
                                 className: "flex items-center gap-2 mb-5",
                                 children: [l.jsx("div", {
