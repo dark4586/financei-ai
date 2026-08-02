@@ -74719,7 +74719,7 @@ function bIe() {
                 value: J
             }
         }).sort((a, b) => b.value - a.value),
-        ge = ["#ef4444", "#f97316", "#f59e0b", "#84cc16", "#10b981", "#14b8a6", "#06b6d4", "#3b82f6", "#6366f1", "#8b5cf6", "#a855f7", "#d946ef", "#ec4899", "#f43f5e"],
+        ge = ["#ef4444", "#3b82f6", "#10b981", "#f59e0b", "#8b5cf6", "#ec4899", "#06b6d4", "#f97316", "#84cc16", "#14b8a6", "#6366f1", "#a855f7", "#d946ef", "#e11d48", "#0284c7", "#059669", "#d97706", "#7c3aed", "#c026d3", "#0891b2", "#ea580c", "#16a34a", "#2563eb", "#9333ea", "#db2777"],
         Se = [
             ...(Array.isArray(w) ? w : []).filter(K => K.ativa && isItemCreatedBeforeOrInMonth(K, S) && (K.recorrente !== false ? true : (K.mes_referencia && K.mes_referencia.includes(S))) && !isFixedExpensePaidInMonth(K, S)).map(K => ({
                 nome: K.nome,
@@ -75803,7 +75803,7 @@ function bIe() {
                                                 },
                                                 axisLine: !1,
                                                 tickLine: !1,
-                                                domain: [0, K => Math.max(1000, Math.ceil((K * 1.15) / 1000) * 1000)], tickFormatter: K => `${(K/1e3 % 1 === 0 ? (K/1e3).toFixed(0) : (K/1e3).toFixed(1))}k`
+                                                allowDecimals: !1, domain: [0, K => Math.max(1000, Math.ceil((K || 1000) / 1000) * 1000)], tickFormatter: K => `${Math.round(K/1e3)}k`
                                             }), l.jsx(er, {
                                                 contentStyle: Ie,
                                                 labelStyle: tooltipLabelStyle,
@@ -75944,10 +75944,14 @@ function bIe() {
                                             innerRadius: 40,
                                             dataKey: "value",
                                             paddingAngle: 2,
-                                            children: ae.map((K, J) => l.jsx(Bx, {
-                                                fill: ge[J % ge.length],
-                                                stroke: "transparent"
-                                            }, `cell-${J}`))
+                                            children: ae.map((K, J) => {
+                                                let color = ge[J % ge.length];
+                                                if (K && K.name) {
+                                                    if (K.name.includes("Aporte")) color = ge[(J * 5 + 4) % ge.length];
+                                                    else if (K.name.includes("divida") || K.name.includes("Dívida") || K.name.includes("Jeitto")) color = ge[(J * 3) % ge.length];
+                                                }
+                                                return l.jsx(Bx, { fill: color, stroke: "transparent" }, `cell-${J}`);
+                                            })
                                         }), l.jsx(er, {
                                             contentStyle: Ie,
                                             labelStyle: tooltipLabelStyle,
@@ -76747,7 +76751,7 @@ function wIe() {
                                     stroke: "#94a3b8"
                                 }), l.jsx(Ia, {
                                     stroke: "#94a3b8",
-                                    domain: [0, m => Math.max(1000, Math.ceil((m * 1.15) / 1000) * 1000)], tickFormatter: m => `R$ ${(m/1e3 % 1 === 0 ? (m/1e3).toFixed(0) : (m/1e3).toFixed(1))}k`
+                                    allowDecimals: !1, domain: [0, m => Math.max(1000, Math.ceil((m || 1000) / 1000) * 1000)], tickFormatter: m => `R$ ${Math.round(m/1e3)}k`
                                 }), l.jsx(er, {
                                     formatter: m => `R$ ${m.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                                     contentStyle: {
@@ -78441,7 +78445,7 @@ function CIe() {
                             stroke: isDark ? "#ffffff" : "#6b7280"
                         }), l.jsx(Ia, {
                             stroke: isDark ? "#ffffff" : "#6b7280",
-                            domain: [0, p => Math.max(1000, Math.ceil((p * 1.15) / 1000) * 1000)], tickFormatter: p => `R$ ${(p/1e3 % 1 === 0 ? (p/1e3).toFixed(0) : (p/1e3).toFixed(1))}k`
+                            allowDecimals: !1, domain: [0, p => Math.max(1000, Math.ceil((p || 1000) / 1000) * 1000)], tickFormatter: p => `R$ ${Math.round(p/1e3)}k`
                         }), l.jsx(er, {
                             formatter: p => `R$ ${p.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                             contentStyle: isDark ? {
