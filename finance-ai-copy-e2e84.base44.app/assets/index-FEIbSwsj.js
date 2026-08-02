@@ -75803,7 +75803,7 @@ function bIe() {
                                                 },
                                                 axisLine: !1,
                                                 tickLine: !1,
-                                                tickFormatter: K => `${(K/1e3).toFixed(0)}k`
+                                                domain: [0, K => Math.max(1000, Math.ceil((K * 1.15) / 1000) * 1000)], tickFormatter: K => `${(K/1e3 % 1 === 0 ? (K/1e3).toFixed(0) : (K/1e3).toFixed(1))}k`
                                             }), l.jsx(er, {
                                                 contentStyle: Ie,
                                                 labelStyle: tooltipLabelStyle,
@@ -76747,7 +76747,7 @@ function wIe() {
                                     stroke: "#94a3b8"
                                 }), l.jsx(Ia, {
                                     stroke: "#94a3b8",
-                                    tickFormatter: m => `R$ ${(m/1e3).toFixed(0)}k`
+                                    domain: [0, m => Math.max(1000, Math.ceil((m * 1.15) / 1000) * 1000)], tickFormatter: m => `R$ ${(m/1e3 % 1 === 0 ? (m/1e3).toFixed(0) : (m/1e3).toFixed(1))}k`
                                 }), l.jsx(er, {
                                     formatter: m => `R$ ${m.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                                     contentStyle: {
@@ -78441,7 +78441,7 @@ function CIe() {
                             stroke: isDark ? "#ffffff" : "#6b7280"
                         }), l.jsx(Ia, {
                             stroke: isDark ? "#ffffff" : "#6b7280",
-                            tickFormatter: p => `R$ ${(p/1e3).toFixed(0)}k`
+                            domain: [0, p => Math.max(1000, Math.ceil((p * 1.15) / 1000) * 1000)], tickFormatter: p => `R$ ${(p/1e3 % 1 === 0 ? (p/1e3).toFixed(0) : (p/1e3).toFixed(1))}k`
                         }), l.jsx(er, {
                             formatter: p => `R$ ${p.toLocaleString("pt-BR",{minimumFractionDigits:2})}`,
                             contentStyle: isDark ? {
