@@ -250,15 +250,21 @@ async function checkAndTriggerNotificationsSW(data) {
     const yearMonth = formatYearMonth(now);
     const todayStr = formatDateStr(now);
 
-    // 1. Rendimento Diario
+    // 1. Rendimento Diário (apenas dias úteis)
     let dailyYield = 0;
-    savings.forEach(s => {
-        const val = parseFloat(s.valor_investido || 0);
-        const rate = parseFloat(s.taxa_rendimento || 0);
-        if (val > 0 && rate > 0) {
-            dailyYield += (val * (rate / 100)) / 365;
-        }
-    });
+    const dayOfWeek = now.getDay();
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) { // 1-5 = Seg-Sex
+        savings.forEach(s => {
+            const isCDB = s.tipo === 'cdb' || (s.taxa_rendimento && parseFloat(s.taxa_rendimento) > 0);
+            const val = parseFloat(s.valor_investido || 0);
+            if (isCDB && val > 0) {
+                const ratePercent = parseFloat(s.taxa_rendimento) > 0 ? parseFloat(s.taxa_rendimento) : 1.37;
+                const monthlyRate = ratePercent / 100;
+                const dailyRate = Math.pow(1 + monthlyRate, 1 / 21) - 1;
+                dailyYield += val * dailyRate;
+            }
+        });
+    }
     if (dailyYield > 0.01) {
         const id = `daily_yield_${todayStr}`;
         if (!(await isNotificationShownLocal(id))) {

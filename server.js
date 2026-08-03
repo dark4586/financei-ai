@@ -29,6 +29,89 @@ function saveDB() {
     }
 }
 
+// Contabiliza apenas dias úteis (segunda a sexta) entre duas datas
+function getBusinessDaysCount(startDate, endDate) {
+    if (!startDate || !endDate) return 0;
+    const start = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+    const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+    if (start >= end) return 0;
+
+    let count = 0;
+    const cur = new Date(start.getTime());
+    cur.setDate(cur.getDate() + 1);
+
+    while (cur <= end) {
+        const dayOfWeek = cur.getDay(); // 0: Dom, 1: Seg, ..., 5: Sex, 6: Sáb
+        if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            count++;
+        }
+        cur.setDate(cur.getDate() + 1);
+    }
+    return count;
+}
+
+// Aplica rendimento composto diário aos CDBs apenas em dias úteis
+function processCDBYields() {
+    if (!db.Savings || !Array.isArray(db.Savings)) return false;
+
+    let updated = false;
+    const now = new Date();
+
+    db.Savings.forEach(item => {
+        if (!item) return;
+
+        const isCDB = item.tipo === 'cdb' || (item.taxa_rendimento && parseFloat(item.taxa_rendimento) > 0);
+        const valorInvestido = parseFloat(item.valor_investido || 0);
+
+        if (isCDB && valorInvestido > 0) {
+            // Taxa mensal padrão 1.37% a.m. (~120% CDI) se não informada
+            const monthlyRatePercent = parseFloat(item.taxa_rendimento) > 0 ? parseFloat(item.taxa_rendimento) : 1.37;
+            const monthlyRate = monthlyRatePercent / 100;
+
+            // Converter taxa mensal para taxa diária composta em 21 dias úteis por mês
+            const dailyRate = Math.pow(1 + monthlyRate, 1 / 21) - 1;
+
+            const lastDateStr = item.last_rendimento_date || item.data_inicio || item.created_date || item.updated_date;
+            let lastDate = lastDateStr ? new Date(lastDateStr) : null;
+
+            if (!lastDate || isNaN(lastDate.getTime())) {
+                lastDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                item.last_rendimento_date = lastDate.toISOString();
+                updated = true;
+                return;
+            }
+
+            const businessDays = getBusinessDaysCount(lastDate, now);
+            if (businessDays > 0) {
+                const accruedMultiplier = Math.pow(1 + dailyRate, businessDays);
+                const newValor = parseFloat((valorInvestido * accruedMultiplier).toFixed(2));
+                const yieldAmount = parseFloat((newValor - valorInvestido).toFixed(2));
+
+                if (yieldAmount > 0) {
+                    item.valor_investido = newValor;
+                    item.rendimento_acumulado = parseFloat(((parseFloat(item.rendimento_acumulado || 0)) + yieldAmount).toFixed(2));
+                    item.last_rendimento_date = now.toISOString();
+                    item.updated_date = now.toISOString();
+                    updated = true;
+                }
+            }
+        }
+    });
+
+    if (updated) {
+        saveDB();
+    }
+    return updated;
+}
+
+// Executar rendimentos na inicialização do servidor e a cada 1 hora
+try {
+    processCDBYields();
+    setInterval(processCDBYields, 3600000);
+} catch (err) {
+    console.error("Erro ao inicializar rendimentos CDB:", err);
+}
+
 // Load .env file if it exists (for local development)
 try {
     const dotenvPath = path.join(__dirname, '.env');
@@ -597,33 +680,7 @@ async function handleEntityRequest(req, res, appId, entityName, subPath) {
 
         if (method === 'GET' && !subPath) {
             if (entityName === 'Savings' && db.Savings) {
-                let updated = false;
-                const now = new Date();
-                db.Savings.forEach(item => {
-                    if (item && item.taxa_rendimento > 0 && item.valor_investido > 0) {
-                        const lastDateStr = item.last_rendimento_date || item.updated_date || item.created_date || item.data_inicio;
-                        if (lastDateStr) {
-                            const lastDate = new Date(lastDateStr);
-                            const diffMs = now.getTime() - lastDate.getTime();
-                            const daysPassed = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-                            if (daysPassed >= 1) {
-                                const monthlyRate = parseFloat(item.taxa_rendimento) / 100;
-                                const dailyRate = monthlyRate / 30;
-                                const accruedMultiplier = Math.pow(1 + dailyRate, daysPassed);
-                                const newValor = parseFloat((item.valor_investido * accruedMultiplier).toFixed(4));
-                                if (newValor > item.valor_investido) {
-                                    item.valor_investido = newValor;
-                                    item.last_rendimento_date = now.toISOString();
-                                    item.updated_date = now.toISOString();
-                                    updated = true;
-                                }
-                            }
-                        }
-                    }
-                });
-                if (updated) {
-                    saveDB();
-                }
+                processCDBYields();
             }
 
             const parsedUrl = new URL(req.url, `http://${req.headers.host}`);
