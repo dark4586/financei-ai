@@ -32,9 +32,25 @@ function saveDB() {
 // Contabiliza apenas dias úteis (segunda a sexta) entre duas datas
 function getBusinessDaysCount(startDate, endDate) {
     if (!startDate || !endDate) return 0;
-    const start = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
-    const end = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
-    if (start >= end) return 0;
+    
+    let start, end;
+    if (typeof startDate === 'string' && startDate.length === 10) {
+        const parts = startDate.split('-').map(Number);
+        start = new Date(parts[0], parts[1] - 1, parts[2]);
+    } else {
+        const d = new Date(startDate);
+        start = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    if (typeof endDate === 'string' && endDate.length === 10) {
+        const parts = endDate.split('-').map(Number);
+        end = new Date(parts[0], parts[1] - 1, parts[2]);
+    } else {
+        const d = new Date(endDate);
+        end = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime()) || start >= end) return 0;
 
     let count = 0;
     const cur = new Date(start.getTime());
