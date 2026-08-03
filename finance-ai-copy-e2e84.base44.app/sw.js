@@ -260,7 +260,7 @@ async function checkAndTriggerNotificationsSW(data) {
             if (isCDB && val > 0) {
                 const ratePercent = parseFloat(s.taxa_rendimento) > 0 ? parseFloat(s.taxa_rendimento) : 1.37;
                 const monthlyRate = ratePercent / 100;
-                const dailyRate = Math.pow(1 + monthlyRate, 1 / 21) - 1;
+                const dailyRate = Math.pow(1 + monthlyRate, 1 / 24) - 1;
                 dailyYield += val * dailyRate;
             }
         });

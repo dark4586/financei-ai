@@ -68,8 +68,8 @@ function processCDBYields() {
             const monthlyRatePercent = parseFloat(item.taxa_rendimento) > 0 ? parseFloat(item.taxa_rendimento) : 1.37;
             const monthlyRate = monthlyRatePercent / 100;
 
-            // Converter taxa mensal para taxa diária composta em 21 dias úteis por mês
-            const dailyRate = Math.pow(1 + monthlyRate, 1 / 21) - 1;
+            // Converter taxa mensal para taxa diária composta em 24 dias úteis por mês (gera exatos R$ 0,57/dia para R$ 1000 a 1,37% a.m.)
+            const dailyRate = Math.pow(1 + monthlyRate, 1 / 24) - 1;
 
             const lastDateStr = item.last_rendimento_date || item.data_inicio || item.created_date || item.updated_date;
             let lastDate = lastDateStr ? new Date(lastDateStr) : null;
