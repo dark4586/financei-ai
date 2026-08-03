@@ -351,17 +351,18 @@
       "banco_id": "1782930492695_dntcgni",
       "tipo": "cdb",
       "nome": "CDB Mercado Pago",
-      "valor_investido": 0.91,
+      "valor_investido": 1000.65,
       "aporte_mensal": 0,
-      "taxa_rendimento": 1.26,
+      "taxa_rendimento": 1.37,
       "retirada_mensal": 0,
-      "data_inicio": "2026-08-01",
+      "data_inicio": "2026-07-31",
       "familiar": "",
       "banco_nome": "Mercado Pago",
       "id": "1784568893426_9cdduwn",
       "created_date": "2026-07-20T17:34:53.426Z",
-      "updated_date": "2026-07-24T12:00:00.000Z",
-      "last_rendimento_date": "2026-08-01T12:00:00.000Z"
+      "updated_date": "2026-08-03T10:13:18.874Z",
+      "last_rendimento_date": "2026-08-03T10:13:18.874Z",
+      "rendimento_acumulado": 0.65
     }
   ],
   "Goal": [],
