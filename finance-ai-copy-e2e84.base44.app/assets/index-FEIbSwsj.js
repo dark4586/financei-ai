@@ -68270,7 +68270,7 @@ function N4e() {
 
             const totalExp = expVal + debtVal + goalVal + cardVal;
             const extraAportes = (scheduledList || []).filter(sd => !sd.efetivado && sd.mes_referencia && sd.mes_referencia.substring(0, 7) === monthKey).reduce((sum, sd) => sum + sd.valor, 0);
-            return { totalInc, totalExp, balance: totalInc - totalExp - investVal - extraAportes };
+            return { totalInc, totalExp, balance: totalInc - totalExp };
         };
 
         const currentMonthData = calculateBalanceForMonth(B);
@@ -74556,7 +74556,7 @@ function bIe() {
                 }),
                 receitas: rr + H + Ce,
                 despesas: de,
-                saldo: rr + H + Ce - de - meInvestimento,
+                saldo: rr + H + Ce - de,
                 investimento: meInvestimento
             })
         }
